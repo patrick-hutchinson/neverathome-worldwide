@@ -11,6 +11,23 @@
   pointer-events: auto;
 }
 
+.cityListLayer {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.cityListLayer > * {
+  pointer-events: auto;
+}
+
+.cityListScrollSpace {
+  position: relative;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .marqueeContainer {
   position: absolute;
   bottom: var(--spacing-6);

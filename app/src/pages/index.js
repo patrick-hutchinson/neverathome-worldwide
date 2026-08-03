@@ -1,10 +1,14 @@
 import styles from "@/styles/Home.module.css";
 import { getDestinations, getPage, getPageDeadlines, getSite } from "@/lib/sanity";
 
+import Text from "@/components/Text/Text";
+
 export default function Home() {
   return (
     <div className={`page ${styles.page}`}>
-      <main className="main" />
+      <main className="main">
+        <Text text="Here's some text" typo="h2" />
+      </main>
     </div>
   );
 }

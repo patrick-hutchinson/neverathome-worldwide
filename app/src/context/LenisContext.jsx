@@ -93,13 +93,8 @@ function LenisContextProvider({ children }) {
 }
 
 export default function LenisProvider({ children }) {
-  const { pathname } = useRouter();
-
-  const infiniteRoutes = ["/"];
-  const scrollInfinite = infiniteRoutes.includes(pathname);
-
   return (
-    <ReactLenis root options={{ infinite: scrollInfinite, stopInertiaOnNavigate: true, syncTouch: true }}>
+    <ReactLenis root options={{ stopInertiaOnNavigate: true, syncTouch: true }}>
       <LenisContextProvider>{children}</LenisContextProvider>
     </ReactLenis>
   );

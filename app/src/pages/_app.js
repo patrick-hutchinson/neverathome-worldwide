@@ -2,7 +2,7 @@ import Head from "next/head";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import CityList from "@/components/CityList/CityList";
 import Globe from "@/components/Globe/Globe";
@@ -55,6 +55,8 @@ export default function App({ Component, pageProps }) {
 
   const [exitingScrollY, setExitingScrollY] = useState(0);
   const [destinationCity, setDestinationCity] = useState(null);
+  const cityListRef = useRef(null);
+  const [contentOffset, setContentOffset] = useState(0);
 
   useEffect(() => {
     const handleRouteChangeStart = () => {
@@ -107,6 +109,27 @@ export default function App({ Component, pageProps }) {
     };
   }, [sharedData.destinations, sharedData.page, sharedData.pageDeadlines, sharedData.site]);
 
+  useEffect(() => {
+    const cityList = cityListRef.current;
+    if (!cityList) return undefined;
+
+    const updateContentOffset = () => {
+      const rect = cityList.getBoundingClientRect();
+      setContentOffset(Math.max(0, Math.ceil(rect.bottom)));
+    };
+
+    updateContentOffset();
+
+    const resizeObserver = new ResizeObserver(updateContentOffset);
+    resizeObserver.observe(cityList);
+    window.addEventListener("resize", updateContentOffset);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateContentOffset);
+    };
+  }, [destinations]);
+
   return (
     <>
       <Head>
@@ -122,14 +145,17 @@ export default function App({ Component, pageProps }) {
             <Header currentPhase={currentPhase} pageDeadlines={pageDeadlines} site={site} />
             <div className={styles.sharedLayer}>
               <Globe destinationCity={destinationCity} />
-              <CityList cities={destinations} onCitySelect={setDestinationCity} />
 
               <div className={styles.marqueeContainer}>
                 {currentPhaseLabel ? <Marquee text={currentPhaseLabel} typo="h1" /> : null}
                 {page.marqueeText ? <Marquee text={page.marqueeText} typo="h3" /> : null}
               </div>
             </div>
+            <div className={styles.cityListLayer}>
+              <CityList cities={destinations} listRef={cityListRef} onCitySelect={setDestinationCity} />
+            </div>
             <SpacingDebugOverlay />
+            <div className={styles.cityListScrollSpace} style={{ height: `${contentOffset}px` }} />
             <div className="pageTransitionRoot">
               <AnimatePresence custom={exitingScrollY} initial={false}>
                 <motion.div
