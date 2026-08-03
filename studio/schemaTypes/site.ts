@@ -63,14 +63,6 @@ export const site = defineType({
       name: 'email',
       type: 'string',
     }),
-    defineField({
-      name: 'phone',
-      type: 'string',
-    }),
-    defineField({
-      name: 'VAT',
-      type: 'string',
-    }),
   ],
   preview: {
     prepare: () => ({title: 'Site'}),

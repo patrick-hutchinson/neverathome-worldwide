@@ -17,6 +17,29 @@ export const siteQuery = `*[_type=="site"][0]{
   },
 }`;
 
+export const pageDeadlinesQuery = `{
+  "openCallPage": *[_type=="openCallPage"][0].deadline,
+  "juryPage": *[_type=="juryPage"][0].deadline,
+  "destinationsPage": *[_type=="destinationsPage"][0].deadline
+}`;
+
+export const pageQuery = `*[_type=="page"][0]{
+  phase,
+  marqueeText,
+}`;
+
+export const destinationsQuery = `*[
+  _type == "destination" &&
+  defined(name) &&
+  defined(coordinates.latitude) &&
+  defined(coordinates.longitude)
+] | order(name asc) {
+  _id,
+  name,
+  "lat": coordinates.latitude,
+  "lng": coordinates.longitude
+}`;
+
 export const homeQuery = `*[_type=="home"][0]{
   selection[]->{
     _type == "project" => {

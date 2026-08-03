@@ -1,0 +1,20 @@
+.cityList {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  top: 0;
+  right: 10%;
+  width: fit-content;
+}
+
+.cityEntry {
+  cursor: pointer;
+}
+
+.cityEntry:hover,
+.cityEntry:focus {
+  color: var(--accent);
+}

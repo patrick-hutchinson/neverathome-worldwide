@@ -1,0 +1,133 @@
+.title {
+  /* text-transform: uppercase; */
+  font-size: var(--font-size-4);
+  line-height: var(--font-size-4);
+}
+
+.announcement .title {
+  font-size: var(--font-size-3);
+  line-height: var(--font-size-3);
+}
+.type {
+  text-transform: uppercase;
+}
+
+.text_marquee {
+  white-space: nowrap;
+}
+
+.text_slide {
+  padding-left: 6px !important;
+}
+
+.measure_slide {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.card {
+  background: var(--foreground);
+  color: var(--background);
+  height: 220px;
+  width: auto;
+  margin: 6px 0 12px 0;
+  overflow: hidden;
+}
+
+.announcement .card {
+  padding: 12px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  width: calc(220px / 1.2);
+  height: 220px;
+  white-space: normal;
+
+  text-align: center;
+  justify-content: center;
+}
+
+.announcement.isLarge .card {
+  width: calc((220px / 1.2) * 2);
+  height: 220px;
+}
+
+.announcement.isWhite .card {
+  background: transparent;
+  color: #000;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+
+.carousel_outer {
+  max-width: 100vw;
+  margin: auto;
+  user-select: none;
+  cursor: grab;
+  overflow: hidden;
+}
+
+.carousel_outer {
+  cursor: grab;
+}
+
+.carousel_outer:active,
+.carousel_outer:active * {
+  cursor: grabbing !important;
+}
+
+.carousel_inner {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+  margin-left: calc(2px * -1);
+}
+.slide {
+  padding-left: 1.5px;
+}
+
+a.announcement:hover,
+a.advert:hover {
+  cursor: pointer;
+}
+
+@media screen and (min-width: 320px) {
+}
+
+/* iPads and other Tablets */
+@media screen and (min-width: 769px) {
+  .card {
+    height: 280px;
+  }
+
+  .announcement .card {
+    width: calc(280px / 1.2);
+    height: 280px;
+  }
+
+  .announcement.isLarge .card {
+    width: calc((280px / 1.2) * 2);
+    height: 280px;
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 1280px) {
+}
+
+/* Large Format Screens */
+@media screen and (min-width: 2560px) {
+  .card {
+    height: 560px;
+  }
+  .announcement .card {
+    width: calc(0.8 * 560px);
+    height: 560px;
+  }
+  .announcement.isLarge .card {
+    width: calc((0.8 * 560px) * 2);
+    height: 560px;
+  }
+}

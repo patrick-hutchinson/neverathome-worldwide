@@ -1,25 +1,54 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fff;
+  --foreground: #0a0a0a;
+
+  --spacing-1: 200px; /* #2EE844 */
+  --spacing-2: 135px; /* #2EE844 */
+  --spacing-3: 60px; /* #E82E4B */
+  --spacing-4: 40px; /* #FF9D00 */
+  --spacing-5: 25px; /* #E8FD1C */
+  --spacing-6: 15px; /* #E8842E */
+  --spacing-7: 10px; /* #0A00FF */
+  --spacing-8: 5px; /* #00EBFF */
+  --spacing-debug-1: #2ee844;
+  --spacing-debug-2: #e12ee8;
+  --spacing-debug-3: #e82e4b;
+  --spacing-debug-4: #ff9d00;
+  --spacing-debug-5: #e8fd1c;
+  --spacing-debug-6: #e8842e;
+  --spacing-debug-7: #0a00ff;
+  --spacing-debug-8: #00ebff;
+
+  --margin: var(--spacing-6);
+  --content-height: calc(100vh - 2 * var(--margin));
+  --content-width: calc(100vw - 2 * var(--margin));
+
+  --accent: #aeb0b1;
+  --opacity: 0.4;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::-webkit-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  overscroll-behavior: none;
+  font-size: 10px;
+  line-height: 1;
+  overscroll-behavior: none;
+  overflow-anchor: none;
+
+  font-family: "TexGyreHeros", Arial, Helvetica, sans-serif;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -30,13 +59,47 @@ body {
   margin: 0;
 }
 
+.page {
+  overflow-x: hidden;
+  background-color: var(--background);
+  position: relative;
+}
+
+@media screen and (min-width: 749px) {
+  :root {
+  }
+}
+
+.pageTransitionRoot {
+  display: grid;
+  min-height: 100vh;
+}
+
+.pageTransition {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
 a {
   color: inherit;
   text-decoration: none;
+  transition: 0.3s ease-in-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+a:focus,
+a:focus-visible,
+button:focus,
+button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+a:hover {
+  opacity: var(--opacity);
+}
+
+ul,
+li {
+  text-decoration: none;
+  list-style: none;
 }

@@ -1,0 +1,104 @@
+:root {
+  --fontSize-1: 32rem;
+  --lineHeight-1: 1;
+  --letterSpacing-1: -2rem;
+  --paragraphSpacing-1: 0rem;
+
+  --fontSize-2: 5.8rem;
+  --lineHeight-2: 1;
+  --letterSpacing-2: -0.2rem;
+  --paragraphSpacing-2: 0rem;
+
+  --fontSize-3: 1.9rem;
+  --lineHeight-3: 1;
+  --letterSpacing-3: 0rem;
+  --paragraphSpacing-3: 0rem;
+
+  --fontSize-4: 1.4rem;
+  --lineHeight-4: 1rem;
+  --letterSpacing-4: 0rem;
+  --paragraphSpacing-4: 0rem;
+
+  --fontSize-5: 1rem;
+  --lineHeight-5: 1rem;
+  --letterSpacing-5: 0rem;
+  --paragraphSpacing-5: 0rem;
+}
+
+@font-face {
+  font-family: "TexGyreHeros";
+  src:
+    url("../../public/fonts/TexGyreHeros-regular.ttf") format("truetype"),
+    url("../../public/fonts/TexGyreHeros-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TexGyreHeros";
+  src: url("../../public/fonts/TexGyreHeros-italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+h1,
+[typo="h1"] {
+  font-size: var(--fontSize-1);
+  line-height: var(--lineHeight-1);
+  letter-spacing: var(--letterSpacing-1);
+}
+h1 p,
+[typo="h1"] p {
+  margin-bottom: var(--paragraphSpacing-1);
+}
+
+h2,
+[typo="h2"] {
+  font-size: var(--fontSize-2);
+  line-height: var(--lineHeight-2);
+  letter-spacing: var(--letterSpacing-2);
+}
+h2 p,
+[typo="h2"] p {
+  margin-bottom: var(--paragraphSpacing-1);
+}
+
+[typo="h3"],
+[typo="h3"] p {
+  font-size: var(--fontSize-3);
+  line-height: var(--lineHeight-3);
+  letter-spacing: var(--letterSpacing-3);
+}
+
+[typo="h3"] p {
+  margin-bottom: var(--paragraphSpacing-3);
+}
+
+h4,
+[typo="h4"] {
+  font-size: var(--fontSize-4);
+  line-height: var(--lineHeight-4);
+  letter-spacing: var(--letterSpacing-4);
+}
+h4 p,
+[typo="h4"] p {
+  margin-bottom: var(--paragraphSpacing-4);
+}
+
+h5,
+[typo="h5"] {
+  font-size: var(--fontSize-5);
+  line-height: var(--lineHeight-5);
+  letter-spacing: var(--letterSpacing-5);
+}
+h5 p,
+[typo="h5"] p {
+  margin-bottom: var(--paragraphSpacing-5);
+}
+
+@media screen and (max-width: 749px) {
+  :root {
+  }
+}

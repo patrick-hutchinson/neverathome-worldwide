@@ -1,0 +1,46 @@
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 10;
+  padding: var(--margin);
+  pointer-events: none;
+}
+
+.progressbar {
+  width: 100%;
+  height: 5px;
+  background: transparent;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.progressbarFill {
+  height: 100%;
+  background: #000;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+
+  justify-content: space-between;
+}
+
+.nav > .phases {
+  display: flex;
+  gap: 12px;
+}
+
+.link {
+  display: inline-flex;
+  gap: 5px;
+  align-items: baseline;
+  pointer-events: auto;
+}
+
+.countdown {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
