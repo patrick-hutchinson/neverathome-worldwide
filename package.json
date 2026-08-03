@@ -1,0 +1,16 @@
+{
+  "name": "neverathome-worldwide",
+  "private": true,
+  "workspaces": [
+    "app",
+    "studio"
+  ],
+  "scripts": {
+    "app:dev": "npm run dev --workspace app",
+    "app:build": "npm run build --workspace app",
+    "app:start": "npm run start --workspace app",
+    "studio:dev": "npm run dev --workspace studio",
+    "studio:build": "npm run build --workspace studio",
+    "studio:start": "npm run start --workspace studio"
+  }
+}
