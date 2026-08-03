@@ -1,6 +1,7 @@
 export {
   fallbackSiteData,
   getDestinations,
+  getHomePage,
   getHome,
   getHomeStaticProps,
   getInfo,

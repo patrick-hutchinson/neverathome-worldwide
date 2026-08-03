@@ -1,5 +1,5 @@
 import { getPreviewClient, getProductionClient } from "./client";
-import { destinationsQuery, pageDeadlinesQuery, pageQuery, siteQuery } from "./queries";
+import { destinationsQuery, homePageQuery, pageDeadlinesQuery, pageQuery, siteQuery } from "./queries";
 
 export const fallbackSiteData = {
   title: "Patrick Hutchinson",
@@ -48,6 +48,12 @@ export async function getPage() {
   const page = await getSanityClient().fetch(pageQuery);
 
   return page || {};
+}
+
+export async function getHomePage() {
+  const homePage = await getSanityClient().fetch(homePageQuery);
+
+  return homePage || {};
 }
 
 export async function getDestinations() {

@@ -105,7 +105,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   };
 
   return (
-    <header className={styles.header} typo="h3">
+    <header className={styles.header} typo="h4">
       <Progressbar />
       <nav className={styles.nav}>
         <div className={styles.phases}>

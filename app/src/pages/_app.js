@@ -148,7 +148,7 @@ export default function App({ Component, pageProps }) {
 
               <div className={styles.marqueeContainer}>
                 {currentPhaseLabel ? <Marquee text={currentPhaseLabel} typo="h1" /> : null}
-                {page.marqueeText ? <Marquee text={page.marqueeText} typo="h3" /> : null}
+                {page.marqueeText ? <Marquee text={page.marqueeText} typo="h4" /> : null}
               </div>
             </div>
             <div className={styles.cityListLayer}>

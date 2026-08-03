@@ -17,7 +17,6 @@ export const portableText = defineType({
         decorators: [
           {title: 'Emphasis', value: 'em'},
           {title: 'Strong', value: 'strong'},
-          {title: 'Ammendum', value: 'ammendum'},
         ],
         annotations: [
           {

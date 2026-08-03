@@ -1,21 +1,21 @@
 :root {
-  --fontSize-1: 32rem;
+  --fontSize-1: 16rem;
   --lineHeight-1: 1;
   --letterSpacing-1: -2rem;
   --paragraphSpacing-1: 0rem;
 
-  --fontSize-2: 5.8rem;
+  --fontSize-2: 3.4rem;
   --lineHeight-2: 1;
   --letterSpacing-2: -0.2rem;
-  --paragraphSpacing-2: 0rem;
+  ----paragraphSpacing-2: 0rem;
 
   --fontSize-3: 1.9rem;
   --lineHeight-3: 1;
-  --letterSpacing-3: 0rem;
-  --paragraphSpacing-3: 0rem;
+  --letterSpacing-3: 0;
+  ----paragraphSpacing-3: 0rem;
 
   --fontSize-4: 1.4rem;
-  --lineHeight-4: 1rem;
+  --lineHeight-4: 1;
   --letterSpacing-4: 0rem;
   --paragraphSpacing-4: 0rem;
 
@@ -62,20 +62,20 @@ h2,
   line-height: var(--lineHeight-2);
   letter-spacing: var(--letterSpacing-2);
 }
-h2 p,
-[typo="h2"] p {
-  margin-bottom: var(--paragraphSpacing-1);
+h1 p,
+[typo="h1"] p {
+  margin-bottom: var(--paragraphSpacing-2);
 }
 
-[typo="h3"],
-[typo="h3"] p {
+h3,
+[typo="h3"] {
   font-size: var(--fontSize-3);
   line-height: var(--lineHeight-3);
   letter-spacing: var(--letterSpacing-3);
 }
-
+h3 p,
 [typo="h3"] p {
-  margin-bottom: var(--paragraphSpacing-3);
+  margin-bottom: var(----paragraphSpacing-3);
 }
 
 h4,
@@ -84,7 +84,7 @@ h4,
   line-height: var(--lineHeight-4);
   letter-spacing: var(--letterSpacing-4);
 }
-h4 p,
+
 [typo="h4"] p {
   margin-bottom: var(--paragraphSpacing-4);
 }
@@ -100,7 +100,31 @@ h5 p,
   margin-bottom: var(--paragraphSpacing-5);
 }
 
-@media screen and (max-width: 749px) {
+@media screen and (min-width: 750px) {
   :root {
+    --fontSize-1: 35rem;
+    --lineHeight-1: 1;
+    --letterSpacing-1: -2rem;
+    --paragraphSpacing-1: 0rem;
+
+    --fontSize-2: 6.5rem;
+    --lineHeight-2: 1;
+    --letterSpacing-2: -0.2rem;
+    ----paragraphSpacing-2: 0rem;
+
+    --fontSize-3: 3.8rem;
+    --lineHeight-3: 1;
+    --letterSpacing-3: 0;
+    ----paragraphSpacing-3: 0rem;
+
+    --fontSize-4: 2.2rem;
+    --lineHeight-4: 1;
+    --letterSpacing-4: 0rem;
+    --paragraphSpacing-4: 0rem;
+
+    --fontSize-5: 1.2rem;
+    --lineHeight-5: 1rem;
+    --letterSpacing-5: 0rem;
+    --paragraphSpacing-5: 0rem;
   }
 }

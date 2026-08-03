@@ -8,7 +8,7 @@
   --spacing-4: 40px; /* #FF9D00 */
   --spacing-5: 25px; /* #E8FD1C */
   --spacing-6: 15px; /* #E8842E */
-  --spacing-7: 10px; /* #0A00FF */
+  --spacing-7: 9px; /* #0A00FF */
   --spacing-8: 5px; /* #00EBFF */
   --spacing-debug-1: #2ee844;
   --spacing-debug-2: #e12ee8;
@@ -65,8 +65,24 @@ body {
   position: relative;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 400;
+}
+
 @media screen and (min-width: 749px) {
   :root {
+    --spacing-1: 270px; /* #2EE844 */
+    --spacing-2: 135px; /* #2EE844 */
+    --spacing-3: 60px; /* #E82E4B */
+    --spacing-4: 40px; /* #FF9D00 */
+    --spacing-5: 25px; /* #E8FD1C */
+    --spacing-6: 15px; /* #E8842E */
+    --spacing-7: 6px; /* #0A00FF */
+    --spacing-8: 5px; /* #00EBFF */
   }
 }
 

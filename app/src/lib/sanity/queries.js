@@ -28,6 +28,39 @@ export const pageQuery = `*[_type=="page"][0]{
   marqueeText,
 }`;
 
+export const homePageQuery = `*[_type=="homePage"][0]{
+  aboutText,
+  schedule{
+    phaseA[]{
+      _key,
+      date,
+      endDate,
+      title,
+      keyword
+    },
+    phaseB[]{
+      _key,
+      date,
+      endDate,
+      title,
+      keyword
+    },
+    phaseC[]{
+      _key,
+      date,
+      endDate,
+      title,
+      keyword
+    }
+  },
+  quotes[]{
+    _key,
+    text,
+    person,
+    role
+  }
+}`;
+
 export const destinationsQuery = `*[
   _type == "destination" &&
   defined(name) &&

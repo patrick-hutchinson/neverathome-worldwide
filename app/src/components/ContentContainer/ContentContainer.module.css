@@ -1,0 +1,31 @@
+.contentContainer {
+  --content-grid-gap: calc(var(--spacing-6) / 3);
+
+  border-top: 1px solid black;
+  background: rgba(255, 255, 255, 0.8);
+  height: 100%;
+  width: 100%;
+
+  z-index: 100;
+  position: relative;
+  isolation: isolate;
+  padding: var(--spacing-6);
+}
+
+.contentContainer > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media screen and (min-width: 749px) {
+  .contentContainer::before {
+    content: "";
+    position: absolute;
+    inset: var(--spacing-6);
+    z-index: 0;
+    pointer-events: none;
+    background-image: linear-gradient(to right, #acffff calc(100% - var(--content-grid-gap)), transparent 0);
+    background-repeat: repeat-x;
+    background-size: calc((100% + var(--content-grid-gap)) / 24) 100%;
+  }
+}
