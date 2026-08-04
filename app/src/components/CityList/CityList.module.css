@@ -21,17 +21,17 @@
   color: inherit;
 }
 
-.cityEntry:hover,
-.cityEntry:focus {
+.cityEntryHoverable:hover,
+.cityEntryClickable:focus {
   color: var(--accent);
 }
 
-.cityEntryInactive:hover,
-.cityEntryInactive:focus {
+.cityEntryHoverable.cityEntryInactive:hover,
+.cityEntryClickable.cityEntryInactive:focus {
   color: #000;
 }
 
-.cityEntrySelected:hover,
-.cityEntrySelected:focus {
+.cityEntryHoverable.cityEntrySelected:hover,
+.cityEntryClickable.cityEntrySelected:focus {
   color: inherit;
 }

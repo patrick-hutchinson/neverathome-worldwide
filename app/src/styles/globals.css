@@ -64,7 +64,7 @@ main {
 }
 
 .page {
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   /* background-color: var(--background); */
   position: relative;
 }

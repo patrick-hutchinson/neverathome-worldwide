@@ -3,6 +3,7 @@ import styles from "./CityList.module.css";
 export default function CityList({
   accentInactive = false,
   cities = [],
+  isClickable = false,
   onCityClick,
   onCitySelect = () => {},
   selectedCity,
@@ -13,7 +14,8 @@ export default function CityList({
         <li
           className={[
             styles.cityEntry,
-            onCityClick ? styles.cityEntryClickable : "",
+            styles.cityEntryHoverable,
+            isClickable ? styles.cityEntryClickable : "",
             accentInactive && selectedCity && selectedCity._id !== city._id ? styles.cityEntryInactive : "",
             selectedCity?._id === city._id ? styles.cityEntrySelected : "",
           ]
@@ -21,9 +23,9 @@ export default function CityList({
             .join(" ")}
           key={city._id || city.name}
           onClick={onCityClick ? () => onCityClick(city) : undefined}
-          onFocus={() => onCitySelect(city)}
+          onFocus={isClickable ? () => onCitySelect(city) : undefined}
           onMouseEnter={() => onCitySelect(city)}
-          tabIndex={0}
+          tabIndex={isClickable ? 0 : undefined}
         >
           {city.name}
         </li>

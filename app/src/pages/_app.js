@@ -128,6 +128,7 @@ export default function App({ Component, pageProps }) {
   const [exitingScrollY, setExitingScrollY] = useState(0);
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
+  const [contentScrollRequest, setContentScrollRequest] = useState(0);
   const globeMoverRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
 
@@ -213,7 +214,7 @@ export default function App({ Component, pageProps }) {
     if (!isDestinationsPage) return;
 
     setSelectedDestination(city);
-    scrollToContent();
+    setContentScrollRequest((requestCount) => requestCount + 1);
   };
 
   useEffect(() => {
@@ -229,6 +230,30 @@ export default function App({ Component, pageProps }) {
     setDestinationCity(randomDestination);
     setSelectedDestination(randomDestination);
   }, [destinations, isDestinationsPage, selectedDestination]);
+
+  useEffect(() => {
+    if (!isDestinationsPage || !selectedDestination || contentScrollRequest === 0) return undefined;
+
+    const frameIds = [];
+    const timeoutIds = [];
+    const queueFrame = (callback) => {
+      const id = requestAnimationFrame(callback);
+      frameIds.push(id);
+    };
+    const queueTimeout = (callback, delay) => {
+      const id = setTimeout(callback, delay);
+      timeoutIds.push(id);
+    };
+
+    queueFrame(() => queueFrame(scrollToContent));
+    queueTimeout(scrollToContent, 120);
+    queueTimeout(scrollToContent, 360);
+
+    return () => {
+      frameIds.forEach(cancelAnimationFrame);
+      timeoutIds.forEach(clearTimeout);
+    };
+  }, [contentScrollRequest, isDestinationsPage, selectedDestination]);
 
   return (
     <>
@@ -263,6 +288,7 @@ export default function App({ Component, pageProps }) {
               <CityList
                 accentInactive={isDestinationsPage}
                 cities={destinations}
+                isClickable={isDestinationsPage}
                 onCityClick={isDestinationsPage ? handleCityClick : undefined}
                 onCitySelect={setDestinationCity}
                 selectedCity={isDestinationsPage ? selectedDestination : null}
