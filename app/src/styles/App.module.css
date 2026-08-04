@@ -11,21 +11,18 @@
   pointer-events: auto;
 }
 
+.globeMover {
+  display: block;
+}
+
 .cityListLayer {
-  position: absolute;
-  inset: 0 0 auto;
+  position: relative;
   z-index: 2;
   pointer-events: none;
 }
 
 .cityListLayer > * {
   pointer-events: auto;
-}
-
-.cityListScrollSpace {
-  position: relative;
-  z-index: -1;
-  pointer-events: none;
 }
 
 .marqueeContainer {
@@ -35,4 +32,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
+
+  pointer-events: none;
 }

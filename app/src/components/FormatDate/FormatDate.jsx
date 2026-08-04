@@ -11,7 +11,7 @@ const FormatDate = ({ date, className }) => {
 
   const day = getOrdinal(d.getDate());
 
-  return <time className={className}>{`${monthYear.split(" ")[0]} ${day}, ${d.getFullYear()}`}</time>;
+  return <time className={className}>{`${monthYear.split(" ")[0]} ${day}`}</time>;
 };
 
 export default FormatDate;

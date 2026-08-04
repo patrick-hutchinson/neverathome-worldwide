@@ -105,16 +105,18 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   };
 
   return (
-    <header className={styles.header} typo="h4">
+    <header className={styles.header}>
       <Progressbar />
-      <nav className={styles.nav}>
+      <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
           {currentPhaseLabel ? <span className={styles.link}>{currentPhaseLabel}</span> : null}
           {navLinks.map((link) => (
-            <Link className={styles.link} href={link.href} key={link.href}>
-              <span>{link.label}</span>
+            <span className={styles.navItem} key={link.href}>
+              <Link className={styles.link} href={link.href}>
+                {link.label}
+              </Link>
               {link.countdown ? <span className={styles.countdown}>{link.countdown}</span> : null}
-            </Link>
+            </span>
           ))}
         </div>
         <div>

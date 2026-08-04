@@ -4,6 +4,8 @@ import {structure} from './structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 
+import {muxInput} from 'sanity-plugin-mux-input'
+
 export default defineConfig({
   name: 'default',
   title: 'neverathome-worldwide-studio',
@@ -11,7 +13,7 @@ export default defineConfig({
   projectId: 'aw4em3wa',
   dataset: 'production',
 
-  plugins: [structureTool({structure}), visionTool()],
+  plugins: [structureTool({structure}), visionTool(), muxInput()],
 
   schema: {
     types: schemaTypes,

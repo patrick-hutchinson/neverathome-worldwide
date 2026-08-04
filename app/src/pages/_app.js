@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
 import CityList from "@/components/CityList/CityList";
+import ContentContainer from "@/components/ContentContainer/ContentContainer";
+import Footer from "@/components/Footer/Footer";
 import Globe from "@/components/Globe/Globe";
 import { DeviceProvider } from "@/context/DeviceContext";
 import LenisProvider from "@/context/LenisContext";
@@ -37,6 +39,74 @@ const pageTransitionVariants = {
   }),
 };
 
+const MIN_GLOBE_MOVE_DISTANCE = 400;
+const routeMarqueeLabels = {
+  "/destinations": "Destinations",
+  "/jury": "JuryIntl.",
+};
+const contentContainerId = "page-content";
+
+function getDistance(pointA, pointB) {
+  return Math.hypot(pointA.x - pointB.x, pointA.y - pointB.y);
+}
+
+function getGlobeOffsetBounds(element) {
+  if (!element) return { maxNegativeX: 0, maxPositiveX: 0, maxY: 0 };
+
+  const rootStyles = window.getComputedStyle(document.documentElement);
+  const pageMargin = Number.parseFloat(rootStyles.getPropertyValue("--margin")) || 0;
+  const width = element.offsetWidth;
+  const height = element.offsetHeight;
+  const centeredLeft = (window.innerWidth - width) / 2;
+  const leftZoneMaxRight = (window.innerWidth * 2) / 3 - pageMargin;
+  const maxNegativeX = Math.max(0, centeredLeft - pageMargin);
+  const maxPositiveX = Math.max(0, leftZoneMaxRight - (centeredLeft + width));
+  const maxY = Math.max(0, (window.innerHeight - height) / 2 - pageMargin);
+
+  return { maxNegativeX, maxPositiveX, maxY };
+}
+
+function getRandomOffsetFromBounds({ maxNegativeX, maxPositiveX, maxY }) {
+  return {
+    x: Math.round(-maxNegativeX + Math.random() * (maxPositiveX + maxNegativeX)),
+    y: Math.round((Math.random() * 2 - 1) * maxY),
+  };
+}
+
+function getFarthestBoundedOffset(currentPosition, bounds) {
+  const { maxNegativeX, maxPositiveX, maxY } = bounds;
+  const corners = [
+    { x: -maxNegativeX, y: -maxY },
+    { x: -maxNegativeX, y: maxY },
+    { x: maxPositiveX, y: -maxY },
+    { x: maxPositiveX, y: maxY },
+  ];
+
+  return corners.reduce((farthestCorner, corner) =>
+    getDistance(corner, currentPosition) > getDistance(farthestCorner, currentPosition) ? corner : farthestCorner,
+  );
+}
+
+function getRandomBoundedOffset(element, currentPosition = { x: 0, y: 0 }) {
+  const { maxNegativeX, maxPositiveX, maxY } = getGlobeOffsetBounds(element);
+  const bounds = { maxNegativeX, maxPositiveX, maxY };
+  const farthestOffset = getFarthestBoundedOffset(currentPosition, bounds);
+
+  if (getDistance(farthestOffset, currentPosition) < MIN_GLOBE_MOVE_DISTANCE) {
+    return farthestOffset;
+  }
+
+  for (let attempt = 0; attempt < 24; attempt += 1) {
+    const nextOffset = getRandomOffsetFromBounds(bounds);
+
+    if (getDistance(nextOffset, currentPosition) >= MIN_GLOBE_MOVE_DISTANCE) {
+      return nextOffset;
+    }
+  }
+
+  return farthestOffset;
+}
+
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [sharedData, setSharedData] = useState({
@@ -52,11 +122,14 @@ export default function App({ Component, pageProps }) {
   const destinations = sharedData.destinations || [];
   const currentPhase = sharedData.currentPhase || page.phase || null;
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase)?.replaceAll(" ", "");
+  const h1MarqueeText = routeMarqueeLabels[router.pathname] || currentPhaseLabel;
+  const isDestinationsPage = router.pathname === "/destinations";
 
   const [exitingScrollY, setExitingScrollY] = useState(0);
   const [destinationCity, setDestinationCity] = useState(null);
-  const cityListRef = useRef(null);
-  const [contentOffset, setContentOffset] = useState(0);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+  const globeMoverRef = useRef(null);
+  const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleRouteChangeStart = () => {
@@ -110,25 +183,52 @@ export default function App({ Component, pageProps }) {
   }, [sharedData.destinations, sharedData.page, sharedData.pageDeadlines, sharedData.site]);
 
   useEffect(() => {
-    const cityList = cityListRef.current;
-    if (!cityList) return undefined;
+    const keepGlobeInBounds = () => {
+      setGlobePosition((currentPosition) => {
+        const { maxNegativeX, maxPositiveX, maxY } = getGlobeOffsetBounds(globeMoverRef.current);
 
-    const updateContentOffset = () => {
-      const rect = cityList.getBoundingClientRect();
-      setContentOffset(Math.max(0, Math.ceil(rect.bottom)));
+        return {
+          x: Math.max(-maxNegativeX, Math.min(maxPositiveX, currentPosition.x)),
+          y: Math.max(-maxY, Math.min(maxY, currentPosition.y)),
+        };
+      });
     };
 
-    updateContentOffset();
+    window.addEventListener("resize", keepGlobeInBounds);
 
-    const resizeObserver = new ResizeObserver(updateContentOffset);
-    resizeObserver.observe(cityList);
-    window.addEventListener("resize", updateContentOffset);
+    return () => window.removeEventListener("resize", keepGlobeInBounds);
+  }, []);
 
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateContentOffset);
-    };
-  }, [destinations]);
+  const moveGlobeRandomly = () => {
+    setGlobePosition((currentPosition) => getRandomBoundedOffset(globeMoverRef.current, currentPosition));
+  };
+
+  const scrollToContent = () => {
+    document.getElementById(contentContainerId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleCityClick = (city) => {
+    setDestinationCity(city);
+
+    if (!isDestinationsPage) return;
+
+    setSelectedDestination(city);
+    scrollToContent();
+  };
+
+  useEffect(() => {
+    if (!isDestinationsPage) {
+      setSelectedDestination(null);
+    }
+  }, [isDestinationsPage]);
+
+  useEffect(() => {
+    if (!isDestinationsPage || selectedDestination || destinations.length === 0) return;
+
+    const randomDestination = destinations[Math.floor(Math.random() * destinations.length)];
+    setDestinationCity(randomDestination);
+    setSelectedDestination(randomDestination);
+  }, [destinations, isDestinationsPage, selectedDestination]);
 
   return (
     <>
@@ -144,34 +244,50 @@ export default function App({ Component, pageProps }) {
           <LenisProvider>
             <Header currentPhase={currentPhase} pageDeadlines={pageDeadlines} site={site} />
             <div className={styles.sharedLayer}>
-              <Globe destinationCity={destinationCity} />
+              <motion.div
+                animate={globePosition}
+                className={styles.globeMover}
+                onHoverStart={moveGlobeRandomly}
+                ref={globeMoverRef}
+                transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Globe destinationCity={destinationCity} />
+              </motion.div>
 
               <div className={styles.marqueeContainer}>
-                {currentPhaseLabel ? <Marquee text={currentPhaseLabel} typo="h1" /> : null}
+                {h1MarqueeText ? <Marquee direction="backward" text={h1MarqueeText} typo="h1" /> : null}
                 {page.marqueeText ? <Marquee text={page.marqueeText} typo="h4" /> : null}
               </div>
             </div>
             <div className={styles.cityListLayer}>
-              <CityList cities={destinations} listRef={cityListRef} onCitySelect={setDestinationCity} />
+              <CityList
+                accentInactive={isDestinationsPage}
+                cities={destinations}
+                onCityClick={isDestinationsPage ? handleCityClick : undefined}
+                onCitySelect={setDestinationCity}
+                selectedCity={isDestinationsPage ? selectedDestination : null}
+              />
             </div>
             <SpacingDebugOverlay />
-            <div className={styles.cityListScrollSpace} style={{ height: `${contentOffset}px` }} />
-            <div className="pageTransitionRoot">
-              <AnimatePresence custom={exitingScrollY} initial={false}>
-                <motion.div
-                  animate="animate"
-                  className="pageTransition"
-                  custom={exitingScrollY}
-                  exit="exit"
-                  initial="initial"
-                  key={router.asPath}
-                  transition={{ duration: 1, ease: "easeInOut" }}
-                  variants={pageTransitionVariants}
-                >
-                  <Component {...pageProps} />
-                </motion.div>
-              </AnimatePresence>
-            </div>
+            <ContentContainer id={contentContainerId}>
+              <div className="pageTransitionRoot">
+                <AnimatePresence custom={exitingScrollY} initial={false}>
+                  <motion.div
+                    animate="animate"
+                    className="pageTransition"
+                    custom={exitingScrollY}
+                    exit="exit"
+                    initial="initial"
+                    key={router.asPath}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                    variants={pageTransitionVariants}
+                  >
+                    <Component {...pageProps} selectedDestination={selectedDestination} />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              <Footer page={page} />
+            </ContentContainer>
           </LenisProvider>
         </DeviceProvider>
       </ViewportProvider>

@@ -5,7 +5,10 @@ export const destinationsPage = defineType({
   title: 'Destinations Seite',
   type: 'document',
 
-  fields: [defineField({name: 'deadline', type: 'datetime'})],
+  fields: [
+    defineField({name: 'deadline', type: 'datetime'}),
+    defineField({name: 'text', type: 'portableText'}),
+  ],
   preview: {
     prepare: () => ({title: 'Destinations Seite'}),
   },

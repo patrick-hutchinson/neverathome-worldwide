@@ -1,15 +1,3 @@
-export const localizedString = (fieldName) => `coalesce(
-  ${fieldName}[_type == "internationalizedArrayStringValue" && language == $language][0].value,
-  ${fieldName}[_type == "internationalizedArrayStringValue" && language == "en"][0].value,
-  ${fieldName}[_type == "internationalizedArrayStringValue" && language == "de"][0].value,
-  ${fieldName}[_type == "internationalizedArrayStringValue"][0].value,
-  ${fieldName}[_key == $language][0].value,
-  ${fieldName}[_key == "en"][0].value,
-  ${fieldName}[_key == "de"][0].value,
-  ${fieldName}[0].value,
-  ${fieldName}
-)`;
-
 export const mediaAssetFragment = `{
   "medium": {
     "type": select(_type == "imageAsset" => "image", _type == "videoAsset" => "video"),
@@ -44,14 +32,14 @@ export const mediaAssetFragment = `{
     ),
 
     "caption": select(
-      _type == "imageAsset" => ${localizedString("caption")},
-      _type == "videoAsset" => ${localizedString("caption")},
+      _type == "imageAsset" => caption,
+      _type == "videoAsset" => caption,
       true => null
     ),
 
     "subcaption": select(
-      _type == "imageAsset" => ${localizedString("subcaption")},
-      _type == "videoAsset" => ${localizedString("subcaption")},
+      _type == "imageAsset" => subcaption,
+      _type == "videoAsset" => subcaption,
       true => null
     ),
   }

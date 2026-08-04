@@ -44,60 +44,79 @@
 }
 
 h1,
-[typo="h1"] {
+[typo~="h1"] {
   font-size: var(--fontSize-1);
   line-height: var(--lineHeight-1);
   letter-spacing: var(--letterSpacing-1);
 
-  background: red;
+  /* background: red; */
 }
 h1 p,
-[typo="h1"] p {
+[typo~="h1"] p {
   margin-bottom: var(--paragraphSpacing-1);
 }
 
 h2,
-[typo="h2"] {
+[typo~="h2"] {
   font-size: var(--fontSize-2);
   line-height: var(--lineHeight-2);
   letter-spacing: var(--letterSpacing-2);
 }
 h1 p,
-[typo="h1"] p {
+[typo~="h1"] p {
   margin-bottom: var(--paragraphSpacing-2);
 }
 
 h3,
-[typo="h3"] {
+[typo~="h3"] {
   font-size: var(--fontSize-3);
   line-height: var(--lineHeight-3);
   letter-spacing: var(--letterSpacing-3);
 }
 h3 p,
-[typo="h3"] p {
+[typo~="h3"] p {
   margin-bottom: var(----paragraphSpacing-3);
 }
 
 h4,
-[typo="h4"] {
+[typo~="h4"] {
   font-size: var(--fontSize-4);
   line-height: var(--lineHeight-4);
   letter-spacing: var(--letterSpacing-4);
 }
 
-[typo="h4"] p {
+[typo~="h4"] p {
   margin-bottom: var(--paragraphSpacing-4);
 }
 
 h5,
-[typo="h5"] {
+[typo~="h5"] {
   font-size: var(--fontSize-5);
   line-height: var(--lineHeight-5);
   letter-spacing: var(--letterSpacing-5);
 }
 h5 p,
-[typo="h5"] p {
+[typo~="h5"] p {
   margin-bottom: var(--paragraphSpacing-5);
+}
+
+/* Font Compensation */
+[typo~="h1"][typo~="compensate"] {
+  --h1-undershoot: 0.08em;
+
+  margin-bottom: calc(var(--h1-undershoot) * -1) !important;
+}
+
+[typo~="h3"][typo~="compensate"] {
+  --h3-overshoot: 0.18em;
+
+  margin-top: calc(var(--h3-overshoot) * -1);
+}
+
+[typo~="h4"][typo~="compensate"] {
+  --h4-overshoot: 0.18em;
+
+  margin-top: calc(var(--h4-overshoot) * -1);
 }
 
 @media screen and (min-width: 750px) {
@@ -123,7 +142,7 @@ h5 p,
     --paragraphSpacing-4: 0rem;
 
     --fontSize-5: 1.2rem;
-    --lineHeight-5: 1rem;
+    --lineHeight-5: 1.2rem;
     --letterSpacing-5: 0rem;
     --paragraphSpacing-5: 0rem;
   }

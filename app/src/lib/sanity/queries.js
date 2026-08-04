@@ -1,4 +1,4 @@
-import { localizedString, mediaAssetFragment } from "./fragments";
+import { mediaAssetFragment } from "./fragments";
 
 export const siteQuery = `*[_type=="site"][0]{
   title,
@@ -26,6 +26,21 @@ export const pageDeadlinesQuery = `{
 export const pageQuery = `*[_type=="page"][0]{
   phase,
   marqueeText,
+  claim,
+  informationPDF{
+    asset->{
+      url,
+      originalFilename
+    }
+  },
+  formLink,
+  mediaPartner[]{
+    asset->{
+      url,
+      mimeType,
+      originalFilename
+    }
+  },
 }`;
 
 export const homePageQuery = `*[_type=="homePage"][0]{
@@ -61,6 +76,26 @@ export const homePageQuery = `*[_type=="homePage"][0]{
   }
 }`;
 
+export const destinationsPageQuery = `*[_type=="destinationsPage"][0]{
+  deadline,
+  text
+}`;
+
+export const juryPageQuery = `*[_type=="juryPage"][0]{
+  deadline
+}`;
+
+export const juryMembersQuery = `*[_type=="juryMember"] | order(name asc) {
+  _id,
+  name,
+  portrait[0] ${mediaAssetFragment},
+  bio,
+  socials[]{
+    platform,
+    link
+  }
+}`;
+
 export const destinationsQuery = `*[
   _type == "destination" &&
   defined(name) &&
@@ -70,7 +105,9 @@ export const destinationsQuery = `*[
   _id,
   name,
   "lat": coordinates.latitude,
-  "lng": coordinates.longitude
+  "lng": coordinates.longitude,
+  institution,
+  description
 }`;
 
 export const homeQuery = `*[_type=="home"][0]{
@@ -87,7 +124,7 @@ export const homeQuery = `*[_type=="home"][0]{
       scheduling,
       description,
       credits[]{
-        "role": ${localizedString("role")},
+        role,
         entries
       },
       thumbnail[0] ${mediaAssetFragment},

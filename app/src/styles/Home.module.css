@@ -1,5 +1,5 @@
 .page {
-  min-height: 100vh;
+  /* min-height: 100vh; */
 }
 
 .schedule li {
@@ -8,14 +8,19 @@
   flex-direction: row;
   gap: var(--content-grid-gap);
 
-  margin: var(--spacing-7) 0;
+  padding: var(--spacing-7) 0;
 
   border-top: 1px solid black;
+}
+
+.schedule h4 {
+  margin: var(--spacing-6) 0 var(--spacing-7) 0;
 }
 
 .quote {
   width: 100%;
   margin-bottom: var(--spacing-4);
+  padding-top: var(--spacing-7);
   border-top: 1px solid black;
 }
 
@@ -24,6 +29,21 @@
 }
 
 @media screen and (min-width: 749px) {
+  .juryGrid,
+  .destinationsGrid {
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
+  }
+
+  .destinationsText {
+    grid-column: 9 / 17;
+  }
+
+  .destinationInstitution {
+    grid-column: 1 / 9;
+  }
+
   .schedule li {
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));

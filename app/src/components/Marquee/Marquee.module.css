@@ -67,7 +67,8 @@
   margin: auto;
   user-select: none;
   cursor: grab;
-  overflow: hidden;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .carousel_outer {

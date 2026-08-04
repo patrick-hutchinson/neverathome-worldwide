@@ -16,11 +16,11 @@ export const videoAsset = defineType({
     }),
     defineField({
       name: 'caption',
-      type: 'internationalizedArrayString',
+      type: 'string',
     }),
     defineField({
       name: 'subcaption',
-      type: 'internationalizedArrayString',
+      type: 'string',
     }),
     defineField({
       name: 'altText',

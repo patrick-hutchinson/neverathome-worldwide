@@ -53,6 +53,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+main {
+  background: transparent;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -61,7 +65,7 @@ body {
 
 .page {
   overflow-x: hidden;
-  background-color: var(--background);
+  /* background-color: var(--background); */
   position: relative;
 }
 
@@ -71,6 +75,28 @@ h3,
 h4,
 h5 {
   font-weight: 400;
+}
+
+/* time {
+  font-variant-numeric: proportional-nums !important;
+  font-feature-settings:
+    "pnum" 1,
+    "tnum" 0;
+} */
+
+button {
+  all: unset;
+  height: 50px;
+  border: 1px solid black;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--spacing-6);
+}
+
+.invert {
+  background: var(--foreground);
+  color: var(--background);
 }
 
 @media screen and (min-width: 749px) {
@@ -88,7 +114,8 @@ h5 {
 
 .pageTransitionRoot {
   display: grid;
-  min-height: 100vh;
+  /* min-height: 100vh; */
+  min-height: 80vh;
 }
 
 .pageTransition {

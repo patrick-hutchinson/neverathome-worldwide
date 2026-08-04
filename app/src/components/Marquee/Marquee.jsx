@@ -5,18 +5,23 @@ import Text from "@/components/Text/Text";
 
 import styles from "./Marquee.module.css";
 
-const Marquee = ({ text, className, typo }) => {
+const Marquee = ({ text, className, direction = "forward", typo }) => {
   const outerRef = useRef(null);
   const measureRef = useRef(null);
   const [repeatCount, setRepeatCount] = useState(8);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true, dragResistance: 1 }, [
-    AutoScroll({
-      playOnInit: true,
-      stopOnInteraction: false, // <-- here
-      stopOnMouseEnter: false, // <— optional: keep scrolling even on hover
-      speed: 1,
-    }),
-  ]);
+  const autoScrollPlugins = useMemo(
+    () => [
+      AutoScroll({
+        direction,
+        playOnInit: true,
+        stopOnInteraction: false,
+        stopOnMouseEnter: false,
+        speed: 1,
+      }),
+    ],
+    [direction],
+  );
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true, dragResistance: 1 }, autoScrollPlugins);
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -62,9 +67,8 @@ const Marquee = ({ text, className, typo }) => {
         outerRef.current = node;
         emblaRef(node);
       }}
-      typo={typo}
     >
-      <div className={`${styles.carousel_inner}`}>
+      <div className={`${styles.carousel_inner}`} typo={`${typo} compensate`}>
         {slides.map((_, index) => (
           <li key={index}>
             <Text text={text} />

@@ -1,5 +1,14 @@
 import { getPreviewClient, getProductionClient } from "./client";
-import { destinationsQuery, homePageQuery, pageDeadlinesQuery, pageQuery, siteQuery } from "./queries";
+import {
+  destinationsPageQuery,
+  destinationsQuery,
+  homePageQuery,
+  juryMembersQuery,
+  juryPageQuery,
+  pageDeadlinesQuery,
+  pageQuery,
+  siteQuery,
+} from "./queries";
 
 export const fallbackSiteData = {
   title: "Patrick Hutchinson",
@@ -54,6 +63,24 @@ export async function getHomePage() {
   const homePage = await getSanityClient().fetch(homePageQuery);
 
   return homePage || {};
+}
+
+export async function getDestinationsPage() {
+  const destinationsPage = await getSanityClient().fetch(destinationsPageQuery);
+
+  return destinationsPage || {};
+}
+
+export async function getJuryPage() {
+  const juryPage = await getSanityClient().fetch(juryPageQuery);
+
+  return juryPage || {};
+}
+
+export async function getJuryMembers() {
+  const juryMembers = await getSanityClient().fetch(juryMembersQuery);
+
+  return juryMembers || [];
 }
 
 export async function getDestinations() {

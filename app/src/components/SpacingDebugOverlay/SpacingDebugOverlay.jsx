@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const spacingKeys = ["1", "2", "3", "4", "5", "6", "7"];
+const spacingKeys = ["1", "2", "3", "4", "5", "6", "7", "8"];
 const overlayId = "spacing-debug-overlay";
 
 function parsePixelValue(value) {
@@ -187,7 +187,7 @@ function drawGapSpacing(overlay, element, rect, styles, spacingTokens) {
           if (!nextRect) return;
 
           const gap = nextRect.left - childRect.right;
-          if (Math.abs(gap - columnGap) >= 0.5) return;
+          if (gap <= 0) return;
 
           const y = Math.min(childRect.top, nextRect.top);
           const height = Math.max(childRect.bottom, nextRect.bottom) - y;
@@ -211,7 +211,7 @@ function drawGapSpacing(overlay, element, rect, styles, spacingTokens) {
         if (!nextRow) return;
 
         const gap = nextRow.top - row.bottom;
-        if (Math.abs(gap - rowGap) >= 0.5) return;
+        if (gap <= 0) return;
 
         drawBox(overlay, {
           color: rowGapToken.color,
@@ -346,15 +346,25 @@ function getInitialEnabledState() {
 
   if (queryValue === "1") {
     window.localStorage.setItem("spacingDebug", "1");
+    document.documentElement.dataset.spacingDebug = "true";
     return true;
   }
 
   if (queryValue === "0") {
     window.localStorage.removeItem("spacingDebug");
+    delete document.documentElement.dataset.spacingDebug;
     return false;
   }
 
-  return window.localStorage.getItem("spacingDebug") === "1";
+  const isEnabled = window.localStorage.getItem("spacingDebug") === "1";
+
+  if (isEnabled) {
+    document.documentElement.dataset.spacingDebug = "true";
+  } else {
+    delete document.documentElement.dataset.spacingDebug;
+  }
+
+  return isEnabled;
 }
 
 const SpacingDebugOverlay = () => {
@@ -397,6 +407,7 @@ const SpacingDebugOverlay = () => {
       }
 
       document.getElementById(overlayId)?.remove();
+      delete document.documentElement.dataset.spacingDebug;
     };
   }, []);
 

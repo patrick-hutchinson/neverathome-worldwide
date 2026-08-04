@@ -30,5 +30,7 @@ export const destination = defineType({
         },
       ],
     }),
+    defineField({name: 'institution', type: 'string'}),
+    defineField({name: 'description', type: 'portableText'}),
   ],
 })

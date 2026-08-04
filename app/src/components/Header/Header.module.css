@@ -33,9 +33,14 @@
   gap: 12px;
 }
 
-.link {
+.navItem {
   display: inline-flex;
   gap: 5px;
+  align-items: baseline;
+}
+
+.link {
+  display: inline-flex;
   align-items: baseline;
   pointer-events: auto;
 }

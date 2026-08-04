@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@mux/mux-player-react": "^3.13.2",
     "@portabletext/react": "^7.0.1",
     "@sanity/client": "^7.26.0",
     "embla-carousel-auto-scroll": "^8.6.0",

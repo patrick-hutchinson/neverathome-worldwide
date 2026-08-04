@@ -29,8 +29,8 @@ export const imageAsset = defineType({
       type: 'image',
       options: {hotspot: true},
     }),
-    defineField({name: 'caption', type: 'internationalizedArrayString'}),
-    defineField({name: 'subcaption', type: 'internationalizedArrayString'}),
+    defineField({name: 'caption', type: 'string'}),
+    defineField({name: 'subcaption', type: 'string'}),
     defineField({name: 'copyright', type: 'string'}),
   ],
   preview: {
