@@ -12,5 +12,6 @@ export {
   getPage,
   getPageDeadlines,
   getOpenCallPage,
+  getAboutPage,
   getSite,
 } from "./sanity/fetch";

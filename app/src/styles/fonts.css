@@ -105,6 +105,17 @@ h5 p,
   margin-bottom: var(--paragraphSpacing-5);
 }
 
+h6,
+[typo~="h6"] {
+  font-size: var(--fontSize-6);
+  line-height: var(--lineHeight-6);
+  letter-spacing: var(--letterSpacing-6);
+}
+h6 p,
+[typo~="h6"] p {
+  margin-bottom: var(--paragraphSpacing-6);
+}
+
 /* Font Compensation */
 [typo~="h1"][typo~="compensate"] {
   --h1-undershoot: 0.08em;

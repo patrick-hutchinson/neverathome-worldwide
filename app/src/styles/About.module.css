@@ -1,0 +1,42 @@
+.aboutContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.teamMember {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-7);
+}
+
+.portrait {
+  aspect-ratio: 4 / 5;
+}
+
+.team {
+  border-top: 1px solid black;
+  padding-top: var(--spacing-6);
+}
+
+@media screen and (min-width: 749px) {
+  .aboutContainer,
+  .team {
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
+  }
+
+  .aboutNeverAtHome {
+    grid-column: 9 / 17;
+  }
+
+  .aboutAustriaKulturInternational {
+    grid-column: 17 / 25;
+  }
+
+  .teamMember {
+    grid-column: span 4;
+    min-width: 0;
+  }
+}

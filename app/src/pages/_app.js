@@ -44,6 +44,7 @@ const routeMarqueeLabels = {
   "/destinations": "Destinations",
   "/jury": "JuryIntl.",
   "/open-call": "OpenCall",
+  "/about": "About",
 };
 const contentContainerId = "page-content";
 

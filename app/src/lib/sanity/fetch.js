@@ -8,6 +8,7 @@ import {
   pageDeadlinesQuery,
   openCallPageQuery,
   pageQuery,
+  aboutPageQuery,
   siteQuery,
 } from "./queries";
 
@@ -58,6 +59,12 @@ export async function getPage() {
   const page = await getSanityClient().fetch(pageQuery);
 
   return page || {};
+}
+
+export async function getAboutPage() {
+  const aboutPage = await getSanityClient().fetch(aboutPageQuery);
+
+  return aboutPage || {};
 }
 
 export async function getHomePage() {

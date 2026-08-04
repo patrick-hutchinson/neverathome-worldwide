@@ -91,6 +91,17 @@ export const juryPageQuery = `*[_type=="juryPage"][0]{
   deadline
 }`;
 
+export const aboutPageQuery = `*[_type=="aboutPage"][0]{
+  lead,
+  aboutNeverAtHome,
+  aboutAustriaKulturInternational,
+  team[]{
+    name,
+    role,
+    portrait[0] ${mediaAssetFragment},
+  }
+}`;
+
 export const juryMembersQuery = `*[_type=="juryMember"] | order(name asc) {
   _id,
   name,

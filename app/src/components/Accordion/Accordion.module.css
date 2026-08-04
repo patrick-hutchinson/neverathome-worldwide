@@ -5,11 +5,14 @@
 .header {
   border-top: 1px solid black;
   border-bottom: 1px solid black;
+  user-select: none;
+}
+
+.headerButton {
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   padding: var(--spacing-7) 0;
-  user-select: none;
 }
 
 .accordionEntry + .accordionEntry .header {
@@ -22,7 +25,7 @@
 }
 
 .bodyInner {
-  padding: var(--spacing-7) 0 var(--spacing-6);
+  padding: var(--spacing-2) 0 var(--spacing-6);
 }
 
 .openCloseButton {
