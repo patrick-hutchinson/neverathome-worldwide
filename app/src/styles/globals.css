@@ -53,6 +53,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html[data-route="not-found"] {
+  --background: #0a0a0a;
+  --foreground: #fff;
+}
+
+html[data-route="not-found"],
+html[data-route="not-found"] body {
+  height: 100%;
+  overflow: hidden;
+}
+
 main {
   background: transparent;
 }

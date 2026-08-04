@@ -45,6 +45,7 @@ const routeMarqueeLabels = {
   "/jury": "JuryIntl.",
   "/open-call": "OpenCall",
   "/about": "About",
+  "/404": "404NotFound",
 };
 const contentContainerId = "page-content";
 
@@ -126,6 +127,7 @@ export default function App({ Component, pageProps }) {
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase)?.replaceAll(" ", "");
   const h1MarqueeText = routeMarqueeLabels[router.pathname] || currentPhaseLabel;
   const isDestinationsPage = router.pathname === "/destinations";
+  const is404Page = router.pathname === "/404";
 
   const [exitingScrollY, setExitingScrollY] = useState(0);
   const [destinationCity, setDestinationCity] = useState(null);
@@ -226,6 +228,30 @@ export default function App({ Component, pageProps }) {
   }, [isDestinationsPage]);
 
   useEffect(() => {
+    if (!is404Page) {
+      delete document.documentElement.dataset.route;
+
+      return () => {
+        delete document.documentElement.dataset.route;
+      };
+    }
+
+    document.documentElement.dataset.route = "not-found";
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      delete document.documentElement.dataset.route;
+    };
+  }, [is404Page]);
+
+  useEffect(() => {
     if (!isDestinationsPage || selectedDestination || destinations.length === 0) return;
 
     const randomDestination = destinations[Math.floor(Math.random() * destinations.length)];
@@ -297,25 +323,29 @@ export default function App({ Component, pageProps }) {
               />
             </div>
             <SpacingDebugOverlay />
-            <ContentContainer id={contentContainerId}>
-              <div className="pageTransitionRoot">
-                <AnimatePresence custom={exitingScrollY} initial={false}>
-                  <motion.div
-                    animate="animate"
-                    className="pageTransition"
-                    custom={exitingScrollY}
-                    exit="exit"
-                    initial="initial"
-                    key={router.asPath}
-                    transition={{ duration: 1, ease: "easeInOut" }}
-                    variants={pageTransitionVariants}
-                  >
-                    <Component {...pageProps} selectedDestination={selectedDestination} />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-              <Footer page={page} />
-            </ContentContainer>
+            {is404Page ? (
+              <Component {...pageProps} />
+            ) : (
+              <ContentContainer id={contentContainerId}>
+                <div className="pageTransitionRoot">
+                  <AnimatePresence custom={exitingScrollY} initial={false}>
+                    <motion.div
+                      animate="animate"
+                      className="pageTransition"
+                      custom={exitingScrollY}
+                      exit="exit"
+                      initial="initial"
+                      key={router.asPath}
+                      transition={{ duration: 1, ease: "easeInOut" }}
+                      variants={pageTransitionVariants}
+                    >
+                      <Component {...pageProps} selectedDestination={selectedDestination} />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+                <Footer page={page} />
+              </ContentContainer>
+            )}
           </LenisProvider>
         </DeviceProvider>
       </ViewportProvider>
