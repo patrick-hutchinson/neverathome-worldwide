@@ -7,8 +7,18 @@ export const aboutPage = defineType({
 
   fields: [
     defineField({
-      name: 'aboutText',
-      title: 'About (Text)',
+      name: 'aboutLead',
+      title: 'About (Lead Text)',
+      type: 'portableText',
+    }),
+    defineField({
+      name: 'aboutNeverAtHome',
+      title: 'About (NeverAtHome Text)',
+      type: 'portableText',
+    }),
+    defineField({
+      name: 'aboutAustriaKulturInternational',
+      title: 'About (Austria Kultur International)',
       type: 'portableText',
     }),
   ],

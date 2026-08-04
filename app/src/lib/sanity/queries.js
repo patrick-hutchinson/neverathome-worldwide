@@ -79,6 +79,12 @@ export const homePageQuery = `*[_type=="homePage"][0]{
 export const destinationsPageQuery = `*[_type=="destinationsPage"][0]{
   deadline,
   text
+
+}`;
+export const openCallPageQuery = `*[_type=="openCallPage"][0]{
+  deadline,
+  info,
+  faq,
 }`;
 
 export const juryPageQuery = `*[_type=="juryPage"][0]{

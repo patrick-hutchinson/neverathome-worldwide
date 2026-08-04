@@ -7,14 +7,14 @@ const Footer = ({ page = {} }) => {
 
   return (
     <footer className={styles.footer}>
-      <Text className={styles.claim} text={page.claim} typo="h5" />
+      <Text className={styles.claim} text={page.claim} typo="h6" />
 
       <div className={styles.buttonContainer} typo="h4">
         <button className={`${styles.registrationButton} invert`}>ONLINE REGISTRATION</button>
         <button>INFO.PDF</button>
       </div>
 
-      <nav className={styles.legalLinks} typo="h5">
+      <nav className={styles.legalLinks} typo="h6">
         <a href="/imprint">Imprint</a>
         {",\u00a0"}
         <a href="/legal">Legal</a>

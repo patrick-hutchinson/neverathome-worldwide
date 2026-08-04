@@ -43,6 +43,7 @@ const MIN_GLOBE_MOVE_DISTANCE = 400;
 const routeMarqueeLabels = {
   "/destinations": "Destinations",
   "/jury": "JuryIntl.",
+  "/open-call": "OpenCall",
 };
 const contentContainerId = "page-content";
 

@@ -57,7 +57,7 @@ export default function Home({ homePage = {}, currentPhase }) {
               return (
                 <div className={styles.quote} key={quote._key}>
                   <Text text={quote.text} className={styles.quoteText} typo="h4 compensate" />
-                  <div className={styles.quoteAttribution} typo="h5">
+                  <div className={styles.quoteAttribution} typo="h6">
                     {quote.person}, {quote.role}
                   </div>
                 </div>

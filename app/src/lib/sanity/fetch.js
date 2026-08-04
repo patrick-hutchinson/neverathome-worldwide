@@ -6,6 +6,7 @@ import {
   juryMembersQuery,
   juryPageQuery,
   pageDeadlinesQuery,
+  openCallPageQuery,
   pageQuery,
   siteQuery,
 } from "./queries";
@@ -63,6 +64,12 @@ export async function getHomePage() {
   const homePage = await getSanityClient().fetch(homePageQuery);
 
   return homePage || {};
+}
+
+export async function getOpenCallPage() {
+  const openCallPage = await getSanityClient().fetch(openCallPageQuery);
+
+  return openCallPage || {};
 }
 
 export async function getDestinationsPage() {

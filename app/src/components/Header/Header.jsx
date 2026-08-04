@@ -109,7 +109,11 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
       <Progressbar />
       <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
-          {currentPhaseLabel ? <span className={styles.link}>{currentPhaseLabel}</span> : null}
+          {currentPhaseLabel ? (
+            <Link href="/" className={styles.link}>
+              {currentPhaseLabel}
+            </Link>
+          ) : null}
           {navLinks.map((link) => (
             <span className={styles.navItem} key={link.href}>
               <Link className={styles.link} href={link.href}>

@@ -23,6 +23,11 @@
   --lineHeight-5: 1rem;
   --letterSpacing-5: 0rem;
   --paragraphSpacing-5: 0rem;
+
+  --fontSize-6: 1rem;
+  --lineHeight-6: 1rem;
+  --letterSpacing-6: 0rem;
+  --paragraphSpacing-6: 0rem;
 }
 
 @font-face {
@@ -141,9 +146,14 @@ h5 p,
     --letterSpacing-4: 0rem;
     --paragraphSpacing-4: 0rem;
 
-    --fontSize-5: 1.2rem;
-    --lineHeight-5: 1.2rem;
+    --fontSize-5: 1.5rem;
+    --lineHeight-5: 1.5rem;
     --letterSpacing-5: 0rem;
     --paragraphSpacing-5: 0rem;
+
+    --fontSize-6: 1.2rem;
+    --lineHeight-6: 1.2rem;
+    --letterSpacing-6: 0rem;
+    --paragraphSpacing-6: 0rem;
   }
 }

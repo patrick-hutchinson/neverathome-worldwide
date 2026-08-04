@@ -11,5 +11,6 @@ export {
   getJuryPage,
   getPage,
   getPageDeadlines,
+  getOpenCallPage,
   getSite,
 } from "./sanity/fetch";
