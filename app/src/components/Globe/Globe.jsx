@@ -6,6 +6,7 @@ const FOCUS_ROTATE_DAMPING = 3.2;
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
 const MAX_FRAME_RATE = 60;
 const REDUCED_MOTION_FRAME_RATE = 30;
+const INTRO_ANIMATION_MS = 1200;
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
 
@@ -50,7 +51,12 @@ export default function Globe({
     let lastFrameTime = 0;
     let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
+    let introAnimationEndAt = 0;
+    let isVisible = true;
+    let isDocumentVisible = true;
+    let needsRender = false;
     let removePointerListeners = () => {};
+    let removeVisibilityListeners = () => {};
     let isMounted = true;
 
     async function initGlobe() {
@@ -80,6 +86,20 @@ export default function Globe({
 
       globeRef.current.replaceChildren(renderer.domElement, labelRenderer.domElement);
 
+      const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
+
+      const hasActiveMotion = (now = performance.now()) =>
+        needsRender || focusTarget || isDragging || (!prefersReducedMotion && hasInertia()) || now < introAnimationEndAt;
+
+      const requestRender = () => {
+        needsRender = true;
+
+        if (animationFrame || !isVisible || !isDocumentVisible) return;
+
+        lastFrameTime = performance.now();
+        animationFrame = requestAnimationFrame(animate);
+      };
+
       globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: !prefersReducedMotion })
         .globeImageUrl(globeImageUrl)
         .bumpImageUrl(bumpImageUrl)
@@ -105,6 +125,10 @@ export default function Globe({
         .htmlElementVisibilityModifier((element, isVisible) => {
           element.style.opacity = isVisible ? "1" : "0";
           element.style.pointerEvents = isVisible ? "auto" : "none";
+        })
+        .onGlobeReady(() => {
+          introAnimationEndAt = prefersReducedMotion ? 0 : performance.now() + INTRO_ANIMATION_MS;
+          requestRender();
         });
 
       scene.add(globe);
@@ -143,10 +167,13 @@ export default function Globe({
           globe.quaternion.copy(focusTarget);
           focusTarget = null;
         }
+
+        requestRender();
       };
 
       const updateMarkers = (nextCities = []) => {
         globe.htmlElementsData(nextCities);
+        requestRender();
       };
 
       sceneRef.current = { focusCity, updateMarkers };
@@ -159,6 +186,7 @@ export default function Globe({
         lastPointer = { x: event.clientX, y: event.clientY };
         lastDragTime = performance.now();
         renderer.domElement.setPointerCapture(event.pointerId);
+        requestRender();
       };
 
       const handlePointerMove = (event) => {
@@ -179,6 +207,7 @@ export default function Globe({
 
         rotateAroundWorldAxis(new THREE.Vector3(0, 1, 0), deltaX * 0.006);
         rotateAroundWorldAxis(new THREE.Vector3(1, 0, 0), deltaY * 0.006);
+        requestRender();
       };
 
       const handlePointerUp = (event) => {
@@ -187,6 +216,8 @@ export default function Globe({
         if (renderer.domElement.hasPointerCapture(event.pointerId)) {
           renderer.domElement.releasePointerCapture(event.pointerId);
         }
+
+        requestRender();
       };
 
       renderer.domElement.addEventListener("pointerdown", handlePointerDown);
@@ -202,13 +233,19 @@ export default function Globe({
       };
 
       function animate(now = performance.now()) {
-        animationFrame = requestAnimationFrame(animate);
+        animationFrame = undefined;
 
-        if (now - lastRenderTime < frameDuration) return;
+        if (!isVisible || !isDocumentVisible) return;
+
+        if (now - lastRenderTime < frameDuration) {
+          animationFrame = requestAnimationFrame(animate);
+          return;
+        }
 
         const deltaSeconds = Math.min((now - lastFrameTime) / 1000, 0.05);
         lastFrameTime = now;
         lastRenderTime = now;
+        needsRender = false;
 
         if (focusTarget) {
           const dampingAmount = 1 - Math.exp(-FOCUS_ROTATE_DAMPING * deltaSeconds);
@@ -233,9 +270,32 @@ export default function Globe({
         globe.setPointOfView(camera);
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
+
+        if (hasActiveMotion(now)) {
+          animationFrame = requestAnimationFrame(animate);
+        }
       }
 
-      animationFrame = requestAnimationFrame(animate);
+      const intersectionObserver = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+
+        if (isVisible) requestRender();
+      });
+      intersectionObserver.observe(globeRef.current);
+
+      const handleVisibilityChange = () => {
+        isDocumentVisible = document.visibilityState === "visible";
+
+        if (isDocumentVisible) requestRender();
+      };
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+
+      removeVisibilityListeners = () => {
+        intersectionObserver.disconnect();
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
+
+      requestRender();
     }
 
     initGlobe();
@@ -245,6 +305,7 @@ export default function Globe({
       cancelAnimationFrame(animationFrame);
       sceneRef.current = null;
       removePointerListeners();
+      removeVisibilityListeners();
       renderer?.dispose();
       labelRenderer?.domElement?.remove();
       globeRef.current?.replaceChildren();

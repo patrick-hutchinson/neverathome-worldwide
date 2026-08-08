@@ -11,8 +11,6 @@
     "@mux/mux-player-react": "^3.13.2",
     "@portabletext/react": "^7.0.1",
     "@sanity/client": "^7.26.0",
-    "embla-carousel-auto-scroll": "^8.6.0",
-    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.43.0",
     "next": "16.2.12",
     "react": "19.2.4",
