@@ -2,7 +2,7 @@
 "use client";
 
 import { ReactLenis, useLenis } from "lenis/react";
-import { createContext, useCallback, useContext, useEffect, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 
 const LenisContext = createContext(null);
@@ -50,14 +50,8 @@ function LenisContextProvider({ children }) {
 
     queueFrame(() => {
       scrollToTop();
-      queueFrame(scrollToTop);
-    });
-    queueTimeout(scrollToTop, 80);
-    queueTimeout(scrollToTop, 180);
-    queueTimeout(() => {
-      scrollToTop();
       lenis?.start?.();
-    }, 320);
+    });
   }, [clearResetTimers, lenis, scrollToTop]);
 
   useEffect(() => {
@@ -93,8 +87,26 @@ function LenisContextProvider({ children }) {
 }
 
 export default function LenisProvider({ children }) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updatePreference);
+    };
+  }, []);
+
   return (
-    <ReactLenis root options={{ stopInertiaOnNavigate: true, syncTouch: true }}>
+    <ReactLenis
+      root
+      autoRaf={!prefersReducedMotion}
+      options={{ stopInertiaOnNavigate: true, syncTouch: !prefersReducedMotion }}
+    >
       <LenisContextProvider>{children}</LenisContextProvider>
     </ReactLenis>
   );

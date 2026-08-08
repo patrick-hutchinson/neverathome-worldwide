@@ -9,7 +9,7 @@ const MARQUEE_TARGET_SPEED = 1;
 const MARQUEE_RAMP_DURATION = 1200;
 const MARQUEE_STOP_DURATION = 450;
 
-function createEaseInAutoScroll({ direction, speedRef }) {
+function createEaseInAutoScroll({ direction, speedRef, isActiveRef }) {
   let emblaApi = null;
   let defaultScrollBody = null;
   let isDestroyed = false;
@@ -35,6 +35,12 @@ function createEaseInAutoScroll({ direction, speedRef }) {
     let hasSettled = false;
 
     function seek() {
+      if (!isActiveRef.current) {
+        hasSettled = true;
+        return self;
+      }
+
+      hasSettled = false;
       previousLocation.set(location);
       bodyVelocity = directionSign * speedRef.current;
       rawLocation += bodyVelocity;
@@ -76,7 +82,7 @@ function createEaseInAutoScroll({ direction, speedRef }) {
   }
 
   function play() {
-    if (!emblaApi || isDestroyed) return;
+    if (!emblaApi || isDestroyed || !isActiveRef.current) return;
 
     const engine = emblaApi.internalEngine();
     engine.scrollBody = createScrollBody(engine);
@@ -86,7 +92,9 @@ function createEaseInAutoScroll({ direction, speedRef }) {
   function stop() {
     if (!emblaApi || !defaultScrollBody) return;
 
-    emblaApi.internalEngine().scrollBody = defaultScrollBody;
+    const engine = emblaApi.internalEngine();
+    engine.scrollBody = defaultScrollBody;
+    engine.animation.stop?.();
   }
 
   return {
@@ -113,9 +121,14 @@ const Marquee = ({ text, className, direction = "forward", targetSpeed = MARQUEE
   const measureRef = useRef(null);
   const speedAnimationRef = useRef(null);
   const speedRef = useRef(MARQUEE_START_SPEED);
+  const isActiveRef = useRef(false);
+  const [isInView, setIsInView] = useState(true);
+  const [isDocumentVisible, setIsDocumentVisible] = useState(true);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [repeatCount, setRepeatCount] = useState(8);
+  const isAutoScrollActive = isInView && isDocumentVisible && !prefersReducedMotion && targetSpeed > 0;
   const autoScrollPlugins = useMemo(
-    () => [createEaseInAutoScroll({ direction, speedRef })],
+    () => [createEaseInAutoScroll({ direction, speedRef, isActiveRef })],
     [direction],
   );
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true, dragResistance: 1 }, autoScrollPlugins);
@@ -126,15 +139,16 @@ const Marquee = ({ text, className, direction = "forward", targetSpeed = MARQUEE
     }
 
     const startTime = performance.now();
-    const startSpeed = targetSpeed > 0 && speedRef.current === 0 ? MARQUEE_START_SPEED : speedRef.current;
-    const duration = targetSpeed > startSpeed ? MARQUEE_RAMP_DURATION : MARQUEE_STOP_DURATION;
-    const speedDelta = targetSpeed - startSpeed;
+    const nextTargetSpeed = isAutoScrollActive ? targetSpeed : 0;
+    const startSpeed = nextTargetSpeed > 0 && speedRef.current === 0 ? MARQUEE_START_SPEED : speedRef.current;
+    const duration = nextTargetSpeed > startSpeed ? MARQUEE_RAMP_DURATION : MARQUEE_STOP_DURATION;
+    const speedDelta = nextTargetSpeed - startSpeed;
 
     speedRef.current = startSpeed;
 
     const rampSpeed = (time) => {
       const progress = Math.min(1, (time - startTime) / duration);
-      const easedProgress = targetSpeed > startSpeed ? progress * progress * progress : 1 - (1 - progress) ** 3;
+      const easedProgress = nextTargetSpeed > startSpeed ? progress * progress * progress : 1 - (1 - progress) ** 3;
       speedRef.current = Math.max(0, startSpeed + speedDelta * easedProgress);
 
       if (progress < 1) {
@@ -147,7 +161,38 @@ const Marquee = ({ text, className, direction = "forward", targetSpeed = MARQUEE
     return () => {
       cancelAnimationFrame(speedAnimationRef.current);
     };
-  }, [direction, targetSpeed, text]);
+  }, [direction, isAutoScrollActive, targetSpeed, text]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    const updateVisibility = () => setIsDocumentVisible(document.visibilityState === "visible");
+
+    updatePreference();
+    updateVisibility();
+    mediaQuery.addEventListener("change", updatePreference);
+    document.addEventListener("visibilitychange", updateVisibility);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updatePreference);
+      document.removeEventListener("visibilitychange", updateVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return undefined;
+
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      setIsInView(entry.isIntersecting);
+    });
+
+    intersectionObserver.observe(outer);
+
+    return () => {
+      intersectionObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -178,10 +223,29 @@ const Marquee = ({ text, className, direction = "forward", targetSpeed = MARQUEE
   useEffect(() => {
     if (!emblaApi) return;
 
-    emblaApi.reInit();
-    window.requestAnimationFrame(() => {
+    isActiveRef.current = isAutoScrollActive;
+
+    if (isAutoScrollActive) {
       emblaApi.plugins()?.easeInAutoScroll?.play?.();
+      return;
+    }
+
+    emblaApi.plugins()?.easeInAutoScroll?.stop?.();
+  }, [emblaApi, isAutoScrollActive]);
+
+  useEffect(() => {
+    if (!emblaApi) return undefined;
+
+    emblaApi.reInit();
+    const frameId = window.requestAnimationFrame(() => {
+      if (isActiveRef.current) {
+        emblaApi.plugins()?.easeInAutoScroll?.play?.();
+      }
     });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, [emblaApi, repeatCount]);
 
   const slides = useMemo(() => Array.from({ length: repeatCount }), [repeatCount]);

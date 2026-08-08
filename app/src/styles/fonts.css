@@ -1,5 +1,5 @@
 :root {
-  --fontSize-1: 16rem;
+  --fontSize-1: 14rem;
   --lineHeight-1: 1;
   --letterSpacing-1: -1rem;
   --paragraphSpacing-1: 0rem;
@@ -125,6 +125,12 @@ h6 p,
   margin-top: calc(var(--h1-overshoot) * -1);
 }
 
+[typo~="h2"][typo~="compensate"] {
+  --h2-overshoot: 0.18em;
+
+  margin-top: calc(var(--h2-overshoot) * -1);
+}
+
 [typo~="h3"][typo~="compensate"] {
   --h3-overshoot: 0.18em;
 
@@ -141,7 +147,7 @@ h6 p,
   :root {
     --fontSize-1: clamp(20rem, calc(22.3547vw + 2.808rem), 35rem);
     --lineHeight-1: 1;
-    --letterSpacing-1: -2rem;
+    --letterSpacing-1: clamp(-2rem, calc(-1.2774vw - 0.1605rem), -1.1429rem);
     --paragraphSpacing-1: 0rem;
 
     --fontSize-2: 6.5rem;

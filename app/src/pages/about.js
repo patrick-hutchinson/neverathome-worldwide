@@ -10,7 +10,7 @@ const AboutPage = ({ aboutPage }) => {
   return (
     <div className={`page ${styles.page}`}>
       <main className="main">
-        <MediumSection>
+        <MediumSection className={styles.introSection}>
           <Text text={aboutPage.lead} typo="h3 compensate" />
         </MediumSection>
         <LargeSection>

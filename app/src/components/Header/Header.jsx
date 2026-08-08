@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 
 import { formatCountdown } from "@/lib/countdown";
 import { getCurrentPhaseLabel } from "@/lib/phase";
-import styles from "./Header.module.css";
+import styles from "./Header.module.scss";
+import { DeviceContext } from "@/context/DeviceContext";
+
+import Menu from "@/Menu/Menu";
 
 const links = [
   { href: "/open-call", label: "Open Call", deadlineKey: "openCallPage" },
@@ -29,9 +33,11 @@ function getProgress(now) {
 }
 
 const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
+  const { isMobile } = useContext(DeviceContext);
   const router = useRouter();
   const [now, setNow] = useState(null);
   const [progressNow, setProgressNow] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase);
   const navLinks = useMemo(
     () =>
@@ -79,9 +85,8 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     document.getElementById("home-schedule")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  return (
-    <header className={styles.header}>
-      <Progressbar />
+  const DesktopNav = () => {
+    return (
       <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
           {currentPhaseLabel ? (
@@ -110,6 +115,49 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           ) : null}
         </div>
       </nav>
+    );
+  };
+
+  const MobileNav = () => {
+    const openCallLink = navLinks.find((link) => link.href === "/open-call");
+
+    if (!openCallLink) return null;
+
+    return (
+      <nav className={styles.nav} typo="h4 compensate">
+        <span className={styles.navItem}>
+          <Link
+            className={getLinkClassName(openCallLink.href)}
+            href={openCallLink.href}
+            onClick={preventSameRouteNavigation(openCallLink.href)}
+          >
+            {openCallLink.label}
+          </Link>
+          {openCallLink.countdown ? <span className={styles.countdown}>{openCallLink.countdown}</span> : null}
+        </span>
+        <button
+          className={[styles.menuButton, isMenuOpen ? styles.menuButtonOpen : ""].filter(Boolean).join(" ")}
+          type="button"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
+        >
+          <span />
+          <span />
+        </button>
+      </nav>
+    );
+  };
+
+  return (
+    <header className={styles.header}>
+      <Progressbar />
+      {isMobile ? <MobileNav /> : <DesktopNav />}
+      <AnimatePresence>
+        {isMobile && isMenuOpen ? (
+          <Menu currentPhaseLabel={currentPhaseLabel} navLinks={navLinks} email={site.email} />
+        ) : null}
+      </AnimatePresence>
     </header>
   );
 };

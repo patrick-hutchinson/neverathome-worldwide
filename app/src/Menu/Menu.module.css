@@ -1,0 +1,41 @@
+.menu {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  height: 100dvh;
+  width: 100dvw;
+  background: #000;
+  color: #fff;
+  display: flex;
+  pointer-events: auto;
+  padding: var(--spacing-6);
+}
+
+.openCallLink {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.nav {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.topSection,
+.bottomSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav a,
+.nav span {
+  color: inherit;
+}
+
+.countdown {
+  color: var(--accent) !important;
+}

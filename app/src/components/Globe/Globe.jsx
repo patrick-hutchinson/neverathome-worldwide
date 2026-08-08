@@ -2,17 +2,12 @@ import { useEffect, useRef } from "react";
 
 import styles from "./Globe.module.css";
 
-const AUTO_ROTATE_SPEED = 0.001;
-const AUTO_ROTATE_EASE_MS = 1800;
-const AUTO_ROTATE_INTERACTION_PAUSE_MS = 5000;
-const THREE_GLOBE_INTRO_MS = 1200;
 const FOCUS_ROTATE_DAMPING = 3.2;
+const MAX_DEVICE_PIXEL_RATIO = 1.5;
+const MAX_FRAME_RATE = 60;
+const REDUCED_MOTION_FRAME_RATE = 30;
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
-
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-}
 
 export default function Globe({
   cities = [],
@@ -53,8 +48,8 @@ export default function Globe({
     let lastPointer = { x: 0, y: 0 };
     let lastDragTime = 0;
     let lastFrameTime = 0;
+    let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
-    let autoRotateResumeAt = Number.POSITIVE_INFINITY;
     let removePointerListeners = () => {};
     let isMounted = true;
 
@@ -69,11 +64,14 @@ export default function Globe({
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const frameDuration = 1000 / (prefersReducedMotion ? REDUCED_MOTION_FRAME_RATE : MAX_FRAME_RATE);
+
       camera.position.z = 300;
       lastFrameTime = performance.now();
 
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DEVICE_PIXEL_RATIO));
       renderer.setSize(width, height);
 
       labelRenderer = new CSS2DRenderer();
@@ -82,11 +80,7 @@ export default function Globe({
 
       globeRef.current.replaceChildren(renderer.domElement, labelRenderer.domElement);
 
-      const scheduleAutoRotateResume = (delay = 0) => {
-        autoRotateResumeAt = performance.now() + delay;
-      };
-
-      globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: true })
+      globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: !prefersReducedMotion })
         .globeImageUrl(globeImageUrl)
         .bumpImageUrl(bumpImageUrl)
         .htmlElementsData(citiesRef.current)
@@ -111,9 +105,6 @@ export default function Globe({
         .htmlElementVisibilityModifier((element, isVisible) => {
           element.style.opacity = isVisible ? "1" : "0";
           element.style.pointerEvents = isVisible ? "auto" : "none";
-        })
-        .onGlobeReady(() => {
-          scheduleAutoRotateResume(THREE_GLOBE_INTRO_MS);
         });
 
       scene.add(globe);
@@ -147,7 +138,11 @@ export default function Globe({
         const targetMatrix = worldBasis.multiply(localBasis.invert());
 
         focusTarget = new THREE.Quaternion().setFromRotationMatrix(targetMatrix);
-        autoRotateResumeAt = Number.POSITIVE_INFINITY;
+
+        if (prefersReducedMotion) {
+          globe.quaternion.copy(focusTarget);
+          focusTarget = null;
+        }
       };
 
       const updateMarkers = (nextCities = []) => {
@@ -161,7 +156,6 @@ export default function Globe({
         isDragging = true;
         focusTarget = null;
         dragVelocity = { x: 0, y: 0 };
-        autoRotateResumeAt = Number.POSITIVE_INFINITY;
         lastPointer = { x: event.clientX, y: event.clientY };
         lastDragTime = performance.now();
         renderer.domElement.setPointerCapture(event.pointerId);
@@ -176,10 +170,12 @@ export default function Globe({
         const deltaTime = Math.max(now - lastDragTime, 16);
         lastPointer = { x: event.clientX, y: event.clientY };
         lastDragTime = now;
-        dragVelocity = {
-          x: deltaX / deltaTime,
-          y: deltaY / deltaTime,
-        };
+        dragVelocity = prefersReducedMotion
+          ? { x: 0, y: 0 }
+          : {
+              x: deltaX / deltaTime,
+              y: deltaY / deltaTime,
+            };
 
         rotateAroundWorldAxis(new THREE.Vector3(0, 1, 0), deltaX * 0.006);
         rotateAroundWorldAxis(new THREE.Vector3(1, 0, 0), deltaY * 0.006);
@@ -187,7 +183,6 @@ export default function Globe({
 
       const handlePointerUp = (event) => {
         isDragging = false;
-        scheduleAutoRotateResume(AUTO_ROTATE_INTERACTION_PAUSE_MS);
 
         if (renderer.domElement.hasPointerCapture(event.pointerId)) {
           renderer.domElement.releasePointerCapture(event.pointerId);
@@ -206,10 +201,14 @@ export default function Globe({
         renderer.domElement.removeEventListener("pointercancel", handlePointerUp);
       };
 
-      function animate() {
-        const now = performance.now();
+      function animate(now = performance.now()) {
+        animationFrame = requestAnimationFrame(animate);
+
+        if (now - lastRenderTime < frameDuration) return;
+
         const deltaSeconds = Math.min((now - lastFrameTime) / 1000, 0.05);
         lastFrameTime = now;
+        lastRenderTime = now;
 
         if (focusTarget) {
           const dampingAmount = 1 - Math.exp(-FOCUS_ROTATE_DAMPING * deltaSeconds);
@@ -218,26 +217,25 @@ export default function Globe({
           if (globe.quaternion.angleTo(focusTarget) < 0.0005) {
             globe.quaternion.copy(focusTarget);
             focusTarget = null;
-            scheduleAutoRotateResume(AUTO_ROTATE_INTERACTION_PAUSE_MS);
           }
-        } else if (!isDragging && (Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01)) {
+        } else if (
+          !prefersReducedMotion &&
+          !isDragging &&
+          (Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01)
+        ) {
           rotateAroundWorldAxis(new THREE.Vector3(0, 1, 0), dragVelocity.x * 16 * 0.006);
           rotateAroundWorldAxis(new THREE.Vector3(1, 0, 0), dragVelocity.y * 16 * 0.006);
 
           dragVelocity.x *= 0.94;
           dragVelocity.y *= 0.94;
-        } else if (!isDragging && now >= autoRotateResumeAt) {
-          const autoRotateProgress = Math.min((now - autoRotateResumeAt) / AUTO_ROTATE_EASE_MS, 1);
-          rotateAroundWorldAxis(new THREE.Vector3(0, 1, 0), AUTO_ROTATE_SPEED * easeInOutCubic(autoRotateProgress));
         }
 
         globe.setPointOfView(camera);
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
-        animationFrame = requestAnimationFrame(animate);
       }
 
-      animate();
+      animationFrame = requestAnimationFrame(animate);
     }
 
     initGlobe();
