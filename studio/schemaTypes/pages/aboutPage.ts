@@ -40,6 +40,15 @@ export const aboutPage = defineType({
       title: 'About (Austria Kultur International)',
       type: 'portableText',
     }),
+    defineField({
+      name: 'artBoard',
+      title: 'Art Board',
+      type: 'object',
+      fields: [
+        defineField({name: 'text', type: 'portableText'}),
+        defineField({name: 'medium', type: 'mediaAsset'}),
+      ],
+    }),
 
     defineField({
       name: 'team',

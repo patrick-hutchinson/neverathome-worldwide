@@ -1,0 +1,84 @@
+.page {
+  /* min-height: 100vh; */
+}
+
+.destinationInstitution {
+  display: flex;
+  flex-direction: column;
+}
+
+.institutionTitle {
+  margin-bottom: var(--spacing-5);
+}
+
+.destinationsText {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.destinationContainer {
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid black;
+}
+
+@media screen and (min-width: 769px) {
+  .destinationsGrid {
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
+  }
+
+  .destinationInstitution {
+    grid-column: 1 / 11;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
+    grid-auto-rows: max-content;
+  }
+
+  .institutionTitle {
+    grid-column: 1 / 11;
+  }
+
+  .destinationInfo {
+    grid-column: 1 / 11;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
+  }
+
+  .destinationThumbnail {
+    grid-column: 1 / 6;
+    align-self: start;
+    height: auto;
+  }
+
+  .asideText {
+    grid-column: 6 / 11;
+  }
+
+  .trailText {
+    grid-column: 13 / 18;
+  }
+
+  .destinationInfoNoImage .asideText {
+    grid-column: 1 / 5;
+  }
+
+  .destinationsText {
+    display: contents;
+  }
+
+  .destinationDescription {
+    grid-column: 13 / 21;
+    grid-row: 1;
+  }
+
+  .abbreviation {
+    grid-row: 3;
+    grid-column: 1 / 9;
+  }
+}

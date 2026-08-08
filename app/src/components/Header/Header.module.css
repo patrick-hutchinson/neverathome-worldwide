@@ -45,6 +45,10 @@
   pointer-events: auto;
 }
 
+.linkActive {
+  color: var(--accent);
+}
+
 .countdown {
   font-variant-numeric: tabular-nums;
   color: var(--accent);

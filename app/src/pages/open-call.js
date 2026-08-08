@@ -1,6 +1,6 @@
 import Media from "@/components/Media/Media";
 import { getOpenCallPage, getPage, getSite } from "@/lib/sanity";
-import styles from "@/styles/Home.module.css";
+import styles from "@/styles/OpenCall.module.scss";
 
 import Text from "@/components/Text/Text";
 import { LargeSection } from "@/components/Sections/Sections";

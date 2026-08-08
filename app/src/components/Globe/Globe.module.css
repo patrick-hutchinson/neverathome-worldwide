@@ -1,4 +1,5 @@
 .globe {
+  position: relative;
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -6,4 +7,43 @@
 
 .globe:active {
   cursor: grabbing;
+}
+
+.markerLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cityMarker {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  color: #fff;
+  font-size: var(--fontSize-5);
+  line-height: var(--lineHeight-5);
+  letter-spacing: var(--letterSpacing-5);
+  white-space: nowrap;
+  -webkit-text-stroke: 0.75px #000;
+  paint-order: stroke fill;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  transition:
+    opacity 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    text-shadow 0.2s ease-in-out;
+}
+
+.cityMarker:hover {
+  color: #000;
+  -webkit-text-stroke: 0.75px #fff;
+  paint-order: stroke fill;
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff;
 }

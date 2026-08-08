@@ -21,6 +21,10 @@
   color: inherit;
 }
 
+.cityEntryHighlighted {
+  color: var(--accent);
+}
+
 .cityEntryHoverable:hover,
 .cityEntryClickable:focus {
   color: var(--accent);

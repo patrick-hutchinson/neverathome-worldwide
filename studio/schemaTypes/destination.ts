@@ -12,6 +12,12 @@ export const destination = defineType({
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
+      name: 'abbreviation',
+      title: 'Kürzel der Stadt',
+      type: 'string',
+      validation: (Rule) => Rule.required().min(1),
+    }),
+    defineField({
       name: 'coordinates',
       type: 'object',
       options: {columns: 2},
@@ -31,6 +37,7 @@ export const destination = defineType({
       ],
     }),
     defineField({name: 'institution', type: 'string'}),
+    defineField({name: 'institutionMedium', type: 'mediaAsset'}),
     defineField({name: 'description', type: 'portableText'}),
   ],
 })

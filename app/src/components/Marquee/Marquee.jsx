@@ -1,27 +1,153 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import AutoScroll from "embla-carousel-auto-scroll";
 import Text from "@/components/Text/Text";
 
 import styles from "./Marquee.module.css";
 
-const Marquee = ({ text, className, direction = "forward", typo }) => {
+const MARQUEE_START_SPEED = 0.08;
+const MARQUEE_TARGET_SPEED = 1;
+const MARQUEE_RAMP_DURATION = 1200;
+const MARQUEE_STOP_DURATION = 450;
+
+function createEaseInAutoScroll({ direction, speedRef }) {
+  let emblaApi = null;
+  let defaultScrollBody = null;
+  let isDestroyed = false;
+
+  function createScrollBody(engine) {
+    const {
+      location,
+      previousLocation,
+      offsetLocation,
+      target,
+      scrollTarget,
+      index,
+      indexPrevious,
+      limit: { reachedMax, reachedMin },
+      options: { loop },
+    } = engine;
+    const directionSign = direction === "forward" ? -1 : 1;
+    const noop = () => self;
+    let bodyVelocity = 0;
+    let scrollDirection = 0;
+    let rawLocation = location.get();
+    let rawLocationPrevious = rawLocation;
+    let hasSettled = false;
+
+    function seek() {
+      previousLocation.set(location);
+      bodyVelocity = directionSign * speedRef.current;
+      rawLocation += bodyVelocity;
+      location.add(bodyVelocity);
+      target.set(location);
+      scrollDirection = Math.sign(rawLocation - rawLocationPrevious);
+      rawLocationPrevious = rawLocation;
+
+      const currentIndex = scrollTarget.byDistance(0, false).index;
+
+      if (index.get() !== currentIndex) {
+        indexPrevious.set(index.get());
+        index.set(currentIndex);
+        emblaApi.emit("select");
+      }
+
+      const reachedEnd = direction === "forward" ? reachedMin(offsetLocation.get()) : reachedMax(offsetLocation.get());
+
+      if (!loop && reachedEnd) {
+        hasSettled = true;
+      }
+
+      return self;
+    }
+
+    const self = {
+      direction: () => scrollDirection,
+      duration: () => -1,
+      velocity: () => bodyVelocity,
+      settled: () => hasSettled,
+      seek,
+      useBaseFriction: noop,
+      useBaseDuration: noop,
+      useFriction: noop,
+      useDuration: noop,
+    };
+
+    return self;
+  }
+
+  function play() {
+    if (!emblaApi || isDestroyed) return;
+
+    const engine = emblaApi.internalEngine();
+    engine.scrollBody = createScrollBody(engine);
+    engine.animation.start();
+  }
+
+  function stop() {
+    if (!emblaApi || !defaultScrollBody) return;
+
+    emblaApi.internalEngine().scrollBody = defaultScrollBody;
+  }
+
+  return {
+    name: "easeInAutoScroll",
+    options: {},
+    init(api) {
+      emblaApi = api;
+      defaultScrollBody = api.internalEngine().scrollBody;
+      isDestroyed = false;
+      play();
+    },
+    destroy() {
+      stop();
+      isDestroyed = true;
+      emblaApi = null;
+    },
+    play,
+    stop,
+  };
+}
+
+const Marquee = ({ text, className, direction = "forward", targetSpeed = MARQUEE_TARGET_SPEED, typo }) => {
   const outerRef = useRef(null);
   const measureRef = useRef(null);
+  const speedAnimationRef = useRef(null);
+  const speedRef = useRef(MARQUEE_START_SPEED);
   const [repeatCount, setRepeatCount] = useState(8);
   const autoScrollPlugins = useMemo(
-    () => [
-      AutoScroll({
-        direction,
-        playOnInit: true,
-        stopOnInteraction: false,
-        stopOnMouseEnter: false,
-        speed: 1,
-      }),
-    ],
+    () => [createEaseInAutoScroll({ direction, speedRef })],
     [direction],
   );
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: true, dragResistance: 1 }, autoScrollPlugins);
+
+  useEffect(() => {
+    if (speedAnimationRef.current) {
+      cancelAnimationFrame(speedAnimationRef.current);
+    }
+
+    const startTime = performance.now();
+    const startSpeed = targetSpeed > 0 && speedRef.current === 0 ? MARQUEE_START_SPEED : speedRef.current;
+    const duration = targetSpeed > startSpeed ? MARQUEE_RAMP_DURATION : MARQUEE_STOP_DURATION;
+    const speedDelta = targetSpeed - startSpeed;
+
+    speedRef.current = startSpeed;
+
+    const rampSpeed = (time) => {
+      const progress = Math.min(1, (time - startTime) / duration);
+      const easedProgress = targetSpeed > startSpeed ? progress * progress * progress : 1 - (1 - progress) ** 3;
+      speedRef.current = Math.max(0, startSpeed + speedDelta * easedProgress);
+
+      if (progress < 1) {
+        speedAnimationRef.current = requestAnimationFrame(rampSpeed);
+      }
+    };
+
+    speedAnimationRef.current = requestAnimationFrame(rampSpeed);
+
+    return () => {
+      cancelAnimationFrame(speedAnimationRef.current);
+    };
+  }, [direction, targetSpeed, text]);
 
   useEffect(() => {
     const outer = outerRef.current;
@@ -54,7 +180,7 @@ const Marquee = ({ text, className, direction = "forward", typo }) => {
 
     emblaApi.reInit();
     window.requestAnimationFrame(() => {
-      emblaApi.plugins()?.autoScroll?.play?.(0);
+      emblaApi.plugins()?.easeInAutoScroll?.play?.();
     });
   }, [emblaApi, repeatCount]);
 

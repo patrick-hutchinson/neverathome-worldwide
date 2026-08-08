@@ -5,11 +5,11 @@
 .header {
   border-top: 1px solid black;
   border-bottom: 1px solid black;
+  cursor: pointer;
   user-select: none;
 }
 
 .headerButton {
-  cursor: pointer;
   display: flex;
   justify-content: space-between;
   padding: var(--spacing-7) 0;
@@ -32,7 +32,7 @@
   transform: translateY(-3.5px);
 }
 
-@media screen and (min-width: 749px) {
+@media screen and (min-width: 769px) {
   .bodyInner {
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));

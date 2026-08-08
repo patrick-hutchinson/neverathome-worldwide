@@ -1,0 +1,133 @@
+.schedule {
+  li {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    grid-template-rows: 1fr 1fr;
+    column-gap: var(--content-grid-gap);
+    padding: var(--spacing-7) 0;
+    border-top: 1px solid black;
+
+    .scheduleTitle {
+      grid-column: 1 / 25;
+      grid-row: 1;
+
+      .title {
+        display: none;
+      }
+    }
+
+    .scheduleKeyword {
+      white-space: nowrap;
+      grid-column: 1 / 12;
+      grid-row: 2;
+    }
+
+    .scheduleCountdown {
+      grid-column: 13 / 25;
+      grid-row: 2;
+      text-align: right;
+    }
+  }
+
+  h4 {
+    margin: var(--spacing-6) 0 var(--spacing-7) 0;
+  }
+
+  &:first-child h4 {
+    margin-top: 0;
+  }
+
+  &:last-child li {
+    padding-bottom: 0;
+  }
+}
+
+.quoteContainer {
+  width: 100%;
+  margin-bottom: var(--spacing-4);
+  padding-top: var(--spacing-7);
+  border-top: 1px solid black;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+
+  .quoteAttribution {
+    text-align: left;
+  }
+}
+
+/* Phones in Lanscape */
+@media (max-height: 500px) and (orientation: landscape) {
+}
+
+/* Tablets */
+@media screen and (min-width: 769px) {
+  .quoteContainer {
+    display: grid;
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
+
+    .quoteText {
+      grid-column: 1 / 17;
+    }
+
+    .quoteAttribution {
+      grid-column: 21 / 25;
+    }
+  }
+}
+
+/* Tablets and Desktop nuance */
+@media screen and (min-width: 1024px) {
+  .schedule {
+    li {
+      grid-template-rows: 1fr;
+
+      .scheduleKeyword {
+        grid-column: 1 / 5;
+        grid-row: 1;
+      }
+
+      .scheduleTitle {
+        grid-column: 6 / 20;
+        grid-row: 1;
+        // display: none;
+      }
+
+      .scheduleCountdown {
+        grid-column: 15 / 25;
+        grid-row: 1;
+      }
+    }
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 1280px) {
+  .schedule {
+    li {
+      grid-template-rows: 1fr;
+
+      .scheduleKeyword {
+        grid-column: 1 / 4;
+        grid-row: 1;
+      }
+
+      .scheduleTitle {
+        grid-column: 5 / 20;
+        grid-row: 1;
+      }
+
+      .scheduleCountdown {
+        grid-column: 18 / 25;
+        grid-row: 1;
+      }
+    }
+  }
+}
+
+/* Large Format Screens */
+@media screen and (min-width: 2560px) {
+}

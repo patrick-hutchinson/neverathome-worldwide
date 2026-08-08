@@ -10,7 +10,7 @@ const Footer = ({ page = {} }) => {
       <Text className={styles.claim} text={page.claim} typo="h6" />
 
       <div className={styles.buttonContainer} typo="h4">
-        <button className={`${styles.registrationButton} invert`}>ONLINE REGISTRATION</button>
+        <button className={`${styles.registrationButton} invert`}>APPLY NOW</button>
         <button>INFO.PDF</button>
       </div>
 

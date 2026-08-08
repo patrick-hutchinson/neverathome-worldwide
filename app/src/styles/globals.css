@@ -110,7 +110,11 @@ button {
   color: var(--background);
 }
 
-@media screen and (min-width: 749px) {
+#home-schedule {
+  scroll-margin-top: calc(var(--spacing-6) * 0.7);
+}
+
+@media screen and (min-width: 769px) {
   :root {
     --spacing-1: 270px; /* #2EE844 */
     --spacing-2: 135px; /* #2EE844 */

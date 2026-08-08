@@ -99,6 +99,11 @@ export const aboutPageQuery = `*[_type=="aboutPage"][0]{
     name,
     role,
     portrait[0] ${mediaAssetFragment},
+  },
+  artBoard{
+    title,
+    text,
+    medium[0] ${mediaAssetFragment},
   }
 }`;
 
@@ -124,7 +129,9 @@ export const destinationsQuery = `*[
   "lat": coordinates.latitude,
   "lng": coordinates.longitude,
   institution,
-  description
+  institutionMedium[0] ${mediaAssetFragment},
+  description,
+  abbreviation
 }`;
 
 export const homeQuery = `*[_type=="home"][0]{

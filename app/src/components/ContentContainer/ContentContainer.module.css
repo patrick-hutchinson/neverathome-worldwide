@@ -18,7 +18,7 @@
   z-index: 1;
 }
 
-@media screen and (min-width: 749px) {
+@media screen and (min-width: 769px) {
   :global(html[data-spacing-debug="true"]) .contentContainer::before {
     content: "";
     position: absolute;

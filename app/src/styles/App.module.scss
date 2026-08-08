@@ -1,7 +1,18 @@
+.appShell {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.65s ease-in-out;
+}
+
+.appShellReady {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .sharedLayer {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   place-items: center;
   pointer-events: none;
@@ -11,13 +22,17 @@
   pointer-events: auto;
 }
 
+.sharedTransition {
+  display: block;
+}
+
 .globeMover {
   display: block;
 }
 
 .cityListLayer {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   pointer-events: none;
 }
 

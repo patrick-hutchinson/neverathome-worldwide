@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 import styles from "./Globe.module.css";
 
-const AUTO_ROTATE_SPEED = 0.002;
+const AUTO_ROTATE_SPEED = 0.001;
 const AUTO_ROTATE_EASE_MS = 1800;
 const AUTO_ROTATE_INTERACTION_PAUSE_MS = 5000;
 const THREE_GLOBE_INTRO_MS = 1200;
@@ -15,7 +15,9 @@ function easeInOutCubic(t) {
 }
 
 export default function Globe({
+  cities = [],
   destinationCity,
+  onCityMarkerClick,
   width = DEFAULT_WIDTH,
   height = DEFAULT_HEIGHT,
   globeImageUrl = "//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg",
@@ -23,7 +25,14 @@ export default function Globe({
 }) {
   const globeRef = useRef(null);
   const sceneRef = useRef(null);
+  const citiesRef = useRef(cities);
   const destinationCityRef = useRef(destinationCity);
+  const onCityMarkerClickRef = useRef(onCityMarkerClick);
+
+  useEffect(() => {
+    citiesRef.current = cities;
+    sceneRef.current?.updateMarkers(cities);
+  }, [cities]);
 
   useEffect(() => {
     destinationCityRef.current = destinationCity;
@@ -31,8 +40,13 @@ export default function Globe({
   }, [destinationCity]);
 
   useEffect(() => {
+    onCityMarkerClickRef.current = onCityMarkerClick;
+  }, [onCityMarkerClick]);
+
+  useEffect(() => {
     let animationFrame;
     let renderer;
+    let labelRenderer;
     let globe;
     let focusTarget = null;
     let isDragging = false;
@@ -45,7 +59,11 @@ export default function Globe({
     let isMounted = true;
 
     async function initGlobe() {
-      const [{ default: ThreeGlobe }, THREE] = await Promise.all([import("three-globe"), import("three")]);
+      const [{ default: ThreeGlobe }, THREE, { CSS2DRenderer }] = await Promise.all([
+        import("three-globe"),
+        import("three"),
+        import("three/examples/jsm/renderers/CSS2DRenderer.js"),
+      ]);
 
       if (!isMounted || !globeRef.current) return;
 
@@ -57,7 +75,12 @@ export default function Globe({
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(width, height);
-      globeRef.current.replaceChildren(renderer.domElement);
+
+      labelRenderer = new CSS2DRenderer();
+      labelRenderer.setSize(width, height);
+      labelRenderer.domElement.className = styles.markerLayer;
+
+      globeRef.current.replaceChildren(renderer.domElement, labelRenderer.domElement);
 
       const scheduleAutoRotateResume = (delay = 0) => {
         autoRotateResumeAt = performance.now() + delay;
@@ -66,6 +89,29 @@ export default function Globe({
       globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: true })
         .globeImageUrl(globeImageUrl)
         .bumpImageUrl(bumpImageUrl)
+        .htmlElementsData(citiesRef.current)
+        .htmlLat((city) => city.lat)
+        .htmlLng((city) => city.lng)
+        .htmlElement((city) => {
+          const marker = document.createElement("button");
+          marker.type = "button";
+          marker.className = styles.cityMarker;
+          marker.textContent = city.name;
+          marker.addEventListener("pointerdown", (event) => {
+            event.stopPropagation();
+          });
+          marker.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onCityMarkerClickRef.current?.(city);
+          });
+
+          return marker;
+        })
+        .htmlElementVisibilityModifier((element, isVisible) => {
+          element.style.opacity = isVisible ? "1" : "0";
+          element.style.pointerEvents = isVisible ? "auto" : "none";
+        })
         .onGlobeReady(() => {
           scheduleAutoRotateResume(THREE_GLOBE_INTRO_MS);
         });
@@ -104,7 +150,11 @@ export default function Globe({
         autoRotateResumeAt = Number.POSITIVE_INFINITY;
       };
 
-      sceneRef.current = { focusCity };
+      const updateMarkers = (nextCities = []) => {
+        globe.htmlElementsData(nextCities);
+      };
+
+      sceneRef.current = { focusCity, updateMarkers };
       focusCity(destinationCityRef.current);
 
       const handlePointerDown = (event) => {
@@ -181,7 +231,9 @@ export default function Globe({
           rotateAroundWorldAxis(new THREE.Vector3(0, 1, 0), AUTO_ROTATE_SPEED * easeInOutCubic(autoRotateProgress));
         }
 
+        globe.setPointOfView(camera);
         renderer.render(scene, camera);
+        labelRenderer.render(scene, camera);
         animationFrame = requestAnimationFrame(animate);
       }
 
@@ -196,6 +248,7 @@ export default function Globe({
       sceneRef.current = null;
       removePointerListeners();
       renderer?.dispose();
+      labelRenderer?.domElement?.remove();
       globeRef.current?.replaceChildren();
     };
   }, [bumpImageUrl, globeImageUrl, height, width]);

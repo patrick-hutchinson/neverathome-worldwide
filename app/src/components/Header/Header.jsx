@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { formatCountdown } from "@/lib/countdown";
 import { getCurrentPhaseLabel } from "@/lib/phase";
 import styles from "./Header.module.css";
 
@@ -26,51 +28,8 @@ function getProgress(now) {
   return clamp(((now - progressStartDate) / total) * 100, 0, 100);
 }
 
-function getCountdownParts(deadline, now) {
-  if (!deadline) return null;
-
-  const deadlineDate = new Date(deadline);
-  if (Number.isNaN(deadlineDate.getTime())) return null;
-  if (deadlineDate <= now) return { months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
-
-  let cursor = new Date(now);
-  let months = 0;
-  let nextMonth = new Date(cursor);
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-  while (nextMonth <= deadlineDate) {
-    months += 1;
-    cursor = nextMonth;
-    nextMonth = new Date(cursor);
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-  }
-
-  let remainingSeconds = Math.floor((deadlineDate - cursor) / 1000);
-  const weeks = Math.floor(remainingSeconds / (7 * 24 * 60 * 60));
-  remainingSeconds -= weeks * 7 * 24 * 60 * 60;
-
-  const days = Math.floor(remainingSeconds / (24 * 60 * 60));
-  remainingSeconds -= days * 24 * 60 * 60;
-
-  const hours = Math.floor(remainingSeconds / (60 * 60));
-  remainingSeconds -= hours * 60 * 60;
-
-  const minutes = Math.floor(remainingSeconds / 60);
-  const seconds = remainingSeconds - minutes * 60;
-
-  return { months, weeks, days, hours, minutes, seconds };
-}
-
-function formatCountdown(deadline, now) {
-  const parts = getCountdownParts(deadline, now);
-  if (!parts) return null;
-
-  return [parts.months, parts.weeks, parts.days, parts.hours, parts.minutes, parts.seconds]
-    .map((part) => String(part).padStart(2, "0"))
-    .join(":");
-}
-
 const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
+  const router = useRouter();
   const [now, setNow] = useState(null);
   const [progressNow, setProgressNow] = useState(null);
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase);
@@ -104,19 +63,35 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     );
   };
 
+  const getLinkClassName = (href) =>
+    [styles.link, router.pathname === href ? styles.linkActive : ""].filter(Boolean).join(" ");
+
+  const preventSameRouteNavigation = (href) => (event) => {
+    if (router.pathname !== href) return;
+
+    event.preventDefault();
+  };
+
+  const handleHomeLinkClick = (event) => {
+    if (router.pathname !== "/") return;
+
+    event.preventDefault();
+    document.getElementById("home-schedule")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <header className={styles.header}>
       <Progressbar />
       <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
           {currentPhaseLabel ? (
-            <Link href="/" className={styles.link}>
+            <Link className={getLinkClassName("/")} href="/" onClick={handleHomeLinkClick}>
               {currentPhaseLabel}
             </Link>
           ) : null}
           {navLinks.map((link) => (
             <span className={styles.navItem} key={link.href}>
-              <Link className={styles.link} href={link.href}>
+              <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
                 {link.label}
               </Link>
               {link.countdown ? <span className={styles.countdown}>{link.countdown}</span> : null}
@@ -124,7 +99,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           ))}
         </div>
         <div>
-          <Link className={styles.link} href="about">
+          <Link className={getLinkClassName("/about")} href="/about" onClick={preventSameRouteNavigation("/about")}>
             About
           </Link>
           {",\u00a0"}

@@ -11,23 +11,24 @@ const bodyTransition = {
 
 const AccordionEntry = ({ entry }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const toggleEntry = () => setIsOpen((currentState) => !currentState);
 
   return (
     <div className={styles.accordionEntry}>
-      <div className={styles.header}>
-        <div
-          aria-expanded={isOpen}
-          className={styles.headerButton}
-          onClick={() => setIsOpen((currentState) => !currentState)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              setIsOpen((currentState) => !currentState);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-        >
+      <div
+        aria-expanded={isOpen}
+        className={styles.header}
+        onClick={toggleEntry}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleEntry();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <div className={styles.headerButton}>
           <div typo="h3 compensate">{entry.question}</div>
           <div className={styles.openCloseButton} typo="h3 compensate">
             +
