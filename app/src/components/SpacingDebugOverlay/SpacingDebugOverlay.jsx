@@ -134,10 +134,17 @@ function drawPositionOffsets(overlay, element, rect, styles, spacingTokens) {
 }
 
 function getRenderableChildRects(element) {
-  return Array.from(element.children)
-    .filter((child) => child.id !== overlayId && !child.closest(`#${overlayId}`))
-    .map((child) => child.getBoundingClientRect())
-    .filter((rect) => rect.width > 0 && rect.height > 0);
+  return Array.from(element.children).flatMap((child) => {
+    if (child.id === overlayId || child.closest(`#${overlayId}`)) return [];
+
+    if (window.getComputedStyle(child).display === "contents") {
+      return getRenderableChildRects(child);
+    }
+
+    const rect = child.getBoundingClientRect();
+
+    return rect.width > 0 && rect.height > 0 ? [rect] : [];
+  });
 }
 
 function getRectRows(rects) {

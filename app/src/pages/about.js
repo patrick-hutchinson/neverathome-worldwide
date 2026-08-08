@@ -24,23 +24,27 @@ const AboutPage = ({ aboutPage }) => {
           </div>
         </LargeSection>
         <LargeSection>
-          <div className={styles.artBoard}>
+          <div className={styles.artBoardContainer}>
             <h3 typo="h3 compesnate" className={styles.title}>
               Art Board
             </h3>
             <Text text={aboutPage.artBoard.text} typo="h6 compensate" className={styles.text} />
             <Media medium={aboutPage.artBoard.medium.medium} className={styles.medium} />
           </div>
-          <div className={styles.team}>
+          <div className={styles.teamContainer}>
             <h3 typo="h3 compesnate" className={styles.title}>
               The Team
             </h3>
+
             <Text text={aboutPage.artBoard.text} typo="h6 compensate" className={styles.text} />
+            <div className={styles.contact} typo="h6">
+              Any questions? <br /> <a href="mailto:opencall@never-at-home.at">opencall@never-at-home.at</a>
+            </div>
             <div className={styles.teamPhotos}>
               {aboutPage.team.map((teamMember, index) => {
                 return (
                   <div className={styles.teamMember}>
-                    <Media medium={teamMember.portrait.medium} className={styles.portrait} />
+                    <Media medium={teamMember.portrait.medium} />
                     <div typo="h6">
                       {teamMember.name}
                       {",\u00a0"}
@@ -49,9 +53,6 @@ const AboutPage = ({ aboutPage }) => {
                   </div>
                 );
               })}
-            </div>
-            <div className={styles.contact}>
-              Any questions? <a href="mailto:opencall@never-at-home.at">opencall@never-at-home.at</a>
             </div>
           </div>
         </LargeSection>

@@ -2,28 +2,27 @@
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
-  row-gap: var(--spacing-7);
+  row-gap: var(--spacing-5);
 
   .institutionContainer {
     grid-column: 1 / 25;
     grid-row: 1;
     display: grid;
-    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-template-columns: repeat(24, minmax(0, 1fr));
     column-gap: var(--content-grid-gap);
     row-gap: var(--spacing-4);
     grid-auto-rows: max-content;
 
     .institutionName {
-      grid-column: 1 / 11;
+      grid-column: 1 / 25;
     }
 
     .institutionInfo {
       grid-column: 1 / 25;
-      grid-row: 1;
+      grid-row: 2;
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       column-gap: var(--content-grid-gap);
-      // row-gap: var(--spacing-7);
 
       .institutionMedium {
         grid-row: 1;
@@ -45,11 +44,16 @@
   }
 
   .destinationText {
-    display: contents;
+    grid-column: 1 / 25;
+    display: grid;
+    // row-gap: var(--spacing-6);
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+    column-gap: var(--content-grid-gap);
 
     .destinationDescription {
       grid-column: 1 / 25;
       grid-row: 3;
+      margin-bottom: var(--spacing-5);
     }
 
     .trailText {
@@ -119,6 +123,7 @@
       .destinationDescription {
         grid-column: 13 / 25;
         grid-row: 1;
+        margin-bottom: 0;
       }
 
       .trailText {
