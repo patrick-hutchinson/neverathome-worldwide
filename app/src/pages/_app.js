@@ -337,7 +337,7 @@ export default function App({ Component, pageProps }) {
                   ref={globeMoverRef}
                   transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  {/* <Globe cities={destinations} destinationCity={destinationCity} onCityMarkerClick={handleCityMarkerClick} /> */}
+                  <Globe cities={destinations} destinationCity={destinationCity} onCityMarkerClick={handleCityMarkerClick} />
                 </motion.div>
 
                 <div className={styles.marqueeContainer}>
