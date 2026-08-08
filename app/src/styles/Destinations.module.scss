@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
-  grid-row-gap: var(--spacing-7);
+  row-gap: var(--spacing-7);
 
   .institutionContainer {
     grid-column: 1 / 25;
@@ -10,7 +10,7 @@
     display: grid;
     grid-template-columns: repeat(10, minmax(0, 1fr));
     column-gap: var(--content-grid-gap);
-    grid-row-gap: var(--spacing-4);
+    row-gap: var(--spacing-4);
     grid-auto-rows: max-content;
 
     .institutionName {
@@ -23,7 +23,7 @@
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       column-gap: var(--content-grid-gap);
-      grid-row-gap: var(--spacing-7);
+      // row-gap: var(--spacing-7);
 
       .institutionMedium {
         grid-row: 1;
@@ -65,6 +65,7 @@
     grid-template-columns: repeat(24, minmax(0, 1fr));
     grid-template-rows: auto 1fr;
     column-gap: var(--content-grid-gap);
+    row-gap: var(--spacing-4);
 
     .institutionContainer {
       grid-column: 1 / 11;
@@ -85,6 +86,7 @@
         grid-template-columns: repeat(10, minmax(0, 1fr));
         grid-template-rows: auto 1fr auto;
         column-gap: var(--content-grid-gap);
+        row-gap: var(--spacing-4);
 
         .institutionMedium {
           grid-row: 1;
@@ -106,7 +108,7 @@
 
       .institutionInfoNoImage {
         .institutionText {
-          grid-column: 1 / 5;
+          grid-column: 1 / 8;
         }
       }
     }
@@ -115,14 +117,45 @@
       display: contents;
 
       .destinationDescription {
-        grid-column: 13 / 21;
+        grid-column: 13 / 25;
         grid-row: 1;
+      }
+
+      .trailText {
+        grid-column: 13 / 20;
+        grid-row: 2;
+        align-self: end;
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .destinationGrid {
+    .institutionInfo {
+      .institutionText {
+        grid-row: 1;
+        grid-column: 6 / 11;
+      }
+    }
+
+    .destinationText {
+      .destinationDescription {
+        grid-column: 13 / 21;
       }
 
       .trailText {
         grid-column: 13 / 18;
         grid-row: 2;
         align-self: end;
+      }
+    }
+
+    .institutionContainer {
+      .institutionInfoNoImage {
+        .institutionText {
+          grid-column: 1 / 6;
+        }
       }
     }
   }
