@@ -11,36 +11,36 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
     <div className={`page ${styles.page}`}>
       <main className="main">
         <LargeSection className={styles.destinationContainer}>
-          <div className={styles.destinationsGrid}>
+          <div className={styles.destinationGrid}>
             {selectedDestination ? (
               <>
-                <div className={styles.destinationInstitution} typo="h4">
-                  <div className={styles.institutionTitle}>{selectedDestination.institution}</div>
+                <div className={styles.institutionContainer} typo="h4">
+                  <div className={styles.institutionName}>{selectedDestination.institution}</div>
                   <div
-                    className={[styles.destinationInfo, !institutionMedium ? styles.destinationInfoNoImage : ""]
+                    className={[styles.institutionInfo, !institutionMedium ? styles.institutionInfoNoImage : ""]
                       .filter(Boolean)
                       .join(" ")}
                   >
-                    {institutionMedium ? <Media medium={institutionMedium} className={styles.destinationThumbnail} /> : null}
-                    <div className={styles.asideText} typo="h6 compensate">
-                      Hier kommt wohl noch ein kleinerer Text hin, ich bin mir aber unsicher worauf genau er sich beziehen
-                      soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
+                    {institutionMedium ? <Media medium={institutionMedium} className={styles.institutionMedium} /> : null}
+                    <div className={styles.institutionText} typo="h6 compensate">
+                      Hier kommt wohl noch ein kleinerer Text zum Museum hin, ich bin mir aber unsicher worauf genau er sich
+                      beziehen soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
                     </div>
-                    <div typo="h1 compensate" className={styles.abbreviation}>
+                    <div typo="h1 compensate" className={styles.cityAbbreviation}>
                       {selectedDestination.abbreviation}
                     </div>
                   </div>
                 </div>
-                <div className={styles.destinationsText}>
+                <div className={styles.destinationText}>
                   <Text className={styles.destinationDescription} text={selectedDestination.description} typo="h5" />
                   <div className={styles.trailText} typo="h6 compensate">
-                    Hier kommt wohl noch ein kleinerer Text hin, ich bin mir aber unsicher worauf genau er sich beziehen
-                    soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
+                    Hier kommt wohl noch ein kleinerer anderer Text hin, ich bin mir aber unsicher worauf genau er sich
+                    beziehen soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
                   </div>
                 </div>
               </>
             ) : (
-              <Text className={styles.destinationsText} text={destinationsPage.text} typo="h5" />
+              <Text className={styles.destinationText} text={destinationsPage.text} typo="h5" />
             )}
           </div>
         </LargeSection>

@@ -1,7 +1,7 @@
 :root {
   --fontSize-1: 16rem;
   --lineHeight-1: 1;
-  --letterSpacing-1: -2rem;
+  --letterSpacing-1: -1rem;
   --paragraphSpacing-1: 0rem;
 
   --fontSize-2: 3.4rem;
@@ -119,8 +119,10 @@ h6 p,
 /* Font Compensation */
 [typo~="h1"][typo~="compensate"] {
   --h1-undershoot: 0.08em;
+  --h1-overshoot: 0.18em;
 
   margin-bottom: calc(var(--h1-undershoot) * -1) !important;
+  margin-top: calc(var(--h1-overshoot) * -1);
 }
 
 [typo~="h3"][typo~="compensate"] {
@@ -135,9 +137,9 @@ h6 p,
   margin-top: calc(var(--h4-overshoot) * -1);
 }
 
-@media screen and (min-width: 750px) {
+@media screen and (min-width: 769px) {
   :root {
-    --fontSize-1: 35rem;
+    --fontSize-1: clamp(20rem, calc(22.3547vw + 2.808rem), 35rem);
     --lineHeight-1: 1;
     --letterSpacing-1: -2rem;
     --paragraphSpacing-1: 0rem;
