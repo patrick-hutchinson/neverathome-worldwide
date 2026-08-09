@@ -119,6 +119,11 @@ button.invert:hover {
   color: var(--foreground);
 }
 
+button:hover {
+  background: var(--foreground);
+  color: var(--background);
+}
+
 #home-schedule {
   scroll-margin-top: calc(var(--spacing-6) * 0.7);
 }
