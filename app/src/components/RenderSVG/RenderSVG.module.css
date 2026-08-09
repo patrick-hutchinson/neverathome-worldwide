@@ -1,0 +1,11 @@
+.svg {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  overflow: hidden;
+}
+
+.path {
+  fill: currentColor;
+}

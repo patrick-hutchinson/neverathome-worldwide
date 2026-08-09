@@ -4,6 +4,7 @@ import Text from "@/components/Text/Text";
 import styles from "@/styles/Destinations.module.scss";
 import Media from "@/components/Media/Media";
 import { LargeSection } from "@/components/Sections/Sections";
+import RenderSVG from "@/components/RenderSVG/RenderSVG";
 
 const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
   const institutionMedium = selectedDestination?.institutionMedium?.medium;
@@ -26,8 +27,8 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                       Hier kommt wohl noch ein kleinerer Text zum Museum hin, ich bin mir aber unsicher worauf genau er sich
                       beziehen soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
                     </div>
-                    <div typo="h1 compensate" className={styles.cityAbbreviation}>
-                      {selectedDestination.abbreviation}
+                    <div typo="h1" className={styles.cityAbbreviation}>
+                      <RenderSVG className={styles.cityAbbreviationSvg} text={selectedDestination.abbreviation} />
                     </div>
                   </div>
                 </div>

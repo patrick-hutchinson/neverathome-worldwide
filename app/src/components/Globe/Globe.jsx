@@ -48,6 +48,7 @@ export default function Globe({
     let isDragging = false;
     let lastPointer = { x: 0, y: 0 };
     let lastDragTime = 0;
+    let didDrag = false;
     let lastFrameTime = 0;
     let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
@@ -68,6 +69,7 @@ export default function Globe({
 
       if (!isMounted || !globeRef.current) return;
 
+      const globeElement = globeRef.current;
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -84,7 +86,7 @@ export default function Globe({
       labelRenderer.setSize(width, height);
       labelRenderer.domElement.className = styles.markerLayer;
 
-      globeRef.current.replaceChildren(renderer.domElement, labelRenderer.domElement);
+      globeElement.replaceChildren(renderer.domElement, labelRenderer.domElement);
 
       const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
 
@@ -108,15 +110,18 @@ export default function Globe({
         .htmlLng((city) => city.lng)
         .htmlElement((city) => {
           const marker = document.createElement("button");
+          const markerText = document.createElement("span");
           marker.type = "button";
           marker.className = styles.cityMarker;
-          marker.textContent = city.name;
-          marker.addEventListener("pointerdown", (event) => {
-            event.stopPropagation();
-          });
+          markerText.className = styles.cityMarkerText;
+          markerText.textContent = city.name;
+          marker.append(markerText);
           marker.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
+
+            if (didDrag) return;
+
             onCityMarkerClickRef.current?.(city);
           });
 
@@ -183,9 +188,10 @@ export default function Globe({
         isDragging = true;
         focusTarget = null;
         dragVelocity = { x: 0, y: 0 };
+        didDrag = false;
         lastPointer = { x: event.clientX, y: event.clientY };
         lastDragTime = performance.now();
-        renderer.domElement.setPointerCapture(event.pointerId);
+        globeElement.setPointerCapture(event.pointerId);
         requestRender();
       };
 
@@ -196,6 +202,7 @@ export default function Globe({
         const deltaY = event.clientY - lastPointer.y;
         const now = performance.now();
         const deltaTime = Math.max(now - lastDragTime, 16);
+        didDrag = didDrag || Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2;
         lastPointer = { x: event.clientX, y: event.clientY };
         lastDragTime = now;
         dragVelocity = prefersReducedMotion
@@ -213,23 +220,23 @@ export default function Globe({
       const handlePointerUp = (event) => {
         isDragging = false;
 
-        if (renderer.domElement.hasPointerCapture(event.pointerId)) {
-          renderer.domElement.releasePointerCapture(event.pointerId);
+        if (globeElement.hasPointerCapture(event.pointerId)) {
+          globeElement.releasePointerCapture(event.pointerId);
         }
 
         requestRender();
       };
 
-      renderer.domElement.addEventListener("pointerdown", handlePointerDown);
-      renderer.domElement.addEventListener("pointermove", handlePointerMove);
-      renderer.domElement.addEventListener("pointerup", handlePointerUp);
-      renderer.domElement.addEventListener("pointercancel", handlePointerUp);
+      globeElement.addEventListener("pointerdown", handlePointerDown);
+      globeElement.addEventListener("pointermove", handlePointerMove);
+      globeElement.addEventListener("pointerup", handlePointerUp);
+      globeElement.addEventListener("pointercancel", handlePointerUp);
 
       removePointerListeners = () => {
-        renderer.domElement.removeEventListener("pointerdown", handlePointerDown);
-        renderer.domElement.removeEventListener("pointermove", handlePointerMove);
-        renderer.domElement.removeEventListener("pointerup", handlePointerUp);
-        renderer.domElement.removeEventListener("pointercancel", handlePointerUp);
+        globeElement.removeEventListener("pointerdown", handlePointerDown);
+        globeElement.removeEventListener("pointermove", handlePointerMove);
+        globeElement.removeEventListener("pointerup", handlePointerUp);
+        globeElement.removeEventListener("pointercancel", handlePointerUp);
       };
 
       function animate(now = performance.now()) {
@@ -281,7 +288,7 @@ export default function Globe({
 
         if (isVisible) requestRender();
       });
-      intersectionObserver.observe(globeRef.current);
+      intersectionObserver.observe(globeElement);
 
       const handleVisibilityChange = () => {
         isDocumentVisible = document.visibilityState === "visible";

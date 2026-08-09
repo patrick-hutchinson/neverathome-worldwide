@@ -1,8 +1,24 @@
 .globe {
   position: relative;
+  overflow: visible;
   cursor: grab;
   touch-action: none;
   user-select: none;
+}
+
+.globe canvas {
+  overflow: visible;
+}
+
+.globe canvas,
+.markerLayer {
+  transform-origin: center;
+  transition: transform 0.35s ease;
+}
+
+.globe:hover canvas,
+.globe:hover .markerLayer {
+  transform: scale(2);
 }
 
 .globe:active {
@@ -12,6 +28,7 @@
 .markerLayer {
   position: absolute;
   inset: 0;
+  overflow: visible;
   pointer-events: none;
 }
 
@@ -19,6 +36,15 @@
   all: unset;
   cursor: pointer;
   display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.cityMarkerText {
+  display: block;
+  transform-origin: center;
+  user-select: none;
+  -webkit-user-drag: none;
   color: #fff;
   font-size: var(--fontSize-5);
   line-height: var(--lineHeight-5);
@@ -32,12 +58,17 @@
     -1px 1px 0 #000,
     1px 1px 0 #000;
   transition:
+    transform 0.35s ease,
     opacity 0.2s ease-in-out,
     color 0.2s ease-in-out,
     text-shadow 0.2s ease-in-out;
 }
 
-.cityMarker:hover {
+.globe:hover .cityMarkerText {
+  transform: scale(0.5);
+}
+
+.cityMarker:hover .cityMarkerText {
   color: #000;
   -webkit-text-stroke: 0.75px #fff;
   paint-order: stroke fill;

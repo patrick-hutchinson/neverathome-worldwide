@@ -333,7 +333,6 @@ export default function App({ Component, pageProps }) {
                 <motion.div
                   animate={globePosition}
                   className={styles.globeMover}
-
                   ref={globeMoverRef}
                   transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
                 >
