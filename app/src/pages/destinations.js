@@ -6,8 +6,13 @@ import Media from "@/components/Media/Media";
 import { LargeSection } from "@/components/Sections/Sections";
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
 
+const abbreviationUndershootPattern = /[JOUSC]/i;
+
 const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
   const institutionMedium = selectedDestination?.institutionMedium?.medium;
+  const abbreviation = selectedDestination?.abbreviation || "";
+  const hasAbbreviationUndershoot = abbreviationUndershootPattern.test(abbreviation);
+
   return (
     <div className={`page ${styles.page}`}>
       <main className="main">
@@ -16,7 +21,9 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
             {selectedDestination ? (
               <>
                 <div className={styles.institutionContainer} typo="h4">
-                  <div className={styles.institutionName}>{selectedDestination.institution}</div>
+                  <div className={styles.institutionName} typo="h4 compensate">
+                    {selectedDestination.institution}
+                  </div>
                   <div
                     className={[styles.institutionInfo, !institutionMedium ? styles.institutionInfoNoImage : ""]
                       .filter(Boolean)
@@ -28,7 +35,16 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                       beziehen soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
                     </div>
                     <div typo="h1" className={styles.cityAbbreviation}>
-                      <RenderSVG className={styles.cityAbbreviationSvg} text={selectedDestination.abbreviation} />
+                      <RenderSVG
+                        className={[
+                          styles.cityAbbreviationSvg,
+                          hasAbbreviationUndershoot ? styles.cityAbbreviationSvgUndershoot : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        letterSpacing={-80}
+                        text={abbreviation}
+                      />
                     </div>
                   </div>
                 </div>

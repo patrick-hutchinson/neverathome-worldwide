@@ -38,13 +38,17 @@
         display: flex;
         align-items: flex-end;
         line-height: 0;
-        overflow: hidden;
+        overflow: visible;
       }
 
       .cityAbbreviationSvg {
         width: 100%;
         max-width: 100%;
         height: auto;
+      }
+
+      .cityAbbreviationSvgUndershoot {
+        transform: translateY(2%);
       }
 
       .institutionText {
@@ -104,7 +108,7 @@
         grid-template-columns: repeat(10, minmax(0, 1fr));
         grid-template-rows: auto 1fr;
         column-gap: var(--content-grid-gap);
-        row-gap: var(--spacing-4);
+        row-gap: var(--spacing-3);
         height: 100%;
         min-height: 0;
 

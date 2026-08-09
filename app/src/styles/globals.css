@@ -25,6 +25,7 @@
 
   --accent: #aeb0b1;
   --opacity: 0.4;
+  --transtition: 0.4s ease-in-out;
 }
 
 *,
@@ -103,11 +104,19 @@ button {
   display: flex;
   justify-content: center;
   padding: 0 var(--spacing-6);
+  transition:
+    color var(--transtition),
+    var(--background) var(--transtition);
 }
 
 .invert {
   background: var(--foreground);
   color: var(--background);
+}
+
+button.invert:hover {
+  background: var(--background);
+  color: var(--foreground);
 }
 
 #home-schedule {

@@ -1,4 +1,5 @@
 import Text from "@/components/Text/Text";
+import RenderSVG from "@/components/RenderSVG/RenderSVG";
 
 import styles from "./Footer.module.css";
 
@@ -10,8 +11,12 @@ const Footer = ({ page = {} }) => {
       <Text className={styles.claim} text={page.claim} typo="h6" />
 
       <div className={styles.buttonContainer} typo="h4">
-        <button className={`${styles.registrationButton} invert`}>APPLY NOW</button>
-        <button>INFO.PDF</button>
+        <button className={`${styles.applicationButton} invert`} aria-label="Apply now">
+          <RenderSVG className={styles.buttonLabel} text="APPLY NOW" />
+        </button>
+        <button aria-label="Info PDF">
+          <RenderSVG className={styles.buttonLabel} text="INFO.PDF" />
+        </button>
       </div>
 
       <nav className={styles.legalLinks} typo="h6">

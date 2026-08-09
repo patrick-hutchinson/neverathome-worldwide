@@ -39,7 +39,26 @@ const loadFont = (fontUrl) => {
   return fontCache.get(fontUrl);
 };
 
-const RenderSVG = ({ text, className = "", fontUrl = DEFAULT_FONT_URL, padding = 0 }) => {
+const getPathWithLetterSpacing = (font, text, letterSpacing) => {
+  if (!letterSpacing) {
+    return font.getPath(text, 0, 0, SVG_FONT_SIZE);
+  }
+
+  const path = new opentype.Path();
+  let x = 0;
+
+  for (const character of text) {
+    const glyphPath = font.getPath(character, x, 0, SVG_FONT_SIZE);
+    const advanceWidth = font.getAdvanceWidth(character, SVG_FONT_SIZE);
+
+    path.extend(glyphPath);
+    x += advanceWidth + letterSpacing;
+  }
+
+  return path;
+};
+
+const RenderSVG = ({ text, className = "", fontUrl = DEFAULT_FONT_URL, letterSpacing = 0, padding = 0 }) => {
   const [outline, setOutline] = useState(null);
 
   useEffect(() => {
@@ -49,7 +68,7 @@ const RenderSVG = ({ text, className = "", fontUrl = DEFAULT_FONT_URL, padding =
       .then((font) => {
         if (!isMounted || !text) return;
 
-        const path = font.getPath(text, 0, 0, SVG_FONT_SIZE);
+        const path = getPathWithLetterSpacing(font, text, letterSpacing);
         const box = path.getBoundingBox();
         const nextBox = getPaddedBox(box, padding);
 
@@ -67,7 +86,7 @@ const RenderSVG = ({ text, className = "", fontUrl = DEFAULT_FONT_URL, padding =
     return () => {
       isMounted = false;
     };
-  }, [fontUrl, padding, text]);
+  }, [fontUrl, letterSpacing, padding, text]);
 
   const viewBox = outline?.viewBox || `${fallbackBox.x} ${fallbackBox.y} ${fallbackBox.width} ${fallbackBox.height}`;
   const pathData = outline?.pathData;

@@ -48,6 +48,13 @@
   grid-template-columns: 1fr 1fr;
 }
 
+.buttonContainer .buttonLabel {
+  width: auto;
+  height: var(--fontSize-4);
+  max-width: none;
+  flex: 0 0 auto;
+}
+
 /* Desktop */
 @media screen and (min-width: 769px) {
   .footer {
