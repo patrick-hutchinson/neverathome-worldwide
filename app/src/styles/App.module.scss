@@ -32,12 +32,19 @@
 }
 
 .cityListLayer {
+  --content-grid-gap: calc(var(--spacing-6) / 3);
+
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  column-gap: var(--content-grid-gap);
+  padding: 0 var(--spacing-6);
   pointer-events: none;
 }
 
 .cityListLayer > * {
+  grid-column: 13 / 25;
   pointer-events: auto;
 }
 
@@ -53,6 +60,10 @@
 }
 
 @media screen and (min-width: 769px) {
+  .cityListLayer > * {
+    grid-column: 16 / 25;
+  }
+
   .globeMover {
     position: absolute;
     top: 200px;

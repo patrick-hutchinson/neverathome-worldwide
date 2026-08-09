@@ -1,7 +1,7 @@
 :root {
   --fontSize-1: 14rem;
   --lineHeight-1: 1;
-  --letterSpacing-1: -1rem;
+  --letterSpacing-1: -0.75rem;
   --paragraphSpacing-1: 0rem;
 
   --fontSize-2: 3.4rem;
@@ -103,6 +103,11 @@ h5,
 h5 p,
 [typo~="h5"] p {
   margin-bottom: var(--paragraphSpacing-5);
+}
+
+h5 p:last-child,
+[typo~="h5"] p:last-child {
+  margin-bottom: 0;
 }
 
 h6,

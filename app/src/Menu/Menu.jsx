@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 
 import styles from "./Menu.module.css";
 
+const formatMenuCountdown = (countdown) => countdown?.replace(/\s+\d+s$/, "");
+
 const Menu = ({ currentPhaseLabel = null, navLinks = [], email = null }) => {
   const openCallLink = navLinks.find((link) => link.href === "/open-call");
   const juryLink = navLinks.find((link) => link.href === "/jury");
@@ -23,7 +25,7 @@ const Menu = ({ currentPhaseLabel = null, navLinks = [], email = null }) => {
           {openCallLink ? (
             <div typo="h2 compensate" className={styles.openCallLink}>
               <Link href={openCallLink.href}>{openCallLink.label}</Link>
-              {openCallLink.countdown ? <span className={styles.countdown}>{openCallLink.countdown}</span> : null}
+              {openCallLink.countdown ? <span className={styles.countdown}>{formatMenuCountdown(openCallLink.countdown)}</span> : null}
             </div>
           ) : null}
         </div>

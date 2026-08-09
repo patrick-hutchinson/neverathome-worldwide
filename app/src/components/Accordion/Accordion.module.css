@@ -26,7 +26,7 @@
 }
 
 .bodyInner {
-  padding: var(--spacing-2) 0 var(--spacing-6);
+  padding: var(--spacing-2) 0 var(--spacing-7);
 }
 
 .openCloseButton {
@@ -61,5 +61,12 @@
 
   .bodyInner > * {
     grid-column: 1 / 8;
+  }
+}
+
+/* Large Format Screens */
+@media screen and (min-width: 2560px) {
+  .bodyInner > * {
+    grid-column: 1 / 7;
   }
 }

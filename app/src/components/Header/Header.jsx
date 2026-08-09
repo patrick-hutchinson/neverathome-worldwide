@@ -71,10 +71,24 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const closeMenu = () => setIsMenuOpen(false);
+
+    router.events.on("routeChangeComplete", closeMenu);
+    router.events.on("routeChangeError", closeMenu);
+
+    return () => {
+      router.events.off("routeChangeComplete", closeMenu);
+      router.events.off("routeChangeError", closeMenu);
+    };
+  }, [router.events]);
+
   const Progressbar = () => {
+    const progress = getProgress(progressNow);
+
     return (
       <div className={styles.progressbar}>
-        <div className={styles.progressbarFill} style={{ width: `${getProgress(progressNow)}%` }} />
+        <div className={styles.progressbarFill} style={{ transform: `scaleX(${progress / 100})` }} />
       </div>
     );
   };

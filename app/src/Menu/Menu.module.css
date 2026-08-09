@@ -25,6 +25,9 @@
   justify-content: space-between;
 }
 
+.topSection {
+  row-gap: calc(var(--spacing-7) / 2);
+}
 .topSection,
 .bottomSection {
   display: flex;

@@ -203,3 +203,16 @@
     }
   }
 }
+
+/* Large Format Screens */
+@media screen and (min-width: 2560px) {
+  .destinationContainer {
+    .destinationGrid {
+      .destinationText {
+        .destinationDescription {
+          grid-column: 13 / 19;
+        }
+      }
+    }
+  }
+}

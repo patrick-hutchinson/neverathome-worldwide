@@ -25,6 +25,10 @@
   row-gap: var(--spacing-7);
   column-gap: var(--content-grid-gap);
 
+  padding-bottom: var(--spacing-6);
+  padding-top: var(--spacing-6);
+  border-top: 1px solid black;
+
   .title {
     grid-row: 1;
     grid-column: 1 / 12;
@@ -72,7 +76,7 @@
       grid-column: span 12;
       display: flex;
       flex-direction: column;
-
+      row-gap: calc(var(--spacing-7) / 2);
       margin-bottom: var(--spacing-7);
     }
     .teamMember:last-child {
@@ -106,10 +110,6 @@
   }
 
   .artBoardContainer {
-    padding-bottom: var(--spacing-6);
-    padding-top: var(--spacing-6);
-    border-top: 1px solid black;
-
     .title {
       grid-row: 1;
       grid-column: 1 / 6;
@@ -156,6 +156,21 @@
       grid-column: 21 / 25;
       gap: 4px;
       margin-top: var(--spacing-4);
+    }
+  }
+}
+
+/* Large Format Screens */
+@media screen and (min-width: 2560px) {
+  .aboutContainer {
+    .aboutNeverAtHome {
+      grid-row: 1;
+      grid-column: 13 / 19;
+    }
+
+    .aboutAustriaKulturInternational {
+      grid-row: 1;
+      grid-column: 19 / 25;
     }
   }
 }

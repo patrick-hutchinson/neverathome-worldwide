@@ -76,6 +76,7 @@ export default function App({ Component, pageProps }) {
   const [cityListScrollRequest, setCityListScrollRequest] = useState(0);
   const globeMoverRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
+  const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
   const [h1MarqueeTargetSpeed, setH1MarqueeTargetSpeed] = useState(1);
   const [displayedH1MarqueeText, setDisplayedH1MarqueeText] = useState(h1MarqueeText);
@@ -83,6 +84,7 @@ export default function App({ Component, pageProps }) {
   const h1MarqueeTextRef = useRef(h1MarqueeText);
   const h1MarqueeTextUpdateTimeoutRef = useRef(null);
   const isH1MarqueeTransitioningRef = useRef(false);
+  const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
 
   useEffect(() => {
     h1MarqueeTextRef.current = h1MarqueeText;
@@ -92,6 +94,15 @@ export default function App({ Component, pageProps }) {
     setDisplayedH1MarqueeText(h1MarqueeText);
     setIsH1MarqueeVisible(Boolean(h1MarqueeText));
   }, [h1MarqueeText]);
+
+  useEffect(() => {
+    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
+
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth);
+
+    return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
 
   useEffect(() => {
     const handleRouteChangeStart = () => {
@@ -336,7 +347,13 @@ export default function App({ Component, pageProps }) {
                   ref={globeMoverRef}
                   transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <Globe cities={destinations} destinationCity={destinationCity} onCityMarkerClick={handleCityMarkerClick} />
+                  <Globe
+                    cities={destinations}
+                    destinationCity={destinationCity}
+                    height={globeSize}
+                    onCityMarkerClick={handleCityMarkerClick}
+                    width={globeSize}
+                  />
                 </motion.div>
 
                 <div className={styles.marqueeContainer}>
