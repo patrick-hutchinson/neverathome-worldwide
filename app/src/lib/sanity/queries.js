@@ -10,6 +10,7 @@ export const siteQuery = `*[_type=="site"][0]{
   description,
   address,
   email,
+  instagram,
   phone,
   socials[]{
     platform,

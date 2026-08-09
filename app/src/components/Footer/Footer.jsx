@@ -82,7 +82,7 @@ const LogoShuffle = ({ logos = [] }) => {
   );
 };
 
-const Footer = ({ page = {} }) => {
+const Footer = ({ page = {}, site = {} }) => {
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
   const informationPDFUrl = getDownloadUrl(page.informationPDF);
 
@@ -110,6 +110,12 @@ const Footer = ({ page = {} }) => {
       </nav>
 
       <LogoShuffle logos={logos} />
+
+      {site.instagram ? (
+        <a className={styles.instagramLink} href={site.instagram} target="_blank" rel="noreferrer" typo="h6">
+          Instagram
+        </a>
+      ) : null}
 
       {logos.length > 0 ? (
         <div className={styles.desktopLogos}>

@@ -63,6 +63,14 @@ export const site = defineType({
       name: 'email',
       type: 'string',
     }),
+    defineField({
+      name: 'instagram',
+      type: 'url',
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ['http', 'https'],
+        }),
+    }),
   ],
   preview: {
     prepare: () => ({title: 'Site'}),

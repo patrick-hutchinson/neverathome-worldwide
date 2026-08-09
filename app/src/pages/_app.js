@@ -419,7 +419,7 @@ export default function App({ Component, pageProps }) {
                       <div className="pageTransitionRoot">
                         <Component {...pageProps} selectedDestination={selectedDestination} />
                       </div>
-                      <Footer page={page} />
+                      <Footer page={page} site={site} />
                     </ContentContainer>
                   )}
                 </motion.div>

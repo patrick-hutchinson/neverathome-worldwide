@@ -34,6 +34,11 @@
   inset: 0;
 }
 
+.instagramLink {
+  grid-column: 18 / end;
+  grid-row: 3;
+}
+
 .desktopLogos {
   display: none;
 }
@@ -119,6 +124,10 @@
   }
 
   .logoShuffle {
+    display: none;
+  }
+
+  .instagramLink {
     display: none;
   }
 
