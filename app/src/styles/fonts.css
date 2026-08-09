@@ -22,7 +22,7 @@
   --fontSize-5: 1rem;
   --lineHeight-5: 1rem;
   --letterSpacing-5: 0rem;
-  --paragraphSpacing-5: 0rem;
+  --paragraphSpacing-5: 1rem;
 
   --fontSize-6: 1rem;
   --lineHeight-6: 1rem;
@@ -168,7 +168,7 @@ h6 p,
     --fontSize-5: 1.5rem;
     --lineHeight-5: 1.5rem;
     --letterSpacing-5: 0rem;
-    --paragraphSpacing-5: 0rem;
+    --paragraphSpacing-5: 1rem;
 
     --fontSize-6: 1.2rem;
     --lineHeight-6: 1.2rem;

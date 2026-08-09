@@ -6,7 +6,7 @@ const FOCUS_ROTATE_DAMPING = 3.2;
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
 const MAX_FRAME_RATE = 60;
 const REDUCED_MOTION_FRAME_RATE = 30;
-const INTRO_ANIMATION_MS = 1200;
+const INITIAL_RENDER_BURST_MS = 1500;
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
 
@@ -16,8 +16,8 @@ export default function Globe({
   onCityMarkerClick,
   width = DEFAULT_WIDTH,
   height = DEFAULT_HEIGHT,
-  globeImageUrl = "//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg",
-  bumpImageUrl = "//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png",
+  globeImageUrl = "/images/globe/earth-blue-marble.jpg",
+  bumpImageUrl = "/images/globe/earth-topology.png",
 }) {
   const globeRef = useRef(null);
   const sceneRef = useRef(null);
@@ -52,7 +52,7 @@ export default function Globe({
     let lastFrameTime = 0;
     let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
-    let introAnimationEndAt = 0;
+    let initialRenderBurstEndAt = 0;
     let isVisible = true;
     let isDocumentVisible = true;
     let needsRender = false;
@@ -91,7 +91,7 @@ export default function Globe({
       const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
 
       const hasActiveMotion = (now = performance.now()) =>
-        needsRender || focusTarget || isDragging || (!prefersReducedMotion && hasInertia()) || now < introAnimationEndAt;
+        needsRender || focusTarget || isDragging || (!prefersReducedMotion && hasInertia()) || now < initialRenderBurstEndAt;
 
       const requestRender = () => {
         needsRender = true;
@@ -102,7 +102,7 @@ export default function Globe({
         animationFrame = requestAnimationFrame(animate);
       };
 
-      globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: !prefersReducedMotion })
+      globe = new ThreeGlobe({ waitForGlobeReady: false, animateIn: false })
         .globeImageUrl(globeImageUrl)
         .bumpImageUrl(bumpImageUrl)
         .htmlElementsData(citiesRef.current)
@@ -130,13 +130,11 @@ export default function Globe({
         .htmlElementVisibilityModifier((element, isVisible) => {
           element.style.opacity = isVisible ? "1" : "0";
           element.style.pointerEvents = isVisible ? "auto" : "none";
-        })
-        .onGlobeReady(() => {
-          introAnimationEndAt = prefersReducedMotion ? 0 : performance.now() + INTRO_ANIMATION_MS;
-          requestRender();
         });
 
       scene.add(globe);
+      globe.pauseAnimation?.();
+      initialRenderBurstEndAt = performance.now() + INITIAL_RENDER_BURST_MS;
       scene.add(new THREE.AmbientLight(0xffffff, 1.8));
 
       const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
