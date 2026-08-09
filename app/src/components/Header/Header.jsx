@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 
-import { formatCountdown } from "@/lib/countdown";
+import { formatCountdown, getCountdownParts } from "@/lib/countdown";
 import { getCurrentPhaseLabel } from "@/lib/phase";
 import styles from "./Header.module.scss";
 import { DeviceContext } from "@/context/DeviceContext";
@@ -32,6 +32,15 @@ function getProgress(now) {
   return clamp(((now - progressStartDate) / total) * 100, 0, 100);
 }
 
+function formatMaxCountdown(deadline, now) {
+  const parts = getCountdownParts(deadline, now);
+  if (!parts) return null;
+
+  const dayWidth = Math.max(String(parts.days).length, 1);
+
+  return `${"0".repeat(dayWidth)}d 23h 59m 59s`;
+}
+
 const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   const { isMobile } = useContext(DeviceContext);
   const router = useRouter();
@@ -44,6 +53,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
       links.map((link) => ({
         ...link,
         countdown: now ? formatCountdown(pageDeadlines[link.deadlineKey], now) : null,
+        maxCountdown: now ? formatMaxCountdown(pageDeadlines[link.deadlineKey], now) : null,
       })),
     [now, pageDeadlines],
   );
@@ -95,11 +105,25 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
             </Link>
           ) : null}
           {navLinks.map((link) => (
-            <span className={styles.navItem} key={link.href}>
+            <span
+              className={[styles.navItem, link.href === "/open-call" ? styles.navItemOpenCall : ""].filter(Boolean).join(" ")}
+              key={link.href}
+            >
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
                 {link.label}
               </Link>
-              {link.countdown ? <span className={styles.countdown}>{link.countdown}</span> : null}
+              {link.countdown ? (
+                link.href === "/open-call" ? (
+                  <span className={styles.countdownSlot}>
+                    <span className={styles.countdown}>{link.countdown}</span>
+                    <span className={styles.countdownGhost} aria-hidden="true">
+                      {link.maxCountdown}
+                    </span>
+                  </span>
+                ) : (
+                  <span className={styles.countdown}>{link.countdown}</span>
+                )
+              ) : null}
             </span>
           ))}
         </div>

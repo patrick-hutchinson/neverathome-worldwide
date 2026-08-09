@@ -47,6 +47,21 @@
       color: var(--accent);
     }
 
+    .countdownSlot {
+      display: inline-grid;
+      font-variant-numeric: tabular-nums;
+
+      .countdown,
+      .countdownGhost {
+        grid-area: 1 / 1;
+      }
+
+      .countdownGhost {
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+
     .menuButton {
       position: relative;
       z-index: 2;

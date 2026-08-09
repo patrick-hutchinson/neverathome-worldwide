@@ -42,7 +42,7 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                         ]
                           .filter(Boolean)
                           .join(" ")}
-                        letterSpacing={-80}
+                        letterSpacing={-40}
                         text={abbreviation}
                       />
                     </div>

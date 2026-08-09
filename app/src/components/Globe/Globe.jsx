@@ -14,6 +14,7 @@ export default function Globe({
   cities = [],
   destinationCity,
   onCityMarkerClick,
+  enableHoverScale = false,
   width = DEFAULT_WIDTH,
   height = DEFAULT_HEIGHT,
   globeImageUrl = "/images/globe/earth-blue-marble.jpg",
@@ -317,5 +318,11 @@ export default function Globe({
     };
   }, [bumpImageUrl, globeImageUrl, height, width]);
 
-  return <div ref={globeRef} className={styles.globe} style={{ width, height }} />;
+  return (
+    <div
+      ref={globeRef}
+      className={[styles.globe, enableHoverScale ? styles.globeHoverScale : ""].filter(Boolean).join(" ")}
+      style={{ width, height }}
+    />
+  );
 }

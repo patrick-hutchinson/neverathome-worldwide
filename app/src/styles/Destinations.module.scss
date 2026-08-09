@@ -1,186 +1,203 @@
-.destinationGrid {
-  display: grid;
-  grid-template-columns: repeat(24, minmax(0, 1fr));
-  column-gap: var(--content-grid-gap);
-  row-gap: var(--spacing-5);
+.destinationContainer {
+  .destinationGrid::after {
+    content: "";
+    height: 1px;
+    width: calc(100vw - (2 * var(--spacing-6)));
+    position: absolute;
+    left: 0;
+    bottom: calc(var(--spacing-6) * -1);
+    background: #000;
+  }
 
-  .institutionContainer {
-    grid-column: 1 / 25;
-    grid-row: 1;
+  .destinationGrid {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));
     column-gap: var(--content-grid-gap);
-    row-gap: var(--spacing-4);
-    grid-auto-rows: max-content;
+    row-gap: var(--spacing-5);
 
-    .institutionName {
+    .institutionContainer {
       grid-column: 1 / 25;
-    }
-
-    .institutionInfo {
-      grid-column: 1 / 25;
-      grid-row: 2;
+      grid-row: 1;
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       column-gap: var(--content-grid-gap);
-      row-gap: var(--spacing-7);
-
-      .institutionMedium {
-        grid-row: 1;
-        grid-column: 1 / 25;
-        align-self: start;
-        height: auto;
-      }
-
-      .cityAbbreviation {
-        grid-row: 2;
-        grid-column: 1 / 12;
-        display: flex;
-        align-items: flex-end;
-        line-height: 0;
-        overflow: visible;
-      }
-
-      .cityAbbreviationSvg {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-      }
-
-      .cityAbbreviationSvgUndershoot {
-        transform: translateY(2%);
-      }
-
-      .institutionText {
-        grid-row: 2;
-        grid-column: 13 / 25;
-      }
-    }
-  }
-
-  .destinationText {
-    grid-column: 1 / 25;
-    display: grid;
-    // row-gap: var(--spacing-6);
-    grid-template-columns: repeat(24, minmax(0, 1fr));
-    column-gap: var(--content-grid-gap);
-
-    .destinationDescription {
-      grid-column: 1 / 25;
-      grid-row: 3;
-      margin-bottom: var(--spacing-5);
-    }
-
-    .trailText {
-      grid-column: 13 / 25;
-      grid-row: 4;
-    }
-  }
-}
-
-@media screen and (min-width: 769px) {
-  .destinationGrid {
-    display: grid;
-    grid-template-columns: repeat(24, minmax(0, 1fr));
-    grid-template-rows: auto 1fr;
-    column-gap: var(--content-grid-gap);
-    row-gap: var(--spacing-4);
-    align-items: stretch;
-
-    .institutionContainer {
-      grid-column: 1 / 11;
-      grid-row: 1 / 3;
-      display: grid;
-      grid-template-columns: repeat(10, minmax(0, 1fr));
-      grid-template-rows: auto 1fr;
-      column-gap: var(--content-grid-gap);
-      align-self: stretch;
-      height: 100%;
+      row-gap: var(--spacing-4);
+      grid-auto-rows: max-content;
 
       .institutionName {
-        grid-column: 1 / 11;
+        grid-column: 1 / 25;
       }
 
       .institutionInfo {
-        grid-column: 1 / 11;
+        grid-column: 1 / 25;
         grid-row: 2;
         display: grid;
-        grid-template-columns: repeat(10, minmax(0, 1fr));
-        grid-template-rows: auto 1fr;
+        grid-template-columns: repeat(24, minmax(0, 1fr));
         column-gap: var(--content-grid-gap);
-        row-gap: var(--spacing-3);
-        height: 100%;
-        min-height: 0;
+        row-gap: var(--spacing-7);
 
         .institutionMedium {
           grid-row: 1;
-          grid-column: 1 / 6;
+          grid-column: 1 / 25;
           align-self: start;
           height: auto;
         }
 
-        .institutionText {
-          grid-row: 1;
-          grid-column: 6 / 11;
-        }
-
         .cityAbbreviation {
           grid-row: 2;
-          grid-column: 1 / 9;
-          align-self: end;
+          grid-column: 1 / 12;
+          display: flex;
+          align-items: flex-end;
+          line-height: 0;
+          overflow: visible;
         }
-      }
 
-      .institutionInfoNoImage {
+        .cityAbbreviationSvg {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+        }
+
+        .cityAbbreviationSvgUndershoot {
+          transform: translateY(2%);
+        }
+
         .institutionText {
-          grid-column: 1 / 8;
+          grid-row: 2;
+          grid-column: 13 / 25;
         }
       }
     }
 
     .destinationText {
-      display: contents;
+      grid-column: 1 / 25;
+      display: grid;
+      // row-gap: var(--spacing-6);
+      grid-template-columns: repeat(24, minmax(0, 1fr));
+      column-gap: var(--content-grid-gap);
 
       .destinationDescription {
-        grid-column: 13 / 25;
-        grid-row: 1;
-        margin-bottom: 0;
+        grid-column: 1 / 25;
+        grid-row: 3;
+        margin-bottom: var(--spacing-5);
       }
 
       .trailText {
-        grid-column: 13 / 20;
-        grid-row: 2;
-        align-self: end;
+        grid-column: 13 / 25;
+        grid-row: 4;
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .destinationContainer {
+    .destinationGrid {
+      display: grid;
+      grid-template-columns: repeat(24, minmax(0, 1fr));
+      grid-template-rows: auto 1fr;
+      column-gap: var(--content-grid-gap);
+      row-gap: var(--spacing-1);
+      align-items: stretch;
+
+      .institutionContainer {
+        grid-column: 1 / 11;
+        grid-row: 1 / 3;
+        display: grid;
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        grid-template-rows: auto 1fr;
+        column-gap: var(--content-grid-gap);
+        align-self: stretch;
+        height: 100%;
+
+        .institutionName {
+          grid-column: 1 / 11;
+        }
+
+        .institutionInfo {
+          grid-column: 1 / 11;
+          grid-row: 2;
+          display: grid;
+          grid-template-columns: repeat(10, minmax(0, 1fr));
+          grid-template-rows: auto 1fr;
+          column-gap: var(--content-grid-gap);
+          row-gap: var(--spacing-3);
+          height: 100%;
+          min-height: 0;
+
+          .institutionMedium {
+            grid-row: 1;
+            grid-column: 1 / 6;
+            align-self: start;
+            height: auto;
+          }
+
+          .institutionText {
+            grid-row: 1;
+            grid-column: 6 / 11;
+          }
+
+          .cityAbbreviation {
+            grid-row: 2;
+            grid-column: 1 / 9;
+            align-self: end;
+          }
+        }
+
+        .institutionInfoNoImage {
+          .institutionText {
+            grid-column: 1 / 8;
+          }
+        }
+      }
+
+      .destinationText {
+        display: contents;
+
+        .destinationDescription {
+          grid-column: 13 / 25;
+          grid-row: 1;
+          margin-bottom: 0;
+        }
+
+        .trailText {
+          grid-column: 13 / 20;
+          grid-row: 2;
+          align-self: end;
+        }
       }
     }
   }
 }
 
 @media screen and (min-width: 1024px) {
-  .destinationGrid {
-    .institutionInfo {
-      .institutionText {
-        grid-row: 1;
-        grid-column: 6 / 11;
-      }
-    }
-
-    .destinationText {
-      .destinationDescription {
-        grid-column: 13 / 21;
-      }
-
-      .trailText {
-        grid-column: 13 / 18;
-        grid-row: 2;
-        align-self: end;
-      }
-    }
-
-    .institutionContainer {
-      .institutionInfoNoImage {
+  .destinationContainer {
+    .destinationGrid {
+      .institutionInfo {
         .institutionText {
-          grid-column: 1 / 6;
+          grid-row: 1;
+          grid-column: 6 / 11;
+        }
+      }
+
+      .destinationText {
+        .destinationDescription {
+          grid-column: 13 / 21;
+        }
+
+        .trailText {
+          grid-column: 13 / 18;
+          grid-row: 2;
+          align-self: end;
+        }
+      }
+
+      .institutionContainer {
+        .institutionInfoNoImage {
+          .institutionText {
+            grid-column: 1 / 6;
+          }
         }
       }
     }

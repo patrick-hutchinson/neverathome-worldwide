@@ -16,8 +16,8 @@
   transition: transform 0.35s ease;
 }
 
-.globe:hover canvas,
-.globe:hover .markerLayer {
+.globeHoverScale:hover canvas,
+.globeHoverScale:hover .markerLayer {
   transform: scale(2);
 }
 
@@ -64,7 +64,7 @@
     text-shadow 0.2s ease-in-out;
 }
 
-.globe:hover .cityMarkerText {
+.globeHoverScale:hover .cityMarkerText {
   transform: scale(0.5);
 }
 

@@ -12,6 +12,7 @@
 .headerButton {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: var(--spacing-7) 0;
 }
 
@@ -29,7 +30,26 @@
 }
 
 .openCloseButton {
-  transform: translateY(-3.5px);
+  width: 0.5em;
+  height: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* transform: translateY(-3.5px); */
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+
+.openCloseButtonOpen {
+  transform: rotate(45deg);
+}
+
+.openCloseButton .openCloseIcon {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  flex: 0 0 auto;
+  overflow: visible;
 }
 
 @media screen and (min-width: 769px) {

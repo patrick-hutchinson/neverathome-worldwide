@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import styles from "./Accordion.module.css";
 import Text from "../Text/Text";
+import RenderSVG from "../RenderSVG/RenderSVG";
 
 const bodyTransition = {
   duration: 0.45,
@@ -30,8 +31,11 @@ const AccordionEntry = ({ entry }) => {
       >
         <div className={styles.headerButton}>
           <div typo="h3 compensate">{entry.question}</div>
-          <div className={styles.openCloseButton} typo="h3 compensate">
-            +
+          <div
+            className={[styles.openCloseButton, isOpen ? styles.openCloseButtonOpen : ""].filter(Boolean).join(" ")}
+            typo="h3"
+          >
+            <RenderSVG className={styles.openCloseIcon} text="+" />
           </div>
         </div>
         <AnimatePresence initial={false}>
