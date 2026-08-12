@@ -22,7 +22,6 @@ import "@/styles/globals.css";
 import "@/styles/fonts.css";
 import styles from "@/styles/App.module.scss";
 
-const H1_MARQUEE_STOP_DURATION = 0.45;
 const pageTransition = { duration: 0.5, ease: "easeInOut" };
 
 const pageTransitionVariants = {
@@ -31,7 +30,7 @@ const pageTransitionVariants = {
   exit: {
     opacity: 0,
     pointerEvents: "none",
-    transition: { ...pageTransition, delay: H1_MARQUEE_STOP_DURATION },
+    transition: pageTransition,
   },
 };
 
@@ -51,6 +50,37 @@ const routeMarqueeLabels = {
   "/404": "404NotFound",
 };
 const contentContainerId = "page-content";
+const desktopGlobeSize = 300;
+const desktopGlobeBasePosition = { x: 200, y: 200 };
+const desktopGlobeViewportPadding = 24;
+
+function getRandomNumber(min, max) {
+  if (max <= min) return min;
+
+  return Math.random() * (max - min) + min;
+}
+
+function getRandomDesktopGlobePosition() {
+  if (typeof window === "undefined") return { x: 0, y: 0 };
+
+  const minLeft = desktopGlobeViewportPadding;
+  const maxLeft = Math.max(window.innerWidth / 2 - desktopGlobeSize - desktopGlobeViewportPadding, minLeft);
+  const minTop = desktopGlobeViewportPadding;
+  const maxTop = Math.max(window.innerHeight - desktopGlobeSize - desktopGlobeViewportPadding, minTop);
+  const left = getRandomNumber(minLeft, maxLeft);
+  const top = getRandomNumber(minTop, maxTop);
+
+  return {
+    x: left - desktopGlobeBasePosition.x,
+    y: top - desktopGlobeBasePosition.y,
+  };
+}
+
+function getRandomDestination(destinations = []) {
+  if (destinations.length === 0) return null;
+
+  return destinations[Math.floor(Math.random() * destinations.length)];
+}
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
@@ -80,22 +110,19 @@ export default function App({ Component, pageProps }) {
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
-  const [h1MarqueeTargetSpeed, setH1MarqueeTargetSpeed] = useState(1);
-  const [displayedH1MarqueeText, setDisplayedH1MarqueeText] = useState(h1MarqueeText);
-  const [isH1MarqueeVisible, setIsH1MarqueeVisible] = useState(Boolean(h1MarqueeText));
-  const h1MarqueeTextRef = useRef(h1MarqueeText);
-  const h1MarqueeTextUpdateTimeoutRef = useRef(null);
-  const isH1MarqueeTransitioningRef = useRef(false);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
 
-  useEffect(() => {
-    h1MarqueeTextRef.current = h1MarqueeText;
+  const moveGlobeForNavigation = () => {
+    const randomDestination = getRandomDestination(destinations);
 
-    if (isH1MarqueeTransitioningRef.current) return;
+    if (randomDestination) {
+      setDestinationCity(randomDestination);
+    }
 
-    setDisplayedH1MarqueeText(h1MarqueeText);
-    setIsH1MarqueeVisible(Boolean(h1MarqueeText));
-  }, [h1MarqueeText]);
+    if (window.innerWidth >= 769) {
+      setGlobePosition(getRandomDesktopGlobePosition());
+    }
+  };
 
   useEffect(() => {
     const updateViewportWidth = () => setViewportWidth(window.innerWidth);
@@ -108,35 +135,15 @@ export default function App({ Component, pageProps }) {
 
   useEffect(() => {
     const handleRouteChangeStart = () => {
-      clearTimeout(h1MarqueeTextUpdateTimeoutRef.current);
-      isH1MarqueeTransitioningRef.current = true;
-      setH1MarqueeTargetSpeed(0);
-      setIsH1MarqueeVisible(false);
-    };
-
-    const handleRouteChangeEnd = () => {
-      clearTimeout(h1MarqueeTextUpdateTimeoutRef.current);
-      h1MarqueeTextUpdateTimeoutRef.current = setTimeout(() => {
-        const nextH1MarqueeText = h1MarqueeTextRef.current;
-
-        setDisplayedH1MarqueeText(nextH1MarqueeText);
-        setIsH1MarqueeVisible(Boolean(nextH1MarqueeText));
-        setH1MarqueeTargetSpeed(1);
-        isH1MarqueeTransitioningRef.current = false;
-      }, H1_MARQUEE_STOP_DURATION * 1000);
+      moveGlobeForNavigation();
     };
 
     router.events.on("routeChangeStart", handleRouteChangeStart);
-    router.events.on("routeChangeComplete", handleRouteChangeEnd);
-    router.events.on("routeChangeError", handleRouteChangeEnd);
 
     return () => {
-      clearTimeout(h1MarqueeTextUpdateTimeoutRef.current);
       router.events.off("routeChangeStart", handleRouteChangeStart);
-      router.events.off("routeChangeComplete", handleRouteChangeEnd);
-      router.events.off("routeChangeError", handleRouteChangeEnd);
     };
-  }, [router.events]);
+  }, [destinations, router.events]);
 
   useEffect(() => {
     if (isAppReady || !router.isReady) return undefined;
@@ -257,7 +264,6 @@ export default function App({ Component, pageProps }) {
 
   useEffect(() => {
     if (!isDestinationsPage) {
-      setDestinationCity(null);
       setSelectedDestination(null);
     }
   }, [isDestinationsPage]);
@@ -364,25 +370,7 @@ export default function App({ Component, pageProps }) {
                 </motion.div>
 
                 <div className={styles.marqueeContainer}>
-                  <AnimatePresence initial={false} mode="wait">
-                    {isH1MarqueeVisible && displayedH1MarqueeText ? (
-                      <motion.div
-                        animate="animate"
-                        exit="exit"
-                        initial="initial"
-                        key={`h1-${displayedH1MarqueeText}`}
-                        transition={pageTransition}
-                        variants={sharedTransitionVariants}
-                      >
-                        <Marquee
-                          direction="backward"
-                          targetSpeed={h1MarqueeTargetSpeed}
-                          text={displayedH1MarqueeText}
-                          typo="h1"
-                        />
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
+                  {h1MarqueeText ? <Marquee direction="backward" text={h1MarqueeText} typo="h1" /> : null}
                   {page.marqueeText ? <Marquee text={page.marqueeText} typo="h4" /> : null}
                 </div>
               </div>

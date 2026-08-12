@@ -8,6 +8,9 @@ const MARQUEE_TARGET_SPEED = 1;
 const MARQUEE_BASE_DURATION = 42;
 const MARQUEE_MIN_REPEAT_COUNT = 2;
 const MARQUEE_SCROLLABLE_WIDTH_MULTIPLIER = 3;
+const MARQUEE_SCROLL_SPEED_MULTIPLIER = 100;
+const MARQUEE_SCROLL_SPEED_DAMPING = 0.075;
+const MARQUEE_SCROLL_VELOCITY_VARIABLE = "--lenis-scroll-velocity";
 
 const getMarqueeDuration = (itemWidth, targetSpeed) => {
   if (!itemWidth || targetSpeed <= 0) return MARQUEE_BASE_DURATION;
@@ -17,6 +20,7 @@ const getMarqueeDuration = (itemWidth, targetSpeed) => {
 
 const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MARQUEE_TARGET_SPEED, typo }) => {
   const outerRef = useRef(null);
+  const innerRef = useRef(null);
   const measureRef = useRef(null);
   const [itemWidth, setItemWidth] = useState(0);
   const [repeatCount, setRepeatCount] = useState(MARQUEE_MIN_REPEAT_COUNT);
@@ -68,10 +72,7 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
       const containerWidth = outer.clientWidth || window.innerWidth || 1;
       const nextItemWidth = measure.scrollWidth || 1;
       const minimumScrollableWidth = containerWidth * MARQUEE_SCROLLABLE_WIDTH_MULTIPLIER;
-      const nextRepeatCount = Math.max(
-        MARQUEE_MIN_REPEAT_COUNT,
-        Math.ceil(minimumScrollableWidth / nextItemWidth) + 1,
-      );
+      const nextRepeatCount = Math.max(MARQUEE_MIN_REPEAT_COUNT, Math.ceil(minimumScrollableWidth / nextItemWidth) + 1);
 
       setItemWidth(nextItemWidth);
       setRepeatCount(nextRepeatCount);
@@ -90,6 +91,45 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
     };
   }, [text]);
 
+  useEffect(() => {
+    const inner = innerRef.current;
+    if (!inner || !isAnimating || !inner.getAnimations) return undefined;
+
+    let animationFrame = null;
+    let playbackRate = 1;
+
+    const setAnimationPlaybackRate = (nextPlaybackRate) => {
+      inner.getAnimations().forEach((animation) => {
+        if (typeof animation.updatePlaybackRate === "function") {
+          animation.updatePlaybackRate(nextPlaybackRate);
+          return;
+        }
+
+        animation.playbackRate = nextPlaybackRate;
+      });
+    };
+
+    const tick = () => {
+      const scrollVelocity = Number.parseFloat(
+        document.documentElement.style.getPropertyValue(MARQUEE_SCROLL_VELOCITY_VARIABLE),
+      );
+      const targetPlaybackRate =
+        1 + (Number.isFinite(scrollVelocity) ? scrollVelocity : 0) * MARQUEE_SCROLL_SPEED_MULTIPLIER;
+
+      playbackRate += (targetPlaybackRate - playbackRate) * MARQUEE_SCROLL_SPEED_DAMPING;
+      setAnimationPlaybackRate(playbackRate);
+
+      animationFrame = requestAnimationFrame(tick);
+    };
+
+    animationFrame = requestAnimationFrame(tick);
+
+    return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      setAnimationPlaybackRate(1);
+    };
+  }, [isAnimating]);
+
   return (
     <div
       className={`${styles.carousel_outer} ${className}`}
@@ -101,6 +141,7 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
       }}
     >
       <div
+        ref={innerRef}
         className={[styles.carousel_inner, isAnimating ? styles.isAnimating : ""].filter(Boolean).join(" ")}
         typo={`${typo} compensate`}
       >
@@ -110,7 +151,12 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
           </span>
         ))}
       </div>
-      <div ref={measureRef} className={`${styles.slide} ${styles.measure_slide}`} typo={`${typo} compensate`} aria-hidden="true">
+      <div
+        ref={measureRef}
+        className={`${styles.slide} ${styles.measure_slide}`}
+        typo={`${typo} compensate`}
+        aria-hidden="true"
+      >
         <Text text={text} />
       </div>
     </div>
