@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const spacingKeys = ["1", "2", "3", "4", "5", "6", "7", "8"];
 const overlayId = "spacing-debug-overlay";
@@ -374,9 +374,72 @@ function getInitialEnabledState() {
   return isEnabled;
 }
 
+function shouldIgnoreKeyboardToggle(event) {
+  if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return true;
+  if (event.key.toLowerCase() !== "r") return true;
+
+  const activeElement = document.activeElement;
+  if (!activeElement) return false;
+
+  const tagName = activeElement.tagName?.toLowerCase();
+
+  return (
+    activeElement.isContentEditable ||
+    tagName === "input" ||
+    tagName === "textarea" ||
+    tagName === "select"
+  );
+}
+
+function updateSpacingDebugUrl(isEnabled) {
+  const url = new URL(window.location.href);
+
+  url.searchParams.set("spacingDebug", isEnabled ? "1" : "0");
+  window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function applySpacingDebugState(isEnabled) {
+  if (isEnabled) {
+    window.localStorage.setItem("spacingDebug", "1");
+    document.documentElement.dataset.spacingDebug = "true";
+  } else {
+    window.localStorage.removeItem("spacingDebug");
+    delete document.documentElement.dataset.spacingDebug;
+    document.getElementById(overlayId)?.remove();
+  }
+
+  updateSpacingDebugUrl(isEnabled);
+}
+
 const SpacingDebugOverlay = () => {
+  const [isEnabled, setIsEnabled] = useState(false);
+
   useEffect(() => {
-    if (!getInitialEnabledState()) return undefined;
+    setIsEnabled(getInitialEnabledState());
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (shouldIgnoreKeyboardToggle(event)) return;
+
+      event.preventDefault();
+
+      setIsEnabled((currentIsEnabled) => {
+        const nextIsEnabled = !currentIsEnabled;
+
+        applySpacingDebugState(nextIsEnabled);
+
+        return nextIsEnabled;
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (!isEnabled) return undefined;
 
     let animationFrame = null;
 
@@ -416,7 +479,7 @@ const SpacingDebugOverlay = () => {
       document.getElementById(overlayId)?.remove();
       delete document.documentElement.dataset.spacingDebug;
     };
-  }, []);
+  }, [isEnabled]);
 
   return null;
 };
