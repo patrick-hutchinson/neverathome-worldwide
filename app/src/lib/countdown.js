@@ -19,9 +19,13 @@ export function getCountdownParts(deadline, now) {
   return { days, hours, minutes, seconds };
 }
 
-export function formatCountdown(deadline, now) {
+export function formatCountdown(deadline, now, { compact = false } = {}) {
   const parts = getCountdownParts(deadline, now);
   if (!parts) return null;
+
+  if (compact) {
+    return `${parts.days}d${parts.hours}h${parts.minutes}m${parts.seconds}s`;
+  }
 
   return `${parts.days}d ${parts.hours}h ${parts.minutes}m ${parts.seconds}s`;
 }

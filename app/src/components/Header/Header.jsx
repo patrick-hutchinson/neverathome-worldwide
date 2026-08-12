@@ -38,7 +38,7 @@ function formatMaxCountdown(deadline, now) {
 
   const dayWidth = Math.max(String(parts.days).length, 1);
 
-  return `${"0".repeat(dayWidth)}d 23h 59m 59s`;
+  return `${"0".repeat(dayWidth)}d23h59m59s`;
 }
 
 const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
@@ -52,7 +52,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     () =>
       links.map((link) => ({
         ...link,
-        countdown: now ? formatCountdown(pageDeadlines[link.deadlineKey], now) : null,
+        countdown: now ? formatCountdown(pageDeadlines[link.deadlineKey], now, { compact: true }) : null,
         maxCountdown: now ? formatMaxCountdown(pageDeadlines[link.deadlineKey], now) : null,
       })),
     [now, pageDeadlines],

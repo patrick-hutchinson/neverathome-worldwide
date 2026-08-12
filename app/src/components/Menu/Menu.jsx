@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 import styles from "./Menu.module.css";
 
-const formatMenuCountdown = (countdown) => countdown?.replace(/\s+\d+s$/, "");
+const formatMenuCountdown = (countdown) => countdown?.replace(/\s*\d+s$/, "");
 
 const Menu = ({ currentPhaseLabel = null, navLinks = [], email = null }) => {
   const openCallLink = navLinks.find((link) => link.href === "/open-call");

@@ -167,7 +167,7 @@ button:focus-visible {
 }
 
 a:hover {
-  opacity: var(--opacity);
+  color: var(--accent);
 }
 
 ul,
