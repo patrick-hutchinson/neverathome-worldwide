@@ -7,8 +7,12 @@ const MAX_DEVICE_PIXEL_RATIO = 1.5;
 const MAX_FRAME_RATE = 60;
 const REDUCED_MOTION_FRAME_RATE = 30;
 const INITIAL_RENDER_BURST_MS = 1500;
+const ENTRY_ANIMATION_MS = 1500;
+const ENTRY_SPIN_RADIANS = Math.PI * 2.25;
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
+
+const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
 
 export default function Globe({
   cities = [],
@@ -45,6 +49,7 @@ export default function Globe({
     let renderer;
     let labelRenderer;
     let globe;
+    let globeGroup;
     let focusTarget = null;
     let isDragging = false;
     let lastPointer = { x: 0, y: 0 };
@@ -54,6 +59,8 @@ export default function Globe({
     let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
     let initialRenderBurstEndAt = 0;
+    let entryAnimationStartAt = 0;
+    let entryAnimationEndAt = 0;
     let isVisible = true;
     let isDocumentVisible = true;
     let needsRender = false;
@@ -88,6 +95,13 @@ export default function Globe({
       labelRenderer.domElement.className = styles.markerLayer;
 
       globeElement.replaceChildren(renderer.domElement, labelRenderer.domElement);
+      globeGroup = new THREE.Group();
+      scene.add(globeGroup);
+
+      if (!prefersReducedMotion) {
+        globeGroup.scale.setScalar(0.001);
+        globeGroup.rotation.y = ENTRY_SPIN_RADIANS;
+      }
 
       const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
 
@@ -133,8 +147,10 @@ export default function Globe({
           element.style.pointerEvents = isVisible ? "auto" : "none";
         });
 
-      scene.add(globe);
+      globeGroup.add(globe);
       globe.pauseAnimation?.();
+      entryAnimationStartAt = performance.now();
+      entryAnimationEndAt = prefersReducedMotion ? entryAnimationStartAt : entryAnimationStartAt + ENTRY_ANIMATION_MS;
       initialRenderBurstEndAt = performance.now() + INITIAL_RENDER_BURST_MS;
       scene.add(new THREE.AmbientLight(0xffffff, 1.8));
 
@@ -252,6 +268,17 @@ export default function Globe({
         lastFrameTime = now;
         lastRenderTime = now;
         needsRender = false;
+
+        if (!prefersReducedMotion && now <= entryAnimationEndAt) {
+          const progress = Math.min(Math.max((now - entryAnimationStartAt) / ENTRY_ANIMATION_MS, 0), 1);
+          const easedProgress = easeOutCubic(progress);
+
+          globeGroup.scale.setScalar(Math.max(easedProgress, 0.001));
+          globeGroup.rotation.y = (1 - easedProgress) * ENTRY_SPIN_RADIANS;
+        } else if (globeGroup.scale.x !== 1 || globeGroup.rotation.y !== 0) {
+          globeGroup.scale.setScalar(1);
+          globeGroup.rotation.y = 0;
+        }
 
         if (focusTarget) {
           const dampingAmount = 1 - Math.exp(-FOCUS_ROTATE_DAMPING * deltaSeconds);

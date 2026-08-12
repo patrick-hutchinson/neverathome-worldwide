@@ -8,7 +8,7 @@ import { getCurrentPhaseLabel } from "@/lib/phase";
 import styles from "./Header.module.scss";
 import { DeviceContext } from "@/context/DeviceContext";
 
-import Menu from "@/Menu/Menu";
+import Menu from "@/components/Menu/Menu";
 
 const links = [
   { href: "/open-call", label: "Open Call", deadlineKey: "openCallPage" },
@@ -120,7 +120,9 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           ) : null}
           {navLinks.map((link) => (
             <span
-              className={[styles.navItem, link.href === "/open-call" ? styles.navItemOpenCall : ""].filter(Boolean).join(" ")}
+              className={[styles.navItem, link.href === "/open-call" ? styles.navItemOpenCall : ""]
+                .filter(Boolean)
+                .join(" ")}
               key={link.href}
             >
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
