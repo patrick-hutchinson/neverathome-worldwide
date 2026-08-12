@@ -35,6 +35,8 @@ const pageTransitionVariants = {
   },
 };
 
+// Updated Packages
+
 const sharedTransitionVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
