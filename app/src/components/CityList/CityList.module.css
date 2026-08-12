@@ -13,6 +13,8 @@
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */
+
+  transition: color 0.3s ease-in-out;
 }
 
 .cityEntryClickable {
@@ -20,11 +22,11 @@
 }
 
 .cityEntryInactive {
-  color: var(--accent);
+  /* color: var(--accent); */
 }
 
 .cityEntrySelected {
-  color: inherit;
+  color: var(--accent);
 }
 
 .cityEntryHighlighted {
@@ -38,10 +40,10 @@
 
 .cityEntryHoverable.cityEntryInactive:hover,
 .cityEntryClickable.cityEntryInactive:focus {
-  color: #000;
+  color: var(--accent);
 }
 
 .cityEntryHoverable.cityEntrySelected:hover,
 .cityEntryClickable.cityEntrySelected:focus {
-  color: inherit;
+  color: #000;
 }

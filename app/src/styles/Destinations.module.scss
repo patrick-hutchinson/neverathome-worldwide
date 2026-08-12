@@ -10,6 +10,7 @@
   }
 
   .destinationGrid {
+    min-height: calc(var(--content-height) - 85px);
     position: relative;
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));
@@ -50,13 +51,16 @@
           display: flex;
           align-items: flex-end;
           line-height: 0;
+          max-height: calc(var(--fontSize-1) * 0.76);
           overflow: visible;
         }
 
         .cityAbbreviationSvg {
           width: 100%;
           max-width: 100%;
+          max-height: calc(var(--fontSize-1) * 0.76);
           height: auto;
+          object-fit: contain;
         }
 
         .cityAbbreviationSvgUndershoot {
@@ -205,7 +209,7 @@
 }
 
 /* Large Format Screens */
-@media screen and (min-width: 2560px) {
+@media screen and (min-width: 1920px) {
   .destinationContainer {
     .destinationGrid {
       .destinationText {

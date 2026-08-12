@@ -227,7 +227,12 @@ export default function App({ Component, pageProps }) {
   }, [sharedData.destinations, sharedData.page, sharedData.pageDeadlines, sharedData.site]);
 
   const scrollToContent = () => {
-    document.getElementById(contentContainerId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const contentElement = document.getElementById(contentContainerId);
+    if (!contentElement) return;
+
+    const scrollTop = contentElement.getBoundingClientRect().top + window.scrollY - 65;
+
+    window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
   };
 
   const handleCityClick = (city) => {

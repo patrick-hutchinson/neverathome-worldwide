@@ -5,7 +5,9 @@
   touch-action: none;
   user-select: none;
 
-  filter: hue-rotate(2);
+  /* filter: hue-rotate(2); */
+
+  animation: float 6s ease-in-out infinite;
 }
 
 .globe canvas {
@@ -18,65 +20,95 @@
   transition: transform 0.35s ease;
 }
 
-.globeHoverScale:hover canvas,
-.globeHoverScale:hover .markerLayer {
-  transform: scale(2);
-}
-
 .globe:active {
   cursor: grabbing;
+}
+
+@keyframes float {
+  0% {
+    transform: translatey(0px);
+  }
+  50% {
+    transform: translatey(-2 0px);
+  }
+  100% {
+    transform: translatey(0px);
+  }
 }
 
 .markerLayer {
   position: absolute;
   inset: 0;
-  overflow: visible;
+  overflow: visible !important;
   pointer-events: none;
+}
+
+.markerLayer * {
+  overflow: visible !important;
 }
 
 .cityMarker {
   all: unset;
   cursor: pointer;
   display: block;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.cityMarker:hover {
+  background: transparent;
+  color: inherit;
 }
 
 .cityMarkerText {
   display: block;
   transform-origin: center;
+  padding: 0.08em 0.12em;
+  margin: -0.08em -0.12em;
+  overflow: visible;
   user-select: none;
   -webkit-user-drag: none;
-  color: #fff;
-  font-size: var(--fontSize-5);
+  font-size: calc(var(--fontSize-5) * 1.2);
   line-height: var(--lineHeight-5);
   letter-spacing: var(--letterSpacing-5);
   white-space: nowrap;
-  -webkit-text-stroke: 1 #000;
-  paint-order: stroke fill;
-  /* text-shadow:
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000; */
   transition:
     transform 0.35s ease,
-    opacity 0.2s ease-in-out,
-    color 0.2s ease-in-out,
-    text-shadow 0.2s ease-in-out;
+    opacity 0.2s ease-in-out;
+}
+
+.cityMarkerSvg {
+  width: calc(var(--city-marker-aspect-ratio, 1) * 1em);
+  height: 1em;
+  overflow: visible;
+  display: block;
+}
+
+.cityMarkerSvgOutline {
+  fill: #000;
+  transition: fill 0.2s ease-in-out;
+}
+
+.cityMarkerSvgFill {
+  fill: #fff;
+  transition: fill 0.2s ease-in-out;
 }
 
 .globeHoverScale:hover .cityMarkerText {
   transform: scale(0.5);
 }
 
-.cityMarker:hover .cityMarkerText {
-  color: #000;
-  -webkit-text-stroke: 1 #fff;
-  paint-order: stroke fill;
-  /* text-shadow:
-    -1px -1px 0 #fff,
-    1px -1px 0 #fff,
-    -1px 1px 0 #fff,
-    1px 1px 0 #fff; */
+.cityMarker:hover .cityMarkerSvgOutline {
+  fill: #fff;
+}
+
+.cityMarker:hover .cityMarkerSvgFill {
+  fill: #000;
 }

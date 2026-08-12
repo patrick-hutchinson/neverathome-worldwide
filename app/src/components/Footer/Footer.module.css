@@ -68,7 +68,7 @@
 
 .buttonContainer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .footerButton {
@@ -87,20 +87,35 @@
   border-left: 0;
 }
 
+.footerButton:not(.applicationButton):hover {
+  background: var(--foreground);
+  color: var(--background);
+}
+
 .footerButton:global(.invert):hover {
-  background: var(--background);
+  background: transparent;
+  color: var(--foreground);
+}
+
+.buttonContainer:has(.applicationButton:hover) .footerButton:not(.applicationButton) {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.buttonContainer:has(.footerButton:not(.applicationButton):hover) .applicationButton {
+  background: transparent;
   color: var(--foreground);
 }
 
 .buttonContainer .buttonLabel {
   width: auto;
-  height: var(--fontSize-4);
+  height: var(--fontSize-5);
   max-width: none;
   flex: 0 0 auto;
 }
 
 /* Desktop */
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 1024px) {
   .footer {
     grid-template-rows: 1fr;
     align-items: end;
@@ -119,7 +134,7 @@
   }
 
   .legalLinks {
-    grid-column: 16 / 18;
+    grid-column: 18 / 20;
     grid-row: 1;
   }
 

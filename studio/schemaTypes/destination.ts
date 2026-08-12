@@ -39,5 +39,11 @@ export const destination = defineType({
     defineField({name: 'institution', type: 'string'}),
     defineField({name: 'institutionMedium', type: 'mediaAsset'}),
     defineField({name: 'description', type: 'portableText'}),
+    defineField({
+      name: 'info',
+      description:
+        'Der kleine Text, der unter dem Haupt-Textblock steht. Darf wahlweise leer gelassenw werden',
+      type: 'portableText',
+    }),
   ],
 })

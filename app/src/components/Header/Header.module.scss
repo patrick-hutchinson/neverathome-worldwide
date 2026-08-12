@@ -101,6 +101,10 @@
   color: var(--accent);
 }
 
+.phaseLink.linkActive:hover {
+  color: #000;
+}
+
 @media screen and (min-width: 769px) {
   .header {
     .nav {

@@ -34,6 +34,11 @@
   -ms-overflow-style: none;
 }
 
+*::selection {
+  background: transparent;
+  color: var(--accent);
+}
+
 html,
 body {
   max-width: 100vw;
@@ -76,8 +81,6 @@ main {
 }
 
 .page {
-  /* overflow-x: hidden; */
-  /* background-color: var(--background); */
   position: relative;
 }
 
@@ -88,13 +91,6 @@ h4,
 h5 {
   font-weight: 400;
 }
-
-/* time {
-  font-variant-numeric: proportional-nums !important;
-  font-feature-settings:
-    "pnum" 1,
-    "tnum" 0;
-} */
 
 button {
   all: unset;
@@ -155,7 +151,7 @@ button:hover {
 a {
   color: inherit;
   text-decoration: none;
-  transition: 0.3s ease-in-out;
+  transition: color 0.3s ease-in-out;
 }
 
 a:focus,

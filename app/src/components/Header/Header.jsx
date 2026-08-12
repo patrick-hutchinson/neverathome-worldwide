@@ -52,7 +52,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     () =>
       links.map((link) => ({
         ...link,
-        countdown: now ? formatCountdown(pageDeadlines[link.deadlineKey], now, { compact: true }) : null,
+        countdown: now ? formatCountdown(pageDeadlines[link.deadlineKey], now) : null,
         maxCountdown: now ? formatMaxCountdown(pageDeadlines[link.deadlineKey], now) : null,
       })),
     [now, pageDeadlines],
@@ -114,7 +114,11 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
       <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
           {currentPhaseLabel ? (
-            <Link className={getLinkClassName("/")} href="/" onClick={handleHomeLinkClick}>
+            <Link
+              className={[getLinkClassName("/"), styles.phaseLink].filter(Boolean).join(" ")}
+              href="/"
+              onClick={handleHomeLinkClick}
+            >
               {currentPhaseLabel}
             </Link>
           ) : null}

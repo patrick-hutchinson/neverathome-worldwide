@@ -16,6 +16,7 @@ const JuryPage = ({ juryMembers, juryPage }) => {
             {juryMembers.map((juryMember) => {
               return (
                 <div className={styles.juryMemberContainer} key={juryMember._id} typo="h3">
+                  <hr className={styles.divider} />
                   <div className={styles.juryMemberContainerInner} typo="h3 compensate">
                     <div className={styles.juryMemberName} typo="h3">
                       {juryMember.name}

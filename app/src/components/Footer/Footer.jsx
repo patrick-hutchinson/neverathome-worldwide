@@ -90,16 +90,23 @@ const Footer = ({ page = {}, site = {} }) => {
     <footer className={styles.footer}>
       <Text className={styles.claim} text={page.claim} typo="h6" />
 
-      <div className={styles.buttonContainer} typo="h4">
+      <div className={styles.buttonContainer} typo="h5">
         <FooterButton className={`${styles.applicationButton} invert`} ariaLabel="Apply now" href={page.formLink}>
           <RenderSVG className={styles.buttonLabel} text="APPLY NOW" />
+        </FooterButton>
+        <FooterButton
+          ariaLabel="Any questions"
+          download={page.informationPDF?.asset?.originalFilename || true}
+          href={informationPDFUrl}
+        >
+          <RenderSVG className={styles.buttonLabel} text="INFO.PDF" />
         </FooterButton>
         <FooterButton
           ariaLabel="Info PDF"
           download={page.informationPDF?.asset?.originalFilename || true}
           href={informationPDFUrl}
         >
-          <RenderSVG className={styles.buttonLabel} text="INFO.PDF" />
+          <RenderSVG className={styles.buttonLabel} text="ANY QUESTIONS?" />
         </FooterButton>
       </div>
 

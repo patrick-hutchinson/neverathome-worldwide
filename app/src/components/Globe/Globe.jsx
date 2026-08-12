@@ -11,6 +11,20 @@ const ENTRY_ANIMATION_MS = 1500;
 const ENTRY_SPIN_RADIANS = Math.PI * 2.25;
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
+const FLOAT_PLAYBACK_RAMP_MS = 650;
+const MARKER_FONT_URL = "/fonts/TexGyreHeros-regular.ttf";
+const MARKER_FONT_SIZE = 1000;
+const MARKER_OUTLINE_OFFSET = 55;
+const MARKER_OUTLINE_OFFSETS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1],
+].map(([x, y]) => [x * MARKER_OUTLINE_OFFSET, y * MARKER_OUTLINE_OFFSET]);
 
 const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
 
@@ -45,6 +59,86 @@ export default function Globe({
   }, [onCityMarkerClick]);
 
   useEffect(() => {
+    const globeElement = globeRef.current;
+    if (!globeElement || typeof globeElement.getAnimations !== "function") return undefined;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return undefined;
+
+    let animationFrame = null;
+
+    const getFloatAnimations = () =>
+      globeElement
+        .getAnimations()
+        .filter((animation) => animation.animationName === "float" || animation.effect?.target === globeElement);
+
+    const cancelRamp = () => {
+      if (!animationFrame) return;
+
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    };
+
+    const rampFloatPlayback = (targetRate) => {
+      cancelRamp();
+
+      const animations = getFloatAnimations();
+      if (!animations.length) return;
+
+      animations.forEach((animation) => {
+        if (targetRate > 0 && animation.playState === "paused") {
+          animation.play();
+        }
+      });
+
+      const startTime = performance.now();
+      const startRates = animations.map((animation) => animation.playbackRate);
+
+      const tick = (now) => {
+        const progress = Math.min((now - startTime) / FLOAT_PLAYBACK_RAMP_MS, 1);
+        const easedProgress = easeOutCubic(progress);
+
+        animations.forEach((animation, index) => {
+          const nextRate = startRates[index] + (targetRate - startRates[index]) * easedProgress;
+
+          if (typeof animation.updatePlaybackRate === "function") {
+            animation.updatePlaybackRate(nextRate);
+          } else {
+            animation.playbackRate = nextRate;
+          }
+        });
+
+        if (progress < 1) {
+          animationFrame = window.requestAnimationFrame(tick);
+          return;
+        }
+
+        animationFrame = null;
+
+        animations.forEach((animation) => {
+          if (targetRate === 0) {
+            animation.pause();
+          }
+        });
+      };
+
+      animationFrame = window.requestAnimationFrame(tick);
+    };
+
+    const handlePointerEnter = () => rampFloatPlayback(0);
+    const handlePointerLeave = () => rampFloatPlayback(1);
+
+    globeElement.addEventListener("pointerenter", handlePointerEnter);
+    globeElement.addEventListener("pointerleave", handlePointerLeave);
+
+    return () => {
+      cancelRamp();
+      globeElement.removeEventListener("pointerenter", handlePointerEnter);
+      globeElement.removeEventListener("pointerleave", handlePointerLeave);
+    };
+  }, []);
+
+  useEffect(() => {
     let animationFrame;
     let renderer;
     let labelRenderer;
@@ -69,14 +163,17 @@ export default function Globe({
     let isMounted = true;
 
     async function initGlobe() {
-      const [{ default: ThreeGlobe }, THREE, { CSS2DRenderer }] = await Promise.all([
+      const [{ default: ThreeGlobe }, THREE, { CSS2DRenderer }, { default: opentype }, markerFontBuffer] = await Promise.all([
         import("three-globe"),
         import("three"),
         import("three/examples/jsm/renderers/CSS2DRenderer.js"),
+        import("opentype.js"),
+        fetch(MARKER_FONT_URL).then((response) => (response.ok ? response.arrayBuffer() : null)),
       ]);
 
       if (!isMounted || !globeRef.current) return;
 
+      const markerFont = markerFontBuffer ? opentype.parse(markerFontBuffer) : null;
       const globeElement = globeRef.current;
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -89,6 +186,7 @@ export default function Globe({
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DEVICE_PIXEL_RATIO));
       renderer.setSize(width, height);
+      renderer.shadowMap.enabled = false;
 
       labelRenderer = new CSS2DRenderer();
       labelRenderer.setSize(width, height);
@@ -117,19 +215,67 @@ export default function Globe({
         animationFrame = requestAnimationFrame(animate);
       };
 
+      const createMarkerSvg = (text) => {
+        if (!markerFont) return null;
+
+        const path = markerFont.getPath(text, 0, 0, MARKER_FONT_SIZE);
+        const fontScale = MARKER_FONT_SIZE / markerFont.unitsPerEm;
+        const ascender = markerFont.ascender * fontScale;
+        const descender = markerFont.descender * fontScale;
+        const width = markerFont.getAdvanceWidth(text, MARKER_FONT_SIZE);
+        const box = {
+          x: -MARKER_OUTLINE_OFFSET,
+          y: -ascender - MARKER_OUTLINE_OFFSET,
+          width: width + MARKER_OUTLINE_OFFSET * 2,
+          height: ascender - descender + MARKER_OUTLINE_OFFSET * 2,
+        };
+        const pathData = path.toPathData(2);
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        const fillPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const aspectRatio = box.height > 0 ? box.width / box.height : 1;
+
+        svg.setAttribute("aria-label", text);
+        svg.setAttribute("focusable", "false");
+        svg.setAttribute("role", "img");
+        svg.setAttribute("viewBox", `${box.x} ${box.y} ${box.width} ${box.height}`);
+        svg.style.setProperty("--city-marker-aspect-ratio", aspectRatio);
+        svg.classList.add(styles.cityMarkerSvg);
+
+        MARKER_OUTLINE_OFFSETS.forEach(([x, y]) => {
+          const outlinePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+          outlinePath.setAttribute("d", pathData);
+          outlinePath.setAttribute("transform", `translate(${x} ${y})`);
+          outlinePath.classList.add(styles.cityMarkerSvgOutline);
+          svg.append(outlinePath);
+        });
+
+        fillPath.setAttribute("d", pathData);
+        fillPath.classList.add(styles.cityMarkerSvgFill);
+
+        svg.append(fillPath);
+
+        return svg;
+      };
+
       globe = new ThreeGlobe({ waitForGlobeReady: false, animateIn: false })
         .globeImageUrl(globeImageUrl)
         .bumpImageUrl(bumpImageUrl)
+        .showAtmosphere(false)
         .htmlElementsData(citiesRef.current)
         .htmlLat((city) => city.lat)
         .htmlLng((city) => city.lng)
         .htmlElement((city) => {
           const marker = document.createElement("button");
-          const markerText = document.createElement("span");
+          const markerText = createMarkerSvg(city.name) || document.createElement("span");
           marker.type = "button";
           marker.className = styles.cityMarker;
-          markerText.className = styles.cityMarkerText;
-          markerText.textContent = city.name;
+          markerText.classList.add(styles.cityMarkerText);
+
+          if (!markerText.textContent && !markerText.firstChild) {
+            markerText.textContent = city.name;
+          }
+
           marker.append(markerText);
           marker.addEventListener("click", (event) => {
             event.preventDefault();
@@ -152,11 +298,7 @@ export default function Globe({
       entryAnimationStartAt = performance.now();
       entryAnimationEndAt = prefersReducedMotion ? entryAnimationStartAt : entryAnimationStartAt + ENTRY_ANIMATION_MS;
       initialRenderBurstEndAt = performance.now() + INITIAL_RENDER_BURST_MS;
-      scene.add(new THREE.AmbientLight(0xffffff, 1.8));
-
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-      directionalLight.position.set(1, 1, 1);
-      scene.add(directionalLight);
+      scene.add(new THREE.AmbientLight(0xffffff, 2.2));
 
       const rotateAroundWorldAxis = (axis, angle) => {
         globe.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(axis, angle));

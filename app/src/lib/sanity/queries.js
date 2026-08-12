@@ -132,6 +132,7 @@ export const destinationsQuery = `*[
   institution,
   institutionMedium[0] ${mediaAssetFragment},
   description,
+  info,
   abbreviation
 }`;
 

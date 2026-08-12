@@ -30,10 +30,7 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                       .join(" ")}
                   >
                     {institutionMedium ? <Media medium={institutionMedium} className={styles.institutionMedium} /> : null}
-                    <div className={styles.institutionText} typo="h6 compensate">
-                      Hier kommt wohl noch ein kleinerer Text zum Museum hin, ich bin mir aber unsicher worauf genau er sich
-                      beziehen soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
-                    </div>
+
                     <div typo="h1" className={styles.cityAbbreviation}>
                       <RenderSVG
                         className={[
@@ -51,8 +48,7 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                 <div className={styles.destinationText}>
                   <Text className={styles.destinationDescription} text={selectedDestination.description} typo="h5" />
                   <div className={styles.trailText} typo="h6 compensate">
-                    Hier kommt wohl noch ein kleinerer anderer Text hin, ich bin mir aber unsicher worauf genau er sich
-                    beziehen soll. Das könnten wir dann nochmal absprechen wenn wir soweit sind.
+                    <Text text={selectedDestination.info} />
                   </div>
                 </div>
               </>

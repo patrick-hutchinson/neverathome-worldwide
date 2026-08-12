@@ -83,13 +83,6 @@
       margin-bottom: 0;
     }
   }
-
-  .contact {
-    grid-row: 2;
-    grid-column: 1 / 13;
-    align-self: end;
-    // display: none;
-  }
 }
 
 @media screen and (min-width: 769px) {
@@ -149,19 +142,15 @@
         margin-bottom: 0;
       }
     }
-
-    .contact {
-      display: flex;
-      white-space: nowrap;
-      grid-column: 21 / 25;
-      gap: 4px;
-      margin-top: var(--spacing-4);
-    }
   }
 }
 
-/* Large Format Screens */
-@media screen and (min-width: 2560px) {
+/* Desktop */
+@media screen and (min-width: 1280px) {
+}
+
+/* Wide Desktop (Verena's Screen) */
+@media screen and (min-width: 1920px) {
   .aboutContainer {
     .aboutNeverAtHome {
       grid-row: 1;
@@ -173,4 +162,8 @@
       grid-column: 19 / 25;
     }
   }
+}
+
+/* Large Format Screens */
+@media screen and (min-width: 2560px) {
 }

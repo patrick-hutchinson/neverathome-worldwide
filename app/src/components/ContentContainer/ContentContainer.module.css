@@ -15,9 +15,9 @@
 .contentContainer::before {
   content: "";
   height: 1px;
-  width: calc(100vw - (2 * var(--spacing-6)));
+  width: calc(100vw);
   position: absolute;
-  left: var(--spacing-6);
+  left: 0;
   top: 0;
   background: #000;
 }

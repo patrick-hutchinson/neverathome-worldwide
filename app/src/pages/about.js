@@ -37,9 +37,7 @@ const AboutPage = ({ aboutPage }) => {
             </h3>
 
             <Text text={aboutPage.artBoard.text} typo="h6 compensate" className={styles.text} />
-            <div className={styles.contact} typo="h6">
-              Any questions? <br /> <a href="mailto:opencall@never-at-home.at">opencall@never-at-home.at</a>
-            </div>
+
             <div className={styles.teamPhotos}>
               {aboutPage.team.map((teamMember, index) => {
                 return (

@@ -6,6 +6,15 @@
 
   .juryMemberContainer {
     grid-column: 1 / 25;
+    position: relative;
+
+    .divider {
+      color: #000;
+      border-style: solid;
+      margin-bottom: var(--spacing-7);
+      border: 0;
+      border-top: 1px solid black;
+    }
 
     .juryMemberContainerInner {
       display: grid;
@@ -32,6 +41,10 @@
         grid-column: 13 / 25;
       }
     }
+
+    &:first-child .divider {
+      display: none;
+    }
   }
 }
 
@@ -40,30 +53,49 @@
 
 @media screen and (min-width: 1024px) {
   .juryGrid {
+    row-gap: var(--spacing-2);
+
     .juryMemberContainer:nth-child(odd) {
-      grid-column: 1 / 11;
+      grid-column: 1 / 13;
     }
 
     .juryMemberContainer:nth-child(even) {
-      grid-column: 13 / 23;
+      grid-column: 13 / 25;
     }
 
-    .juryMemberContainerInner {
-      grid-template-columns: repeat(10, minmax(0, 1fr));
+    .juryMemberContainer:nth-child(odd)::before {
+      width: calc(100% + (2 * (100vw / 24)) - 5px);
+    }
 
-      .juryMemberName {
-        grid-column: 1 / 11;
+    .juryMemberContainer {
+      .divider {
+        margin-bottom: var(--spacing-6);
       }
 
-      .juryMemberMedia {
-        grid-column: 1 / 6;
-        aspect-ratio: 4 / 5;
-        align-self: start;
-        height: auto;
+      .juryMemberContainerInner {
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+
+        .juryMemberName {
+          grid-column: 1 / 11;
+        }
+
+        .juryMemberMedia {
+          grid-column: 1 / 5;
+          aspect-ratio: 4 / 5;
+          align-self: start;
+          height: auto;
+        }
+
+        .juryMemberBio {
+          grid-column: 5 / 9;
+        }
       }
 
-      .juryMemberBio {
-        grid-column: 6 / 11;
+      &:first-child .divider {
+        display: none;
+      }
+      &:nth-child(2) .divider {
+        display: none;
       }
     }
   }

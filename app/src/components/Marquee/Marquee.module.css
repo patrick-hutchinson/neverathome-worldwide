@@ -28,41 +28,6 @@
   inset: auto;
 }
 
-.card {
-  background: var(--foreground);
-  color: var(--background);
-  height: 220px;
-  width: auto;
-  margin: 6px 0 12px 0;
-  overflow: hidden;
-}
-
-.announcement .card {
-  padding: 12px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  width: calc(220px / 1.2);
-  height: 220px;
-  white-space: normal;
-
-  text-align: center;
-  justify-content: center;
-}
-
-.announcement.isLarge .card {
-  width: calc((220px / 1.2) * 2);
-  height: 220px;
-}
-
-.announcement.isWhite .card {
-  background: transparent;
-  color: #000;
-  border-top: 1px solid #000;
-  border-bottom: 1px solid #000;
-}
-
 .carousel_outer {
   max-width: 100vw;
   margin: auto;
@@ -115,19 +80,6 @@ a.advert:hover {
 
 /* iPads and other Tablets */
 @media screen and (min-width: 769px) {
-  .card {
-    height: 280px;
-  }
-
-  .announcement .card {
-    width: calc(280px / 1.2);
-    height: 280px;
-  }
-
-  .announcement.isLarge .card {
-    width: calc((280px / 1.2) * 2);
-    height: 280px;
-  }
 }
 
 /* Desktop */
@@ -135,16 +87,5 @@ a.advert:hover {
 }
 
 /* Large Format Screens */
-@media screen and (min-width: 2560px) {
-  .card {
-    height: 560px;
-  }
-  .announcement .card {
-    width: calc(0.8 * 560px);
-    height: 560px;
-  }
-  .announcement.isLarge .card {
-    width: calc((0.8 * 560px) * 2);
-    height: 560px;
-  }
+@media screen and (min-width: 1920px) {
 }
