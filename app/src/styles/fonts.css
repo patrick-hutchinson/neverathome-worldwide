@@ -100,15 +100,15 @@ h5,
   line-height: var(--lineHeight-5);
   letter-spacing: var(--letterSpacing-5);
 }
-h5 p,
-[typo~="h5"] p {
+h5 p:not(:last-of-type),
+[typo~="h5"] p:not(:last-of-type) {
   margin-bottom: var(--paragraphSpacing-5);
 }
 
-h5 p:last-child,
+/* h5 p:last-child,
 [typo~="h5"] p:last-child {
   margin-bottom: 0;
-}
+} */
 
 h6,
 [typo~="h6"] {
@@ -116,8 +116,8 @@ h6,
   line-height: var(--lineHeight-6);
   letter-spacing: var(--letterSpacing-6);
 }
-h6 p,
-[typo~="h6"] p {
+h6 p:not(:last-of-type),
+[typo~="h6"] p:not(:last-of-type) {
   margin-bottom: var(--paragraphSpacing-6);
 }
 
@@ -166,12 +166,12 @@ h6 p,
     ----paragraphSpacing-3: 0rem;
 
     --fontSize-4: 2.2rem;
-    --lineHeight-4: 1;
+    --lineHeight-4: 2.3rem;
     --letterSpacing-4: -0.02em;
     --paragraphSpacing-4: 0rem;
 
     --fontSize-5: 1.5rem;
-    --lineHeight-5: 1.6rem;
+    --lineHeight-5: 1.7rem;
     --letterSpacing-5: 0rem;
     --paragraphSpacing-5: 1rem;
 

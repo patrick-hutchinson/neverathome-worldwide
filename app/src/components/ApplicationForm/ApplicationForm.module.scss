@@ -1,0 +1,217 @@
+.form {
+  --form-line-color: color-mix(in srgb, var(--foreground) 28%, transparent);
+  --form-muted-color: color-mix(in srgb, var(--foreground) 55%, transparent);
+  --form-selected-color: #006cff;
+  --form-alternative-color: #43d7ff;
+
+  display: flex;
+  flex-direction: column;
+  // row-gap: var(--spacing-2);
+  width: 100%;
+}
+
+.personalInformation {
+  margin-bottom: var(--spacing-2);
+}
+.destinationGrid {
+  margin-bottom: var(--spacing-5);
+}
+.timeFrame {
+  margin-bottom: var(--spacing-5);
+}
+
+.fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend,
+.legendRow {
+  display: flex;
+  width: 100%;
+  padding-bottom: var(--spacing-7);
+  border-bottom: 1px solid var(--form-line-color);
+  color: var(--foreground);
+}
+
+.legendRow {
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.legendNote,
+.fieldNote,
+.muted,
+.uploadHelp,
+.uploadAction {
+  color: var(--form-muted-color);
+}
+
+.personalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inputField {
+  position: relative;
+  min-width: 0;
+  border-bottom: 1px solid var(--form-line-color);
+}
+
+.inputFieldFull {
+  grid-column: 1 / -1;
+}
+
+.inputField input,
+.textareaField textarea {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  outline: 0;
+}
+
+.inputField input {
+  height: var(--spacing-4);
+}
+
+.inputField input::placeholder {
+  color: var(--form-muted-color);
+  opacity: 1;
+}
+
+.textareaField textarea::placeholder {
+  color: var(--form-muted-color);
+  opacity: 1;
+}
+
+.fieldNote {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.destinationGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--content-grid-gap);
+
+  border-bottom: 1px solid var(--form-line-color);
+  padding-bottom: var(--spacing-6);
+}
+
+.destinationList,
+.quarterList {
+  padding-top: var(--spacing-8);
+}
+
+.destinationList {
+  max-height: 5em;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.choice,
+.quarterChoice {
+  display: inline;
+  color: var(--form-muted-color);
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.choice {
+  display: block;
+}
+
+.choice input,
+.quarterChoice input,
+.uploadField input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice:has(input:checked) {
+  color: var(--form-selected-color);
+}
+
+.destinationGrid .fieldset:nth-child(2) .choice:has(input:checked),
+.quarterChoice:has(input:checked) {
+  color: var(--form-alternative-color);
+}
+
+.choiceDisabled {
+  color: var(--form-line-color);
+  cursor: not-allowed;
+}
+
+.choiceDisabled span {
+  text-decoration: line-through;
+}
+
+.textareaField {
+  display: block;
+}
+
+.textareaField textarea {
+  display: block;
+  min-height: var(--spacing-2);
+  padding: var(--spacing-8) 0 var(--spacing-5);
+  overflow: hidden;
+  resize: none;
+}
+
+.uploads {
+  display: flex;
+  flex-direction: column;
+}
+
+.uploadField {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr) auto;
+  column-gap: var(--content-grid-gap);
+  align-items: baseline;
+  min-height: var(--spacing-4);
+  padding: var(--spacing-8) 0;
+  border-bottom: 1px solid var(--form-line-color);
+  cursor: pointer;
+}
+
+.uploadAction {
+  justify-self: end;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .personalGrid,
+  .destinationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .uploadField {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .uploadHelp {
+    grid-column: 1 / -1;
+  }
+}

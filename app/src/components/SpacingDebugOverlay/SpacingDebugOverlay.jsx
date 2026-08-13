@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 const spacingKeys = ["1", "2", "3", "4", "5", "6", "7", "8"];
-const overlayId = "spacing-debug-overlay";
+const defaultOverlayId = "spacing-debug-overlay";
+const formOverlayId = "spacing-debug-overlay-form";
 
 function parsePixelValue(value) {
   const number = Number.parseFloat(value);
@@ -24,7 +25,7 @@ function getSpacingTokens() {
     .filter((token) => token.size > 0 && token.color);
 }
 
-function createOverlayLayer() {
+function createOverlayLayer(overlayId = defaultOverlayId) {
   const existingOverlay = document.getElementById(overlayId);
 
   if (existingOverlay) {
@@ -133,12 +134,12 @@ function drawPositionOffsets(overlay, element, rect, styles, spacingTokens) {
   }
 }
 
-function getRenderableChildRects(element) {
+function getRenderableChildRects(element, overlayId = defaultOverlayId) {
   return Array.from(element.children).flatMap((child) => {
     if (child.id === overlayId || child.closest(`#${overlayId}`)) return [];
 
     if (window.getComputedStyle(child).display === "contents") {
-      return getRenderableChildRects(child);
+      return getRenderableChildRects(child, overlayId);
     }
 
     const rect = child.getBoundingClientRect();
@@ -173,7 +174,7 @@ function getRectRows(rects) {
     }, []);
 }
 
-function drawGapSpacing(overlay, element, rect, styles, spacingTokens) {
+function drawGapSpacing(overlay, element, rect, styles, spacingTokens, overlayId = defaultOverlayId) {
   if (!["flex", "inline-flex", "grid", "inline-grid"].includes(styles.display)) return;
 
   const rowGap = parsePixelValue(styles.rowGap);
@@ -183,7 +184,7 @@ function drawGapSpacing(overlay, element, rect, styles, spacingTokens) {
 
   if (!rowGapToken && !columnGapToken) return;
 
-  const rows = getRectRows(getRenderableChildRects(element));
+  const rows = getRectRows(getRenderableChildRects(element, overlayId));
 
   if (columnGapToken) {
     rows.forEach((row) => {
@@ -231,7 +232,7 @@ function drawGapSpacing(overlay, element, rect, styles, spacingTokens) {
   }
 }
 
-function drawSpacingForElement(overlay, element, spacingTokens) {
+function drawSpacingForElement(overlay, element, spacingTokens, overlayId = defaultOverlayId) {
   if (element.id === overlayId || element.closest(`#${overlayId}`)) return;
 
   const rect = element.getBoundingClientRect();
@@ -335,15 +336,18 @@ function drawSpacingForElement(overlay, element, spacingTokens) {
   }
 
   drawPositionOffsets(overlay, element, rect, styles, spacingTokens);
-  drawGapSpacing(overlay, element, rect, styles, spacingTokens);
+  drawGapSpacing(overlay, element, rect, styles, spacingTokens, overlayId);
 }
 
-function renderSpacingOverlay() {
+function renderSpacingOverlay({ overlayId = defaultOverlayId, rootSelector = "body" } = {}) {
   const spacingTokens = getSpacingTokens();
-  const overlay = createOverlayLayer();
+  const overlay = createOverlayLayer(overlayId);
+  const root = document.querySelector(rootSelector);
 
-  document.querySelectorAll("body *").forEach((element) => {
-    drawSpacingForElement(overlay, element, spacingTokens);
+  if (!root) return;
+
+  root.querySelectorAll("*").forEach((element) => {
+    drawSpacingForElement(overlay, element, spacingTokens, overlayId);
   });
 }
 
@@ -405,13 +409,14 @@ function applySpacingDebugState(isEnabled) {
   } else {
     window.localStorage.removeItem("spacingDebug");
     delete document.documentElement.dataset.spacingDebug;
-    document.getElementById(overlayId)?.remove();
+    document.getElementById(defaultOverlayId)?.remove();
+    document.getElementById(formOverlayId)?.remove();
   }
 
   updateSpacingDebugUrl(isEnabled);
 }
 
-const SpacingDebugOverlay = () => {
+const SpacingDebugOverlay = ({ overlayId = defaultOverlayId, rootSelector = "body" }) => {
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
@@ -448,7 +453,7 @@ const SpacingDebugOverlay = () => {
 
       animationFrame = window.requestAnimationFrame(() => {
         animationFrame = null;
-        renderSpacingOverlay();
+        renderSpacingOverlay({ overlayId, rootSelector });
       });
     };
 
@@ -479,7 +484,7 @@ const SpacingDebugOverlay = () => {
       document.getElementById(overlayId)?.remove();
       delete document.documentElement.dataset.spacingDebug;
     };
-  }, [isEnabled]);
+  }, [isEnabled, overlayId, rootSelector]);
 
   return null;
 };

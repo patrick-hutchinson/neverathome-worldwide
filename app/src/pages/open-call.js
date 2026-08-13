@@ -1,12 +1,12 @@
-import Media from "@/components/Media/Media";
-import { getOpenCallPage, getPage, getSite } from "@/lib/sanity";
+import { getDestinations, getOpenCallPage, getPage, getSite } from "@/lib/sanity";
 import styles from "@/styles/OpenCall.module.scss";
 
 import Text from "@/components/Text/Text";
 import { LargeSection } from "@/components/Sections/Sections";
 import Accordion from "@/components/Accordion/Accordion";
+import ApplicationForm from "@/components/ApplicationForm/ApplicationForm";
 
-const OpenCallPage = ({ openCallPage }) => {
+const OpenCallPage = ({ destinations = [], openCallPage, page }) => {
   if (!openCallPage || openCallPage.length === 0) return null;
   return (
     <div className={`page ${styles.page}`}>
@@ -18,6 +18,10 @@ const OpenCallPage = ({ openCallPage }) => {
         <LargeSection>
           <Accordion array={openCallPage.faq} />
         </LargeSection>
+
+        <LargeSection>
+          <ApplicationForm destinations={destinations} page={page} />
+        </LargeSection>
       </main>
     </div>
   );
@@ -26,13 +30,19 @@ const OpenCallPage = ({ openCallPage }) => {
 export default OpenCallPage;
 
 export async function getStaticProps() {
-  const [site, page, openCallPage] = await Promise.all([getSite(), getPage(), getOpenCallPage()]);
+  const [site, page, openCallPage, destinations] = await Promise.all([
+    getSite(),
+    getPage(),
+    getOpenCallPage(),
+    getDestinations(),
+  ]);
 
   return {
     props: {
       site,
       page,
       openCallPage,
+      destinations,
     },
     revalidate: 60,
   };

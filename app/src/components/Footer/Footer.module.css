@@ -85,33 +85,14 @@
   cursor: pointer;
 }
 
-.applicationButton {
-  background: var(--foreground);
-  color: var(--background);
-}
-
 .footerButton + .footerButton {
   border-left: 0;
 }
 
-.footerButton:not(.applicationButton):hover {
-  background: var(--interactive-hover-color);
-  color: var(--background);
-}
-
+.footerButton:hover,
 .footerButton:global(.invert):hover {
-  background: transparent;
-  color: var(--interactive-hover-color);
-}
-
-.buttonContainer:has(.applicationButton:hover) .footerButton:not(.applicationButton) {
   background: var(--foreground);
   color: var(--background);
-}
-
-.buttonContainer:has(.footerButton:not(.applicationButton):hover) .applicationButton {
-  background: transparent;
-  color: var(--foreground);
 }
 
 .buttonContainer .buttonLabel {

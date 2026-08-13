@@ -8,8 +8,9 @@ import CityList from "@/components/CityList/CityList";
 import ContentContainer from "@/components/ContentContainer/ContentContainer";
 import Footer from "@/components/Footer/Footer";
 import Globe from "@/components/Globe/Globe";
+import ApplicationForm from "@/components/ApplicationForm/ApplicationForm";
 import { DeviceProvider } from "@/context/DeviceContext";
-import LenisProvider from "@/context/LenisContext";
+import LenisProvider, { useLenisContext } from "@/context/LenisContext";
 import Marquee from "@/components/Marquee/Marquee";
 import { ViewportProvider } from "@/context/ViewportContext";
 import Header from "@/components/Header/Header";
@@ -183,6 +184,39 @@ function getGlobeTextureUrl(textureUrl) {
   return textureUrl;
 }
 
+function ApplicationFormOverlay({ destinations = [], isOpen, onClose, page = {} }) {
+  const lenis = useLenisContext();
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    lenis?.stop?.();
+
+    return () => {
+      lenis?.start?.();
+    };
+  }, [isOpen, lenis]);
+
+  return (
+    <AnimatePresence>
+      {isOpen ? (
+        <motion.div
+          animate={{ y: 0 }}
+          className={styles.applicationFormLayer}
+          data-lenis-prevent
+          exit={{ y: "100%" }}
+          id="application-form-layer"
+          initial={{ y: "100%" }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <ApplicationForm destinations={destinations} page={page} />
+          <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [sharedData, setSharedData] = useState({
@@ -215,6 +249,7 @@ export default function App({ Component, pageProps }) {
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
   const pendingNavigationTimerRef = useRef(null);
   const h1MarqueeSettleTimerRef = useRef(null);
@@ -223,6 +258,20 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     destinationsRef.current = destinations;
   }, [destinations]);
+
+  useEffect(() => {
+    if (!isApplicationFormOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsApplicationFormOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isApplicationFormOpen]);
 
   useEffect(() => {
     if (textColorPalette.length === 0) {
@@ -598,7 +647,9 @@ export default function App({ Component, pageProps }) {
           <DeviceProvider>
             <LenisProvider>
               <Header currentPhase={currentPhase} pageDeadlines={pageDeadlines} site={site} />
-              <div className={styles.sharedLayer}>
+              <div
+                className={[styles.sharedLayer, isApplicationFormOpen ? styles.pageObscured : ""].filter(Boolean).join(" ")}
+              >
                 <motion.div
                   animate={globePosition}
                   className={styles.globeMover}
@@ -628,7 +679,11 @@ export default function App({ Component, pageProps }) {
                   {page.marqueeText ? <Marquee text={page.marqueeText} typo="h4" /> : null}
                 </div>
               </div>
-              <div className={styles.cityListLayer}>
+              <div
+                className={[styles.cityListLayer, isApplicationFormOpen ? styles.pageObscured : ""]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
                 <AnimatePresence initial={false} mode="wait">
                   <motion.div
                     animate="animate"
@@ -650,11 +705,11 @@ export default function App({ Component, pageProps }) {
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <SpacingDebugOverlay />
+              {isApplicationFormOpen ? null : <SpacingDebugOverlay />}
               <AnimatePresence initial={false} mode="wait">
                 <motion.div
                   animate="animate"
-                  className="pageTransition"
+                  className={["pageTransition", isApplicationFormOpen ? styles.pageObscured : ""].filter(Boolean).join(" ")}
                   exit="exit"
                   initial="initial"
                   key={router.asPath}
@@ -668,11 +723,17 @@ export default function App({ Component, pageProps }) {
                       <div className="pageTransitionRoot">
                         <Component {...pageProps} selectedDestination={selectedDestination} />
                       </div>
-                      <Footer page={page} site={site} />
+                      <Footer onApplyClick={() => setIsApplicationFormOpen(true)} page={page} site={site} />
                     </ContentContainer>
                   )}
                 </motion.div>
               </AnimatePresence>
+              <ApplicationFormOverlay
+                destinations={destinations}
+                isOpen={isApplicationFormOpen}
+                onClose={() => setIsApplicationFormOpen(false)}
+                page={page}
+              />
             </LenisProvider>
           </DeviceProvider>
         </ViewportProvider>

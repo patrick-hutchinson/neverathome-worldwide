@@ -22,7 +22,7 @@ Obere Linie immer ohne Randabstnad ✅
 Bei Jury unten abstand., über dem jury mitglied ✅
 Und Zwischenabstand größer ✅
 
-Header und (Mobile) Menu müssen geupdated werden: Countdown position uodaten
+Header und (Mobile) Menu müssen geupdated werden: Countdown position uodaten ✅
 
 Any questions text bei About weg ✅
 

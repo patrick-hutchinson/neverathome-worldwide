@@ -18,12 +18,12 @@ const getDownloadUrl = (file) => {
   return `${url}${separator}dl=${encodeURIComponent(filename)}`;
 };
 
-const FooterButton = ({ ariaLabel, children, className = "", download = null, href = null }) => {
+const FooterButton = ({ ariaLabel, children, className = "", download = null, href = null, onClick }) => {
   const buttonClassName = [styles.footerButton, className].filter(Boolean).join(" ");
 
   if (!href) {
     return (
-      <button className={buttonClassName} aria-label={ariaLabel} type="button">
+      <button className={buttonClassName} aria-label={ariaLabel} onClick={onClick} type="button">
         {children}
       </button>
     );
@@ -83,7 +83,7 @@ const LogoShuffle = ({ logos = [] }) => {
   );
 };
 
-const Footer = ({ page = {}, site = {} }) => {
+const Footer = ({ onApplyClick, page = {}, site = {} }) => {
   const { isMobile } = useContext(DeviceContext);
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
   const informationPDFUrl = getDownloadUrl(page.informationPDF);
@@ -93,7 +93,7 @@ const Footer = ({ page = {}, site = {} }) => {
       <Text className={styles.claim} text={page.claim} typo="h6" />
 
       <div className={styles.buttonContainer} typo="h5">
-        <FooterButton className={`${styles.applicationButton} invert`} ariaLabel="Apply now" href={page.formLink}>
+        <FooterButton className={styles.applicationButton} ariaLabel="Apply now" onClick={onApplyClick}>
           <RenderSVG className={styles.buttonLabel} text={isMobile ? "APPLY" : "APPLY NOW"} />
         </FooterButton>
         <FooterButton
