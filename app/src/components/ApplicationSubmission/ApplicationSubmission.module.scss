@@ -42,7 +42,8 @@
 }
 
 .declaration input:checked {
-  background: white;
+  border-color: var(--form-choice-selected-color, currentColor);
+  background: var(--form-choice-selected-color, currentColor);
 }
 
 .declarationsLegend {

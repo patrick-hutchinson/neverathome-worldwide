@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ApplicationSubmission from "@/components/ApplicationSubmission/ApplicationSubmission";
 import styles from "./ApplicationForm.module.scss";
@@ -20,7 +20,7 @@ const quarters = [
   { value: "q1", label: "1" },
   { value: "q2", label: "2" },
   { value: "q3", label: "3" },
-  { value: "q4", label: "4 Quartal 2027" },
+  { value: "q4", label: "4" },
 ];
 
 const uploadFields = [
@@ -41,9 +41,32 @@ const uploadFields = [
     help: "The image will only be used and published if your application is selected.",
   },
 ];
+const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+function getTextColorPalette(textColors = []) {
+  return (textColors || []).map((color) => color?.hexCode).filter((hexCode) => hexColorPattern.test(hexCode));
+}
+
+function getRandomTextColor(textColorPalette = []) {
+  if (textColorPalette.length === 0) return null;
+
+  return textColorPalette[Math.floor(Math.random() * textColorPalette.length)];
+}
 
 function toggleValue(values, value) {
   return values.includes(value) ? values.filter((currentValue) => currentValue !== value) : [...values, value];
+}
+
+function getNextColorMap(currentColorMap, value, textColorPalette) {
+  if (currentColorMap[value]) return currentColorMap;
+
+  const nextColor = getRandomTextColor(textColorPalette);
+  if (!nextColor) return currentColorMap;
+
+  return {
+    ...currentColorMap,
+    [value]: nextColor,
+  };
 }
 
 function resizeTextarea(textarea) {
@@ -51,13 +74,91 @@ function resizeTextarea(textarea) {
   textarea.style.height = `${textarea.scrollHeight}px`;
 }
 
+const DestinationScrollList = ({ children }) => {
+  const listRef = useRef(null);
+  const [edgeState, setEdgeState] = useState({ hasTopFeather: false, hasBottomFeather: false });
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return undefined;
+
+    const updateEdgeState = () => {
+      const hasOverflow = list.scrollHeight > list.clientHeight + 1;
+      const hasTopFeather = hasOverflow && list.scrollTop > 1;
+      const hasBottomFeather = hasOverflow && list.scrollTop + list.clientHeight < list.scrollHeight - 1;
+
+      setEdgeState({ hasTopFeather, hasBottomFeather });
+    };
+
+    updateEdgeState();
+    list.addEventListener("scroll", updateEdgeState, { passive: true });
+    window.addEventListener("resize", updateEdgeState);
+
+    return () => {
+      list.removeEventListener("scroll", updateEdgeState);
+      window.removeEventListener("resize", updateEdgeState);
+    };
+  }, [children]);
+
+  return (
+    <div
+      className={[
+        styles.destinationListFrame,
+        edgeState.hasTopFeather ? styles.destinationListFrameTop : "",
+        edgeState.hasBottomFeather ? styles.destinationListFrameBottom : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div className={styles.destinationList} ref={listRef} typo="h3">
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const ApplicationForm = ({ destinations = [], page = {} }) => {
+  const textColorPalette = getTextColorPalette(page.textColors);
+  const fileInputRefs = useRef({});
   const [preferredDestination, setPreferredDestination] = useState("");
   const [alternativeDestinations, setAlternativeDestinations] = useState([]);
   const [selectedQuarters, setSelectedQuarters] = useState([]);
+  const [selectedColorMap, setSelectedColorMap] = useState({});
+  const [uploads, setUploads] = useState({});
+
+  useEffect(() => {
+    const intervals = [];
+
+    Object.entries(uploads).forEach(([fieldName, upload]) => {
+      if (!upload?.fileName || upload.status !== "loading") return;
+
+      const interval = window.setInterval(() => {
+        setUploads((currentUploads) => {
+          const currentUpload = currentUploads[fieldName];
+          if (!currentUpload || currentUpload.status !== "loading") return currentUploads;
+
+          const nextProgress = Math.min(currentUpload.progress + 8, 100);
+
+          return {
+            ...currentUploads,
+            [fieldName]: {
+              ...currentUpload,
+              progress: nextProgress,
+              status: nextProgress >= 100 ? "complete" : "loading",
+            },
+          };
+        });
+      }, 80);
+
+      intervals.push(interval);
+    });
+
+    return () => intervals.forEach(window.clearInterval);
+  }, [uploads]);
 
   const handlePreferredDestinationChange = (destinationId) => {
     setPreferredDestination(destinationId);
+    setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, destinationId, textColorPalette));
     setAlternativeDestinations((currentDestinations) =>
       currentDestinations.filter((currentDestinationId) => currentDestinationId !== destinationId),
     );
@@ -65,6 +166,32 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
 
   const handleTextareaInput = (event) => {
     resizeTextarea(event.currentTarget);
+  };
+
+  const handleUploadChange = (fieldName, event) => {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+
+    setUploads((currentUploads) => ({
+      ...currentUploads,
+      [fieldName]: {
+        fileName: file.name,
+        progress: 0,
+        status: "loading",
+      },
+    }));
+  };
+
+  const handleUploadReset = (fieldName) => {
+    if (fileInputRefs.current[fieldName]) {
+      fileInputRefs.current[fieldName].value = "";
+    }
+
+    setUploads((currentUploads) => {
+      const nextUploads = { ...currentUploads };
+      delete nextUploads[fieldName];
+      return nextUploads;
+    });
   };
 
   return (
@@ -97,9 +224,13 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
           <legend className={styles.legend} typo="h4">
             Preferred Destination
           </legend>
-          <div className={styles.destinationList} typo="h3">
+          <DestinationScrollList>
             {destinations.map((destination) => (
-              <label className={styles.choice} key={destination._id}>
+              <label
+                className={styles.choice}
+                key={destination._id}
+                style={{ "--form-choice-selected-color": selectedColorMap[destination._id] }}
+              >
                 <input
                   checked={preferredDestination === destination._id}
                   name="preferredDestination"
@@ -110,7 +241,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                 <span>{destination.name}</span>
               </label>
             ))}
-          </div>
+          </DestinationScrollList>
         </fieldset>
 
         <fieldset className={styles.fieldset}>
@@ -120,7 +251,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
               One Or Multiple
             </span>
           </legend>
-          <div className={styles.destinationList} typo="h3">
+          <DestinationScrollList>
             {destinations.map((destination) => {
               const isDisabled = preferredDestination === destination._id;
 
@@ -128,14 +259,18 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                 <label
                   className={[styles.choice, isDisabled ? styles.choiceDisabled : ""].filter(Boolean).join(" ")}
                   key={destination._id}
+                  style={{ "--form-choice-selected-color": selectedColorMap[destination._id] }}
                 >
                   <input
                     checked={alternativeDestinations.includes(destination._id)}
                     disabled={isDisabled}
                     name="alternativeDestinations"
-                    onChange={() =>
-                      setAlternativeDestinations((currentDestinations) => toggleValue(currentDestinations, destination._id))
-                    }
+                    onChange={() => {
+                      setSelectedColorMap((currentColorMap) =>
+                        getNextColorMap(currentColorMap, destination._id, textColorPalette),
+                      );
+                      setAlternativeDestinations((currentDestinations) => toggleValue(currentDestinations, destination._id));
+                    }}
                     type="checkbox"
                     value={destination._id}
                   />
@@ -143,7 +278,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                 </label>
               );
             })}
-          </div>
+          </DestinationScrollList>
         </fieldset>
       </div>
 
@@ -156,20 +291,29 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
         </legend>
         <div className={styles.quarterList} typo="h3">
           {quarters.map((quarter, index) => (
-            <label className={styles.quarterChoice} key={quarter.value}>
-              <input
-                checked={selectedQuarters.includes(quarter.value)}
-                name="quarters"
-                onChange={() => setSelectedQuarters((currentQuarters) => toggleValue(currentQuarters, quarter.value))}
-                type="checkbox"
-                value={quarter.value}
-              />
-              <span>
-                {quarter.label}
-                {index < quarters.length - 1 ? " /" : ""}
-              </span>
-            </label>
+            <span className={styles.quarterGroup} key={quarter.value}>
+              <label
+                className={styles.quarterChoice}
+                style={{ "--form-choice-selected-color": selectedColorMap[quarter.value] }}
+              >
+                <input
+                  checked={selectedQuarters.includes(quarter.value)}
+                  name="quarters"
+                  onChange={() => {
+                    setSelectedColorMap((currentColorMap) =>
+                      getNextColorMap(currentColorMap, quarter.value, textColorPalette),
+                    );
+                    setSelectedQuarters((currentQuarters) => toggleValue(currentQuarters, quarter.value));
+                  }}
+                  type="checkbox"
+                  value={quarter.value}
+                />
+                <span>{quarter.label}</span>
+              </label>
+              {index < quarters.length - 1 ? <span className={styles.quarterSeparator}>/</span> : null}
+            </span>
           ))}
+          <span className={styles.quarterSuffix}>Quarter 2027</span>
         </div>
       </fieldset>
 
@@ -202,26 +346,77 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
           Uploads
         </legend>
         <div className={styles.uploads}>
-          {uploadFields.map((field) => (
-            <label className={styles.uploadField} key={field.name}>
-              <span>
-                {field.label} <span className={styles.muted}>{field.note}</span>
-              </span>
-              {field.help ? (
+          {uploadFields.map((field) => {
+            const upload = uploads[field.name];
+            const isUploading = upload?.status === "loading";
+            const isComplete = upload?.status === "complete";
+
+            return (
+              <div
+                className={[
+                  styles.uploadField,
+                  upload ? styles.uploadFieldActive : "",
+                  isComplete ? styles.uploadFieldComplete : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                key={field.name}
+                onClick={() => fileInputRefs.current[field.name]?.click()}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  fileInputRefs.current[field.name]?.click();
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <span className={styles.uploadTitle}>
+                  <span className={styles.uploadTitleText} style={{ "--upload-progress": `${upload?.progress || 0}%` }}>
+                    {field.label}
+                  </span>
+                  {!upload ? <span className={styles.muted}> {field.note}</span> : null}
+                </span>
+              {field.help && !upload ? (
                 <span className={styles.uploadHelp} typo="h6">
                   {field.help}
                 </span>
               ) : null}
-              <span className={styles.uploadAction} typo="h6">
-                Upload
-              </span>
-              <input name={field.name} type="file" />
-            </label>
-          ))}
+                <span className={styles.uploadMeta} typo="h6">
+                  {isComplete ? <span className={styles.uploadFileName}>{upload.fileName}</span> : null}
+                  {isUploading ? <span className={styles.uploadStatus}>Uploading</span> : null}
+                  <button
+                    className={styles.uploadAction}
+                    onClick={(event) => {
+                      event.stopPropagation();
+
+                      if (isComplete) {
+                        handleUploadReset(field.name);
+                        return;
+                      }
+
+                      fileInputRefs.current[field.name]?.click();
+                    }}
+                    type="button"
+                  >
+                    {isComplete ? "Delete" : "Upload"}
+                  </button>
+                </span>
+                <input
+                  className={styles.uploadInput}
+                  name={field.name}
+                  onChange={(event) => handleUploadChange(field.name, event)}
+                  ref={(input) => {
+                    fileInputRefs.current[field.name] = input;
+                  }}
+                  type="file"
+                />
+              </div>
+            );
+          })}
         </div>
       </fieldset>
 
-      <ApplicationSubmission page={page} />
+      <ApplicationSubmission page={page} textColorPalette={textColorPalette} />
     </form>
   );
 };

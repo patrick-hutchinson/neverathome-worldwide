@@ -20,12 +20,32 @@ const LogoLink = ({ logo }) => (
   </a>
 );
 
-const ApplicationSubmission = ({ page = {} }) => {
+function getRandomTextColor(textColorPalette = []) {
+  if (textColorPalette.length === 0) return null;
+
+  return textColorPalette[Math.floor(Math.random() * textColorPalette.length)];
+}
+
+function getNextColorMap(currentColorMap, value, textColorPalette) {
+  if (currentColorMap[value]) return currentColorMap;
+
+  const nextColor = getRandomTextColor(textColorPalette);
+  if (!nextColor) return currentColorMap;
+
+  return {
+    ...currentColorMap,
+    [value]: nextColor,
+  };
+}
+
+const ApplicationSubmission = ({ page = {}, textColorPalette = [] }) => {
   const [acceptedDeclarations, setAcceptedDeclarations] = useState([]);
+  const [selectedColorMap, setSelectedColorMap] = useState({});
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
   const canSubmit = acceptedDeclarations.length === declarations.length;
 
   const toggleDeclaration = (declaration) => {
+    setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, declaration, textColorPalette));
     setAcceptedDeclarations((currentDeclarations) =>
       currentDeclarations.includes(declaration)
         ? currentDeclarations.filter((currentDeclaration) => currentDeclaration !== declaration)
@@ -42,7 +62,11 @@ const ApplicationSubmission = ({ page = {} }) => {
         <p>Please confirm the following:</p>
         <div className={styles.declarationList}>
           {declarations.map((declaration) => (
-            <label className={styles.declaration} key={declaration}>
+            <label
+              className={styles.declaration}
+              key={declaration}
+              style={{ "--form-choice-selected-color": selectedColorMap[declaration] }}
+            >
               <input
                 checked={acceptedDeclarations.includes(declaration)}
                 name="declarations"

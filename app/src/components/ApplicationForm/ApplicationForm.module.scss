@@ -1,8 +1,7 @@
 .form {
   --form-line-color: color-mix(in srgb, var(--foreground) 28%, transparent);
   --form-muted-color: color-mix(in srgb, var(--foreground) 55%, transparent);
-  --form-selected-color: #006cff;
-  --form-alternative-color: #43d7ff;
+  --form-choice-selected-color: var(--accent);
 
   display: flex;
   flex-direction: column;
@@ -104,13 +103,62 @@
   padding-bottom: var(--spacing-6);
 }
 
-.destinationList,
 .quarterList {
+  display: flex;
+  flex-wrap: wrap;
   padding-top: var(--spacing-8);
+}
+
+.quarterGroup {
+  display: inline-flex;
+}
+
+.quarterSeparator {
+  display: inline-block;
+  padding: 0 0.25em;
+  color: var(--form-muted-color);
+}
+
+.quarterSuffix {
+  color: var(--form-muted-color);
+  margin-left: var(--spacing-6);
+}
+
+.destinationListFrame {
+  position: relative;
+}
+
+.destinationListFrame::before,
+.destinationListFrame::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  height: var(--spacing-5);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.destinationListFrame::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--background), transparent);
+}
+
+.destinationListFrame::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--background), transparent);
+}
+
+.destinationListFrameTop::before,
+.destinationListFrameBottom::after {
+  opacity: 1;
 }
 
 .destinationList {
   max-height: 5em;
+  padding-top: var(--spacing-8);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -139,12 +187,12 @@
 }
 
 .choice:has(input:checked) {
-  color: var(--form-selected-color);
+  color: var(--form-choice-selected-color, var(--accent));
 }
 
 .destinationGrid .fieldset:nth-child(2) .choice:has(input:checked),
 .quarterChoice:has(input:checked) {
-  color: var(--form-alternative-color);
+  color: var(--form-choice-selected-color, var(--accent));
 }
 
 .choiceDisabled {
@@ -177,7 +225,7 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr) auto;
-  column-gap: var(--content-grid-gap);
+
   align-items: baseline;
   min-height: var(--spacing-4);
   padding: var(--spacing-8) 0;
@@ -185,8 +233,61 @@
   cursor: pointer;
 }
 
+.uploadTitle {
+  position: relative;
+  min-width: 0;
+}
+
+.uploadTitleText {
+  color: var(--foreground);
+}
+
+.uploadFieldActive .uploadTitleText {
+  color: transparent;
+  background: linear-gradient(
+    to right,
+    var(--foreground) 0 var(--upload-progress, 0%),
+    var(--form-muted-color) var(--upload-progress, 0%) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+.uploadMeta {
+  display: flex;
+  column-gap: var(--spacing-6);
+  justify-content: flex-end;
+}
+
+.uploadFileName {
+  color: #00ff66;
+}
+
+.uploadStatus {
+  color: var(--form-muted-color);
+}
+
 .uploadAction {
+  all: unset;
   justify-self: end;
+  background: transparent;
+  color: var(--form-muted-color);
+  cursor: pointer;
+}
+
+.uploadAction:hover,
+.uploadAction:focus,
+.uploadAction:focus-visible {
+  background: transparent;
+  color: var(--foreground);
+}
+
+.uploadInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .visuallyHidden {

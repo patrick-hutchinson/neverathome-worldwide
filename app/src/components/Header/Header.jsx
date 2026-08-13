@@ -123,9 +123,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
                 {link.label}
               </Link>
-              {link.href !== "/open-call" ? (
-                <CountdownText className={styles.countdown} deadline={link.deadline} />
-              ) : null}
+              {link.href !== "/open-call" ? <CountdownText className={styles.countdown} deadline={link.deadline} /> : null}
             </span>
           ))}
         </div>
@@ -136,7 +134,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           {",\u00a0"}
           {site.email ? (
             <a className={styles.link} href={`mailto:${site.email}`}>
-              Email
+              Contact
             </a>
           ) : null}
         </div>
