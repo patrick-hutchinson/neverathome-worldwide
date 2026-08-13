@@ -231,7 +231,7 @@ export default function App({ Component, pageProps }) {
       return undefined;
     }
 
-    let previousSelectionText = "";
+    let hasActiveSelectionColor = false;
 
     const setRandomHoverColor = (element) => {
       const nextColor = getRandomTextColor(textColorPalette);
@@ -241,7 +241,7 @@ export default function App({ Component, pageProps }) {
     };
 
     const handlePointerOver = (event) => {
-      const interactiveElement = event.target.closest?.("a, button, [role='button']");
+      const interactiveElement = event.target.closest?.("a, button, [role='button'], [data-random-hover-color]");
       const previousElement = event.relatedTarget instanceof Node ? event.relatedTarget : null;
       if (!interactiveElement || (previousElement && interactiveElement.contains(previousElement))) return;
 
@@ -249,7 +249,7 @@ export default function App({ Component, pageProps }) {
     };
 
     const handleFocusIn = (event) => {
-      const interactiveElement = event.target.closest?.("a, button, [role='button']");
+      const interactiveElement = event.target.closest?.("a, button, [role='button'], [data-random-hover-color]");
       if (!interactiveElement) return;
 
       setRandomHoverColor(interactiveElement);
@@ -259,16 +259,16 @@ export default function App({ Component, pageProps }) {
       const selectionText = window.getSelection()?.toString() || "";
 
       if (!selectionText.trim()) {
-        previousSelectionText = "";
+        hasActiveSelectionColor = false;
         return;
       }
 
-      if (selectionText === previousSelectionText) return;
+      if (hasActiveSelectionColor) return;
 
       const nextColor = getRandomTextColor(textColorPalette);
       if (!nextColor) return;
 
-      previousSelectionText = selectionText;
+      hasActiveSelectionColor = true;
       document.documentElement.style.setProperty("--selection-color", nextColor);
     };
 

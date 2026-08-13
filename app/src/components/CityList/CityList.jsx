@@ -28,6 +28,7 @@ export default function CityList({
           onClick={onCityClick ? () => onCityClick(city) : undefined}
           onFocus={isClickable ? () => onCitySelect(city) : undefined}
           onMouseEnter={() => onCitySelect(city)}
+          data-random-hover-color
           tabIndex={isClickable ? 0 : undefined}
         >
           {city.name}

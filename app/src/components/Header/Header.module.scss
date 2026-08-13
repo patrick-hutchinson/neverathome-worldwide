@@ -40,6 +40,16 @@
       flex-direction: column;
     }
 
+    .navItem:hover,
+    .navItem:focus-within {
+      color: var(--interactive-hover-color);
+
+      .link,
+      .countdown {
+        color: inherit;
+      }
+    }
+
     .link {
       display: inline-flex;
       align-items: baseline;

@@ -41,3 +41,7 @@ Text beim Bild raus bei destinations
 überall:
 
 hover fade
+
+Menu Schwupst sich rein und raus auf scroll
+
+Freitext nach Datum auf der Home Seite

@@ -35,12 +35,12 @@
 
 .cityEntryHoverable:hover,
 .cityEntryClickable:focus {
-  color: var(--accent);
+  color: var(--interactive-hover-color);
 }
 
 .cityEntryHoverable.cityEntryInactive:hover,
 .cityEntryClickable.cityEntryInactive:focus {
-  color: var(--accent);
+  color: var(--interactive-hover-color);
 }
 
 .cityEntryHoverable.cityEntrySelected:hover,

@@ -127,6 +127,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
               className={[styles.navItem, link.href === "/open-call" ? styles.navItemOpenCall : ""]
                 .filter(Boolean)
                 .join(" ")}
+              data-random-hover-color
               key={link.href}
             >
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
@@ -169,7 +170,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
 
     return (
       <nav className={styles.nav} typo="h4 compensate">
-        <span className={styles.navItem}>
+        <span className={styles.navItem} data-random-hover-color>
           <Link
             className={getLinkClassName(openCallLink.href)}
             href={openCallLink.href}
