@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 
 import { CountdownSlot, CountdownText } from "@/components/Countdown/Countdown";
@@ -37,6 +37,8 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   const router = useRouter();
   const [progressNow, setProgressNow] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase);
   const navLinks = useMemo(
     () =>
@@ -53,15 +55,44 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
 
   useEffect(() => {
     const closeMenu = () => setIsMenuOpen(false);
+    const showHeader = () => setIsHeaderHidden(false);
 
     router.events.on("routeChangeComplete", closeMenu);
     router.events.on("routeChangeError", closeMenu);
+    router.events.on("routeChangeStart", showHeader);
 
     return () => {
       router.events.off("routeChangeComplete", closeMenu);
       router.events.off("routeChangeError", closeMenu);
+      router.events.off("routeChangeStart", showHeader);
     };
   }, [router.events]);
+
+  useEffect(() => {
+    const scrollThreshold = 8;
+    const topThreshold = 24;
+    lastScrollYRef.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollYRef.current;
+
+      if (currentScrollY <= topThreshold || isMenuOpen) {
+        setIsHeaderHidden(false);
+        lastScrollYRef.current = currentScrollY;
+        return;
+      }
+
+      if (Math.abs(scrollDelta) < scrollThreshold) return;
+
+      setIsHeaderHidden(scrollDelta > 0);
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMenuOpen]);
 
   const Progressbar = () => {
     const progress = getProgress(progressNow);
@@ -174,7 +205,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   };
 
   return (
-    <header className={styles.header}>
+    <header className={[styles.header, isHeaderHidden ? styles.headerHidden : ""].filter(Boolean).join(" ")}>
       <Progressbar />
       {isMobile ? <MobileNav /> : <DesktopNav />}
       <AnimatePresence>

@@ -4,6 +4,9 @@
   z-index: 1000;
   padding: var(--margin);
   pointer-events: none;
+  transform: translateY(0);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 
   .progressbar {
     width: 100%;
@@ -112,6 +115,10 @@
       mix-blend-mode: difference;
     }
   }
+}
+
+.headerHidden {
+  transform: translateY(-100%);
 }
 
 .linkActive {
