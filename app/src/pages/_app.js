@@ -63,7 +63,8 @@ const mobileGlobeViewportPadding = 16;
 const mobileGlobeMinimumNavigationDistance = 180;
 const h1MarqueeDefaultSpeed = 1;
 const h1MarqueeNavigationSpeed = 100;
-const h1MarqueeNavigationLeadInMs = 500;
+const h1MarqueeNavigationLeadInMs = 300;
+const h1MarqueeScrollNavigationLeadInMs = 500;
 const h1MarqueeNavigationSettleDelay = 0;
 const h1MarqueeNavigationSpeedTransitionMs = 1000;
 const navigationScrollToTopFallbackMs = 1400;
@@ -454,6 +455,20 @@ export default function App({ Component, pageProps }) {
   }, [isApplicationFormOpen]);
 
   useEffect(() => {
+    if (!isImprintOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeImprint();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isImprintOpen]);
+
+  useEffect(() => {
     if (isApplicationFormOpen) return;
 
     setIsApplicationFormEntered(false);
@@ -718,7 +733,12 @@ export default function App({ Component, pageProps }) {
       setShouldRenderCityList(shouldScrollToTop);
 
       const waitForNavigation = shouldScrollToTop
-        ? scrollToPageTop()
+        ? Promise.all([
+            scrollToPageTop(),
+            new Promise((resolve) => {
+              pendingNavigationTimerRef.current = setTimeout(resolve, h1MarqueeScrollNavigationLeadInMs);
+            }),
+          ])
         : new Promise((resolve) => {
             pendingNavigationTimerRef.current = setTimeout(resolve, h1MarqueeNavigationLeadInMs);
           });
