@@ -24,7 +24,6 @@
   --content-width: calc(100vw - 2 * var(--margin));
 
   --header-height: 23px;
-  --inner-height: calc(100vh - 2 * var(--margin) - var(--header-height));
 
   --accent: #aeb0b1;
   --interactive-hover-color: var(--accent);
@@ -163,8 +162,12 @@ a:focus,
 a:focus-visible,
 button:focus,
 button:focus-visible {
-  outline: none;
-  box-shadow: none;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
 }
 
 a:hover {

@@ -61,9 +61,7 @@
   cursor: pointer;
 }
 
-.legalLinks button:hover,
-.legalLinks button:focus,
-.legalLinks button:focus-visible {
+.legalLinks button:hover {
   background: transparent;
   color: var(--interactive-hover-color, var(--accent));
 }

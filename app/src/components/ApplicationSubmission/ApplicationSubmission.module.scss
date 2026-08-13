@@ -48,8 +48,7 @@
 }
 
 .declaration input:checked {
-  border-color: var(--form-choice-selected-color, currentColor);
-  background: var(--form-choice-selected-color, currentColor);
+  background: #fff;
 }
 
 .declarationsLegend {

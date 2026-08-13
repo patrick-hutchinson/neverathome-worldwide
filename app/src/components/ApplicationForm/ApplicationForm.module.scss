@@ -58,9 +58,7 @@
   transition: color 0.2s ease-in-out;
 }
 
-.closeButton:hover,
-.closeButton:focus,
-.closeButton:focus-visible {
+.closeButton:hover {
   color: var(--foreground);
 }
 
@@ -316,9 +314,7 @@
   cursor: pointer;
 }
 
-.uploadAction:hover,
-.uploadAction:focus,
-.uploadAction:focus-visible {
+.uploadAction:hover {
   background: transparent;
   color: var(--foreground);
 }

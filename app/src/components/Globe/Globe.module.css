@@ -21,7 +21,6 @@
 .markerLayer {
   transform-origin: center;
   transform: scale(var(--globe-gesture-scale));
-  transition: transform 0.25s ease-out;
 }
 
 .globe:active {
@@ -84,9 +83,7 @@
   line-height: var(--lineHeight-5);
   letter-spacing: var(--letterSpacing-5);
   white-space: nowrap;
-  transition:
-    transform 0.35s ease,
-    opacity 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .cityMarkerSvg {

@@ -33,17 +33,14 @@
   color: var(--accent);
 }
 
-.cityEntryHoverable:hover,
-.cityEntryClickable:focus {
+.cityEntryHoverable:hover {
   color: var(--interactive-hover-color);
 }
 
-.cityEntryHoverable.cityEntryInactive:hover,
-.cityEntryClickable.cityEntryInactive:focus {
+.cityEntryHoverable.cityEntryInactive:hover {
   color: var(--interactive-hover-color);
 }
 
-.cityEntryHoverable.cityEntrySelected:hover,
-.cityEntryClickable.cityEntrySelected:focus {
+.cityEntryHoverable.cityEntrySelected:hover {
   color: #000;
 }

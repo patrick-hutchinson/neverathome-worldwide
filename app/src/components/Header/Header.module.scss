@@ -43,8 +43,7 @@
       flex-direction: column;
     }
 
-    .navItem:hover,
-    .navItem:focus-within {
+    .navItem:hover {
       color: var(--interactive-hover-color);
 
       .link,
@@ -64,8 +63,7 @@
       color: var(--accent);
     }
 
-    .phaseItem:hover,
-    .phaseItem:focus-within {
+    .phaseItem:hover {
       .countdown {
         color: var(--accent);
       }

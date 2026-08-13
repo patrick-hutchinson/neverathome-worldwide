@@ -18,6 +18,9 @@ const GESTURE_SCALE_MAX = 1.75;
 const GESTURE_WHEEL_SENSITIVITY = 0.0025;
 const GESTURE_PINCH_SENSITIVITY = 0.01;
 const GESTURE_RESOLUTION_RESET_DELAY = 280;
+const GESTURE_SCALE_SPRING_STIFFNESS = 92;
+const GESTURE_SCALE_SPRING_DAMPING = 10;
+const GESTURE_SCALE_SETTLE_THRESHOLD = 0.001;
 const MARKER_FONT_URL = "/fonts/TexGyreHeros-regular.ttf";
 const MARKER_FONT_SIZE = 1000;
 const MARKER_OUTLINE_OFFSET = 55;
@@ -171,6 +174,8 @@ export default function Globe({
     const activePointers = new Map();
     let pinchStartDistance = 0;
     let gestureScale = 1;
+    let gestureTargetScale = 1;
+    let gestureScaleVelocity = 0;
     let gestureStartScale = 1;
     let gestureResolutionResetTimer = null;
     let isGestureResolutionBoosted = false;
@@ -235,8 +240,17 @@ export default function Globe({
 
       const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
 
+      const hasGestureScaleMotion = () =>
+        Math.abs(gestureTargetScale - gestureScale) > GESTURE_SCALE_SETTLE_THRESHOLD ||
+        Math.abs(gestureScaleVelocity) > GESTURE_SCALE_SETTLE_THRESHOLD;
+
       const hasActiveMotion = (now = performance.now()) =>
-        needsRender || focusTarget || isDragging || (!prefersReducedMotion && hasInertia()) || now < initialRenderBurstEndAt;
+        needsRender ||
+        focusTarget ||
+        isDragging ||
+        hasGestureScaleMotion() ||
+        (!prefersReducedMotion && hasInertia()) ||
+        now < initialRenderBurstEndAt;
 
       const requestRender = () => {
         needsRender = true;
@@ -332,10 +346,13 @@ export default function Globe({
         }, GESTURE_RESOLUTION_RESET_DELAY);
       };
 
-      const setGestureScale = (nextScale) => {
-        gestureScale = clamp(nextScale, GESTURE_SCALE_MIN, GESTURE_SCALE_MAX);
+      const applyGestureScale = () => {
         globeElement.style.setProperty("--globe-gesture-scale", gestureScale.toFixed(3));
         globeElement.style.setProperty("--globe-marker-inverse-scale", (1 / gestureScale).toFixed(3));
+      };
+
+      const setGestureScale = (nextScale) => {
+        gestureTargetScale = clamp(nextScale, GESTURE_SCALE_MIN, GESTURE_SCALE_MAX);
         requestRender();
       };
 
@@ -344,9 +361,7 @@ export default function Globe({
         isDragging = false;
         unlockMobilePageScroll();
         pinchStartDistance = 0;
-        gestureScale = 1;
-        globeElement.style.removeProperty("--globe-gesture-scale");
-        globeElement.style.removeProperty("--globe-marker-inverse-scale");
+        gestureTargetScale = 1;
         requestRender();
         scheduleGestureResolutionReset();
       };
@@ -662,6 +677,30 @@ export default function Globe({
 
           dragVelocity.x *= 0.94;
           dragVelocity.y *= 0.94;
+        }
+
+        if (hasGestureScaleMotion()) {
+          if (prefersReducedMotion) {
+            gestureScale = gestureTargetScale;
+            gestureScaleVelocity = 0;
+          } else {
+            const displacement = gestureTargetScale - gestureScale;
+            const springForce = displacement * GESTURE_SCALE_SPRING_STIFFNESS;
+            const dampingForce = gestureScaleVelocity * GESTURE_SCALE_SPRING_DAMPING;
+
+            gestureScaleVelocity += (springForce - dampingForce) * deltaSeconds;
+            gestureScale += gestureScaleVelocity * deltaSeconds;
+
+            if (
+              Math.abs(gestureTargetScale - gestureScale) <= GESTURE_SCALE_SETTLE_THRESHOLD &&
+              Math.abs(gestureScaleVelocity) <= GESTURE_SCALE_SETTLE_THRESHOLD
+            ) {
+              gestureScale = gestureTargetScale;
+              gestureScaleVelocity = 0;
+            }
+          }
+
+          applyGestureScale();
         }
 
         globe.setPointOfView(camera);
