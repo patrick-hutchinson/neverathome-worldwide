@@ -47,11 +47,17 @@
   column-gap: var(--content-grid-gap);
   padding: 0 var(--spacing-6);
   pointer-events: none;
+  transition: opacity 0.35s ease-in-out;
 }
 
 .cityListLayer > * {
   grid-column: 13 / 25;
   pointer-events: auto;
+}
+
+.cityListLayerHidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .marqueeContainer {

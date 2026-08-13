@@ -272,7 +272,9 @@ export default function App({ Component, pageProps }) {
   const [highlightedCity, setHighlightedCity] = useState(null);
   const [contentScrollRequest, setContentScrollRequest] = useState(0);
   const [cityListScrollRequest, setCityListScrollRequest] = useState(0);
+  const [isDestinationCityListHidden, setIsDestinationCityListHidden] = useState(false);
   const globeMoverRef = useRef(null);
+  const cityListLayerRef = useRef(null);
   const footerRef = useRef(null);
   const imprintRef = useRef(null);
   const imprintCloseTimerRef = useRef(null);
@@ -725,7 +727,29 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     if (!isDestinationsPage) {
       setSelectedDestination(null);
+      setIsDestinationCityListHidden(false);
     }
+  }, [isDestinationsPage]);
+
+  useEffect(() => {
+    if (!isDestinationsPage) {
+      setIsDestinationCityListHidden(false);
+      return undefined;
+    }
+
+    const cityListLayer = cityListLayerRef.current;
+    if (!cityListLayer) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsDestinationCityListHidden(entry.intersectionRatio < 0.1);
+      },
+      { threshold: [0, 0.1, 1] },
+    );
+
+    observer.observe(cityListLayer);
+
+    return () => observer.disconnect();
   }, [isDestinationsPage]);
 
   useEffect(() => {
@@ -848,9 +872,14 @@ export default function App({ Component, pageProps }) {
                 </div>
               </div>
               <div
-                className={[styles.cityListLayer, isPageObscuring ? styles.pageObscured : ""]
+                className={[
+                  styles.cityListLayer,
+                  isPageObscuring ? styles.pageObscured : "",
+                  isDestinationCityListHidden ? styles.cityListLayerHidden : "",
+                ]
                   .filter(Boolean)
                   .join(" ")}
+                ref={cityListLayerRef}
               >
                 <AnimatePresence initial={false} mode="wait">
                   <motion.div
