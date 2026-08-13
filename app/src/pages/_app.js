@@ -156,6 +156,22 @@ function getRandomDestination(destinations = []) {
   return destinations[Math.floor(Math.random() * destinations.length)];
 }
 
+function getGlobeTextureUrl(textureUrl) {
+  if (!textureUrl) return undefined;
+
+  try {
+    const url = new URL(textureUrl);
+
+    if (url.hostname === "cdn.sanity.io") {
+      return `/api/globe-texture?url=${encodeURIComponent(textureUrl)}`;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return textureUrl;
+}
+
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [sharedData, setSharedData] = useState({
@@ -172,6 +188,7 @@ export default function App({ Component, pageProps }) {
   const destinationsRef = useRef(destinations);
   const currentPhase = sharedData.currentPhase || page.phase || null;
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase)?.replaceAll(" ", "");
+  const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
   const h1MarqueeText = routeMarqueeLabels[router.pathname] || currentPhaseLabel;
   const isDestinationsPage = router.pathname === "/destinations";
   const is404Page = router.pathname === "/404";
@@ -512,7 +529,7 @@ export default function App({ Component, pageProps }) {
                   <Globe
                     cities={destinations}
                     destinationCity={destinationCity}
-                    globeImageUrl={page.globeTexture?.asset?.url}
+                    globeImageUrl={globeTextureUrl}
                     height={globeSize}
                     onCityMarkerClick={handleCityMarkerClick}
                     width={globeSize}

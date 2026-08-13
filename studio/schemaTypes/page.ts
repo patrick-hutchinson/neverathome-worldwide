@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity'
+import {defineField, defineType, defineArrayMember} from 'sanity'
 
 export const page = defineType({
   name: 'page',
@@ -29,6 +29,35 @@ export const page = defineType({
       of: [{type: 'file'}],
     }),
     defineField({name: 'globeTexture', title: 'Weltkugel Textur (jpg!)', type: 'image'}),
+    defineField({
+      name: 'textColors',
+      title: 'Text Farben',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          name: 'textColor',
+          title: 'Text Farbe',
+          type: 'object',
+          options: {columns: 2},
+          fields: [
+            defineField({
+              name: 'colorName',
+              title: 'Farbname',
+              type: 'string',
+            }),
+            defineField({
+              name: 'hexCode',
+              title: 'Hex Code',
+              type: 'string',
+              validation: (Rule) =>
+                Rule.regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, {
+                  name: 'hex color',
+                }),
+            }),
+          ],
+        }),
+      ],
+    }),
   ],
   preview: {
     prepare: () => ({title: 'Page'}),
