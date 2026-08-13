@@ -113,9 +113,16 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
+  align-items: stretch;
 
   border-bottom: 1px solid var(--form-line-color);
   padding-bottom: var(--spacing-6);
+}
+
+.destinationGrid .fieldset {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
 }
 
 .quarterList {
@@ -141,6 +148,7 @@
 
 .destinationListFrame {
   position: relative;
+  min-height: 0;
 }
 
 .destinationListFrame::before,
@@ -172,7 +180,7 @@
 }
 
 .destinationList {
-  max-height: 5em;
+  height: 5em;
   padding-top: var(--spacing-8);
   overflow-y: auto;
   overscroll-behavior: contain;

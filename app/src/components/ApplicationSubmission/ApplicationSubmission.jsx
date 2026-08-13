@@ -54,8 +54,8 @@ const ApplicationSubmission = ({ hasRequiredError = false, page = {}, textColorP
 
   return (
     <section className={styles.submission}>
-      <fieldset className={styles.declarations} typo="h5">
-        <legend className={`${styles.declarationsLegend} ${styles.legend}`} typo="h4">
+      <fieldset className={styles.declarations} typo="h5 compensate">
+        <legend className={`${styles.declarationsLegend} ${styles.legend}`} typo="h4 compensate">
           <span>Declarations</span>
           {hasRequiredError ? (
             <span className={styles.requiredNote} typo="h6">

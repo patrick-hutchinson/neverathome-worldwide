@@ -274,9 +274,9 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
 
   return (
     <form className={styles.form} noValidate onInput={updateRequiredErrors} onSubmit={handleSubmit} ref={formRef} typo="h4">
-      <fieldset className={`${styles.fieldset} ${styles.personalInformation}`}>
+      <fieldset className={`${styles.fieldset} ${styles.personalInformation}`} typo="h4 compensate">
         <legend className={styles.legendRow} typo="h4">
-          <span>Personal Information</span>
+          <span typo="h4 compensate">Personal Information</span>
           <button className={styles.closeButton} onClick={onClose} type="button">
             Close
           </button>
@@ -297,7 +297,12 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
                 type={field.type || "text"}
               />
               {(field.optional && !field.hideOptionalNote) || requiredErrors[field.name] ? (
-                <span className={[styles.fieldNote, requiredErrors[field.name] ? styles.requiredNote : ""].filter(Boolean).join(" ")} typo="h6">
+                <span
+                  className={[styles.fieldNote, requiredErrors[field.name] ? styles.requiredNote : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                  typo="h6"
+                >
                   {requiredErrors[field.name] ? "Required" : "Optional"}
                 </span>
               ) : null}
@@ -307,7 +312,7 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
       </fieldset>
 
       <div className={styles.destinationGrid}>
-        <fieldset className={styles.fieldset}>
+        <fieldset className={styles.fieldset} typo="h4 compensate">
           <legend className={styles.legendRow} typo="h4">
             <span>Preferred Destinations</span>
             {requiredErrors.preferredDestinations ? (
@@ -337,7 +342,7 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
           </DestinationScrollList>
         </fieldset>
 
-        <fieldset className={styles.fieldset}>
+        <fieldset className={styles.fieldset} typo="h4 compensate">
           <legend className={styles.legendRow} typo="h4">
             <span>Alternative</span>
             <span
@@ -381,10 +386,13 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
         </fieldset>
       </div>
 
-      <fieldset className={`${styles.fieldset} ${styles.timeFrame}`}>
+      <fieldset className={`${styles.fieldset} ${styles.timeFrame}`} typo="h4 compensate">
         <legend className={styles.legendRow} typo="h4">
           <span>Preferred time frame</span>
-          <span className={[styles.legendNote, requiredErrors.quarters ? styles.requiredNote : ""].filter(Boolean).join(" ")} typo="h6">
+          <span
+            className={[styles.legendNote, requiredErrors.quarters ? styles.requiredNote : ""].filter(Boolean).join(" ")}
+            typo="h6"
+          >
             {requiredErrors.quarters ? "Required" : "One Or Multiple Presentation Periods"}
           </span>
         </legend>
@@ -418,7 +426,7 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
       </fieldset>
 
       {textareaFields.map((field) => (
-        <label className={styles.textareaField} key={field.name}>
+        <label className={styles.textareaField} key={field.name} typo="h4 compensate">
           <span className={styles.legendRow} typo="h4">
             <span>{field.label}</span>
             {requiredErrors[field.name] ? (
@@ -437,8 +445,8 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
         </label>
       ))}
 
-      <fieldset className={styles.fieldset}>
-          <legend className={styles.legendRow} typo="h4">
+      <fieldset className={styles.fieldset} typo="h4 compensate">
+        <legend className={styles.legendRow} typo="h4">
           <span>Uploads</span>
           {uploadFields.some((field) => requiredErrors[field.name]) ? (
             <span className={`${styles.legendNote} ${styles.requiredNote}`} typo="h6">
@@ -477,11 +485,11 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
                   </span>
                   {!upload ? <span className={styles.muted}> {field.note}</span> : null}
                 </span>
-              {field.help && !upload ? (
-                <span className={styles.uploadHelp} typo="h6">
-                  {field.help}
-                </span>
-              ) : null}
+                {field.help && !upload ? (
+                  <span className={styles.uploadHelp} typo="h6">
+                    {field.help}
+                  </span>
+                ) : null}
                 <span className={styles.uploadMeta} typo="h6">
                   {requiredErrors[field.name] ? <span className={styles.requiredNote}>Required</span> : null}
                   {isComplete ? <span className={styles.uploadFileName}>{upload.fileName}</span> : null}
@@ -519,7 +527,11 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
         </div>
       </fieldset>
 
-      <ApplicationSubmission hasRequiredError={requiredErrors.declarations} page={page} textColorPalette={textColorPalette} />
+      <ApplicationSubmission
+        hasRequiredError={requiredErrors.declarations}
+        page={page}
+        textColorPalette={textColorPalette}
+      />
     </form>
   );
 };
