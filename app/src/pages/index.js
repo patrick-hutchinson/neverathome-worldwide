@@ -44,13 +44,7 @@ export default function Home({ homePage = {} }) {
                     </div>
 
                     <div className={styles.scheduleTitle} typo="h3 compensate">
-                      <FormatDate date={entry.date} />
-                      {entry.endDate ? (
-                        <>
-                          {" til "}
-                          <FormatDate date={entry.endDate} />
-                        </>
-                      ) : null}
+                      <FormatDate date={entry.date} endDate={entry.endDate} />
                       {entry.title ? <span className={styles.title}>: {entry.title}</span> : null}
                     </div>
 

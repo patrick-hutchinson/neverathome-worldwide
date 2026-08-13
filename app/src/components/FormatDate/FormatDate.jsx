@@ -1,17 +1,40 @@
-const FormatDate = ({ date, className }) => {
-  const d = new Date(date);
-  const options = { month: "short", year: "numeric" };
-  const monthYear = d.toLocaleDateString("en-US", options);
+function parseDate(date) {
+  if (!date) return null;
 
-  function getOrdinal(n) {
-    const s = ["th", "st", "nd", "rd"];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  const [year, month, day] = String(date).split("-").map(Number);
+  const parsedDate =
+    Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+      ? new Date(year, month - 1, day)
+      : new Date(date);
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function formatDate(date, includeYear = true) {
+  if (!date) return null;
+
+  return date.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    ...(includeYear ? { year: "numeric" } : {}),
+  });
+}
+
+const FormatDate = ({ date, endDate, className }) => {
+  const start = parseDate(date);
+  const end = parseDate(endDate);
+
+  if (!start) return null;
+
+  if (!end) {
+    return <time className={className}>{formatDate(start)}</time>;
   }
 
-  const day = getOrdinal(d.getDate());
+  const isSameYear = start.getFullYear() === end.getFullYear();
+  const startLabel = formatDate(start, !isSameYear);
+  const endLabel = formatDate(end);
 
-  return <time className={className}>{`${monthYear.split(" ")[0]} ${day}`}</time>;
+  return <time className={className}>{`${startLabel} to ${endLabel}`}</time>;
 };
 
 export default FormatDate;
