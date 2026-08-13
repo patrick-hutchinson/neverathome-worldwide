@@ -11,6 +11,7 @@ const MARQUEE_SCROLLABLE_WIDTH_MULTIPLIER = 3;
 const MARQUEE_SCROLL_SPEED_MULTIPLIER = 100;
 const MARQUEE_SCROLL_SPEED_DAMPING = 0.075;
 const MARQUEE_SCROLL_VELOCITY_VARIABLE = "--lenis-scroll-velocity";
+const MARQUEE_DEFAULT_SPEED_TRANSITION_MS = 1000;
 
 const getMarqueeDuration = (itemWidth, targetSpeed) => {
   if (!itemWidth || targetSpeed <= 0) return MARQUEE_BASE_DURATION;
@@ -18,10 +19,21 @@ const getMarqueeDuration = (itemWidth, targetSpeed) => {
   return Math.max(6, (itemWidth / 1200) * MARQUEE_BASE_DURATION * (1 / targetSpeed));
 };
 
-const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MARQUEE_TARGET_SPEED, typo }) => {
+const Marquee = ({
+  text,
+  className = "",
+  direction = "forward",
+  speedMultiplier = 1,
+  speedTransitionMs = MARQUEE_DEFAULT_SPEED_TRANSITION_MS,
+  targetSpeed = MARQUEE_TARGET_SPEED,
+  typo,
+}) => {
   const outerRef = useRef(null);
   const innerRef = useRef(null);
   const measureRef = useRef(null);
+  const speedMultiplierRef = useRef(speedMultiplier);
+  const visibleSpeedMultiplierRef = useRef(speedMultiplier);
+  const speedTransitionMsRef = useRef(speedTransitionMs);
   const [itemWidth, setItemWidth] = useState(0);
   const [repeatCount, setRepeatCount] = useState(MARQUEE_MIN_REPEAT_COUNT);
   const [isInView, setIsInView] = useState(true);
@@ -31,6 +43,14 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
   const slides = useMemo(() => Array.from({ length: repeatCount }), [repeatCount]);
   const duration = getMarqueeDuration(itemWidth, targetSpeed);
   const animationDirection = direction === "backward" ? "reverse" : "normal";
+
+  useEffect(() => {
+    speedMultiplierRef.current = speedMultiplier;
+  }, [speedMultiplier]);
+
+  useEffect(() => {
+    speedTransitionMsRef.current = speedTransitionMs;
+  }, [speedTransitionMs]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -96,7 +116,8 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
     if (!inner || !isAnimating || !inner.getAnimations) return undefined;
 
     let animationFrame = null;
-    let playbackRate = 1;
+    let lastTickTime = performance.now();
+    let scrollBoostPlaybackRate = 0;
 
     const setAnimationPlaybackRate = (nextPlaybackRate) => {
       inner.getAnimations().forEach((animation) => {
@@ -109,15 +130,22 @@ const Marquee = ({ text, className = "", direction = "forward", targetSpeed = MA
       });
     };
 
-    const tick = () => {
+    const tick = (now = performance.now()) => {
+      const deltaMs = Math.min(now - lastTickTime, 100);
+      lastTickTime = now;
+      const speedTransitionAmount =
+        speedTransitionMsRef.current <= 0 ? 1 : 1 - Math.exp((-deltaMs * 4.6) / speedTransitionMsRef.current);
+
+      visibleSpeedMultiplierRef.current +=
+        (speedMultiplierRef.current - visibleSpeedMultiplierRef.current) * speedTransitionAmount;
+
       const scrollVelocity = Number.parseFloat(
         document.documentElement.style.getPropertyValue(MARQUEE_SCROLL_VELOCITY_VARIABLE),
       );
-      const targetPlaybackRate =
-        1 + (Number.isFinite(scrollVelocity) ? scrollVelocity : 0) * MARQUEE_SCROLL_SPEED_MULTIPLIER;
+      const targetScrollBoost = (Number.isFinite(scrollVelocity) ? scrollVelocity : 0) * MARQUEE_SCROLL_SPEED_MULTIPLIER;
 
-      playbackRate += (targetPlaybackRate - playbackRate) * MARQUEE_SCROLL_SPEED_DAMPING;
-      setAnimationPlaybackRate(playbackRate);
+      scrollBoostPlaybackRate += (targetScrollBoost - scrollBoostPlaybackRate) * MARQUEE_SCROLL_SPEED_DAMPING;
+      setAnimationPlaybackRate(visibleSpeedMultiplierRef.current + scrollBoostPlaybackRate);
 
       animationFrame = requestAnimationFrame(tick);
     };

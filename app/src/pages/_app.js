@@ -57,6 +57,11 @@ const desktopGlobeMinimumNavigationDistance = 300;
 const desktopGlobePositionAttempts = 24;
 const mobileGlobeViewportPadding = 16;
 const mobileGlobeMinimumNavigationDistance = 180;
+const h1MarqueeDefaultSpeed = 1;
+const h1MarqueeNavigationSpeed = 100;
+const h1MarqueeNavigationLeadInMs = 350;
+const h1MarqueeNavigationSettleDelay = 0;
+const h1MarqueeNavigationSpeedTransitionMs = 1000;
 
 function getRandomNumber(min, max) {
   if (max <= min) return min;
@@ -164,6 +169,7 @@ export default function App({ Component, pageProps }) {
   const page = sharedData.page || {};
   const pageDeadlines = sharedData.pageDeadlines || {};
   const destinations = sharedData.destinations || [];
+  const destinationsRef = useRef(destinations);
   const currentPhase = sharedData.currentPhase || page.phase || null;
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase)?.replaceAll(" ", "");
   const h1MarqueeText = routeMarqueeLabels[router.pathname] || currentPhaseLabel;
@@ -179,10 +185,17 @@ export default function App({ Component, pageProps }) {
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
+  const pendingNavigationTimerRef = useRef(null);
+  const h1MarqueeSettleTimerRef = useRef(null);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
 
+  useEffect(() => {
+    destinationsRef.current = destinations;
+  }, [destinations]);
+
   const moveGlobeForNavigation = () => {
-    const randomDestination = getRandomDestination(destinations);
+    const randomDestination = getRandomDestination(destinationsRef.current);
 
     if (randomDestination) {
       setDestinationCity(randomDestination);
@@ -205,16 +218,81 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   useEffect(() => {
+    const clearH1MarqueeSettleTimer = () => {
+      if (!h1MarqueeSettleTimerRef.current) return;
+
+      clearTimeout(h1MarqueeSettleTimerRef.current);
+      h1MarqueeSettleTimerRef.current = null;
+    };
+
+    const clearPendingNavigationTimer = () => {
+      if (!pendingNavigationTimerRef.current) return;
+
+      clearTimeout(pendingNavigationTimerRef.current);
+      pendingNavigationTimerRef.current = null;
+    };
+
+    const getInternalNavigationHref = (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return null;
+      }
+
+      const anchor = event.target.closest?.("a[href]");
+      if (!anchor || anchor.target || anchor.hasAttribute("download")) return null;
+
+      const nextUrl = new URL(anchor.href, window.location.href);
+      if (nextUrl.origin !== window.location.origin) return null;
+      if (nextUrl.pathname === window.location.pathname && nextUrl.search === window.location.search) return null;
+
+      return `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    };
+
+    const handleDocumentClick = (event) => {
+      const nextHref = getInternalNavigationHref(event);
+      if (!nextHref) return;
+
+      event.preventDefault();
+
+      clearPendingNavigationTimer();
+      clearH1MarqueeSettleTimer();
+      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+
+      pendingNavigationTimerRef.current = setTimeout(() => {
+        pendingNavigationTimerRef.current = null;
+        router.push(nextHref).catch(() => {
+          setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
+        });
+      }, h1MarqueeNavigationLeadInMs);
+    };
+
     const handleRouteChangeStart = () => {
+      clearH1MarqueeSettleTimer();
+      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
       moveGlobeForNavigation();
     };
 
+    const settleH1MarqueeSpeed = () => {
+      clearH1MarqueeSettleTimer();
+      h1MarqueeSettleTimerRef.current = setTimeout(() => {
+        setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
+        h1MarqueeSettleTimerRef.current = null;
+      }, h1MarqueeNavigationSettleDelay);
+    };
+
+    document.addEventListener("click", handleDocumentClick, true);
     router.events.on("routeChangeStart", handleRouteChangeStart);
+    router.events.on("routeChangeComplete", settleH1MarqueeSpeed);
+    router.events.on("routeChangeError", settleH1MarqueeSpeed);
 
     return () => {
+      clearPendingNavigationTimer();
+      clearH1MarqueeSettleTimer();
+      document.removeEventListener("click", handleDocumentClick, true);
       router.events.off("routeChangeStart", handleRouteChangeStart);
+      router.events.off("routeChangeComplete", settleH1MarqueeSpeed);
+      router.events.off("routeChangeError", settleH1MarqueeSpeed);
     };
-  }, [destinations, router.events]);
+  }, [router.events]);
 
   useEffect(() => {
     if (isAppReady || !router.isReady) return undefined;
@@ -441,7 +519,15 @@ export default function App({ Component, pageProps }) {
                 </motion.div>
 
                 <div className={styles.marqueeContainer}>
-                  {h1MarqueeText ? <Marquee direction="backward" text={h1MarqueeText} typo="h1" /> : null}
+                  {h1MarqueeText ? (
+                    <Marquee
+                      direction="backward"
+                      speedMultiplier={h1MarqueeSpeedMultiplier}
+                      speedTransitionMs={h1MarqueeNavigationSpeedTransitionMs}
+                      text={h1MarqueeText}
+                      typo="h1"
+                    />
+                  ) : null}
                   {page.marqueeText ? <Marquee text={page.marqueeText} typo="h4" /> : null}
                 </div>
               </div>
