@@ -35,6 +35,11 @@ export const pageQuery = `*[_type=="page"][0]{
     }
   },
   formLink,
+  globeTexture{
+    asset->{
+      url
+    }
+  },
   mediaPartner[]{
     asset->{
       url,

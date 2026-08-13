@@ -28,6 +28,7 @@ export const page = defineType({
       type: 'array',
       of: [{type: 'file'}],
     }),
+    defineField({name: 'globeTexture', title: 'Weltkugel Textur (jpg!)', type: 'image'}),
   ],
   preview: {
     prepare: () => ({title: 'Page'}),

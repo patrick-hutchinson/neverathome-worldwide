@@ -7,7 +7,6 @@ const MAX_DEVICE_PIXEL_RATIO = 1.5;
 const MAX_GESTURE_DEVICE_PIXEL_RATIO = 3;
 const MAX_FRAME_RATE = 60;
 const REDUCED_MOTION_FRAME_RATE = 30;
-const INITIAL_RENDER_BURST_MS = 1500;
 const ENTRY_ANIMATION_MS = 1500;
 const ENTRY_SPIN_RADIANS = Math.PI * 2.25;
 const DEFAULT_WIDTH = 300;
@@ -170,6 +169,7 @@ export default function Globe({
     let initialRenderBurstEndAt = 0;
     let entryAnimationStartAt = 0;
     let entryAnimationEndAt = 0;
+    let hasStartedEntryAnimation = false;
     let isVisible = true;
     let isDocumentVisible = true;
     let needsRender = false;
@@ -219,7 +219,11 @@ export default function Globe({
       const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
 
       const hasActiveMotion = (now = performance.now()) =>
-        needsRender || focusTarget || isDragging || (!prefersReducedMotion && hasInertia()) || now < initialRenderBurstEndAt;
+        needsRender ||
+        focusTarget ||
+        isDragging ||
+        (!prefersReducedMotion && hasInertia()) ||
+        now < initialRenderBurstEndAt;
 
       const requestRender = () => {
         needsRender = true;
@@ -238,6 +242,22 @@ export default function Globe({
           : Math.min(window.devicePixelRatio, MAX_DEVICE_PIXEL_RATIO);
 
         renderer.setPixelRatio(pixelRatio);
+        requestRender();
+      };
+
+      const startEntryAnimation = () => {
+        if (!isMounted || hasStartedEntryAnimation) return;
+
+        hasStartedEntryAnimation = true;
+        entryAnimationStartAt = performance.now();
+        entryAnimationEndAt = prefersReducedMotion ? entryAnimationStartAt : entryAnimationStartAt + ENTRY_ANIMATION_MS;
+        initialRenderBurstEndAt = entryAnimationEndAt;
+
+        if (prefersReducedMotion) {
+          globeGroup.scale.setScalar(1);
+          globeGroup.rotation.y = 0;
+        }
+
         requestRender();
       };
 
@@ -329,9 +349,10 @@ export default function Globe({
         return svg;
       };
 
-      globe = new ThreeGlobe({ waitForGlobeReady: false, animateIn: false })
+      globe = new ThreeGlobe({ waitForGlobeReady: true, animateIn: false })
         .globeImageUrl(globeImageUrl)
         .bumpImageUrl(bumpImageUrl)
+        .onGlobeReady(startEntryAnimation)
         .showAtmosphere(false)
         .htmlElementsData(citiesRef.current)
         .htmlLat((city) => city.lat)
@@ -366,9 +387,6 @@ export default function Globe({
 
       globeGroup.add(globe);
       globe.pauseAnimation?.();
-      entryAnimationStartAt = performance.now();
-      entryAnimationEndAt = prefersReducedMotion ? entryAnimationStartAt : entryAnimationStartAt + ENTRY_ANIMATION_MS;
-      initialRenderBurstEndAt = performance.now() + INITIAL_RENDER_BURST_MS;
       scene.add(new THREE.AmbientLight(0xffffff, 2.2));
 
       const rotateAroundWorldAxis = (axis, angle) => {
@@ -564,7 +582,10 @@ export default function Globe({
         lastRenderTime = now;
         needsRender = false;
 
-        if (!prefersReducedMotion && now <= entryAnimationEndAt) {
+        if (!prefersReducedMotion && !hasStartedEntryAnimation) {
+          globeGroup.scale.setScalar(0.001);
+          globeGroup.rotation.y = ENTRY_SPIN_RADIANS;
+        } else if (!prefersReducedMotion && now <= entryAnimationEndAt) {
           const progress = Math.min(Math.max((now - entryAnimationStartAt) / ENTRY_ANIMATION_MS, 0), 1);
           const easedProgress = easeOutCubic(progress);
 

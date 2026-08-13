@@ -512,6 +512,7 @@ export default function App({ Component, pageProps }) {
                   <Globe
                     cities={destinations}
                     destinationCity={destinationCity}
+                    globeImageUrl={page.globeTexture?.asset?.url}
                     height={globeSize}
                     onCityMarkerClick={handleCityMarkerClick}
                     width={globeSize}
