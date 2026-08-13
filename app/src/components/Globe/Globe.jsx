@@ -4,6 +4,7 @@ import styles from "./Globe.module.css";
 
 const FOCUS_ROTATE_DAMPING = 3.2;
 const MAX_DEVICE_PIXEL_RATIO = 1.5;
+const MAX_GESTURE_DEVICE_PIXEL_RATIO = 3;
 const MAX_FRAME_RATE = 60;
 const REDUCED_MOTION_FRAME_RATE = 30;
 const INITIAL_RENDER_BURST_MS = 1500;
@@ -12,6 +13,12 @@ const ENTRY_SPIN_RADIANS = Math.PI * 2.25;
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 300;
 const FLOAT_PLAYBACK_RAMP_MS = 650;
+const DESKTOP_BREAKPOINT = 769;
+const GESTURE_SCALE_MIN = 1;
+const GESTURE_SCALE_MAX = 2.4;
+const GESTURE_WHEEL_SENSITIVITY = 0.0025;
+const GESTURE_PINCH_SENSITIVITY = 0.01;
+const GESTURE_RESOLUTION_RESET_DELAY = 280;
 const MARKER_FONT_URL = "/fonts/TexGyreHeros-regular.ttf";
 const MARKER_FONT_SIZE = 1000;
 const MARKER_OUTLINE_OFFSET = 55;
@@ -27,6 +34,7 @@ const MARKER_OUTLINE_OFFSETS = [
 ].map(([x, y]) => [x * MARKER_OUTLINE_OFFSET, y * MARKER_OUTLINE_OFFSET]);
 
 const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 export default function Globe({
   cities = [],
@@ -152,6 +160,10 @@ export default function Globe({
     let lastFrameTime = 0;
     let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
+    let gestureScale = 1;
+    let gestureStartScale = 1;
+    let gestureResolutionResetTimer = null;
+    let isGestureResolutionBoosted = false;
     let initialRenderBurstEndAt = 0;
     let entryAnimationStartAt = 0;
     let entryAnimationEndAt = 0;
@@ -213,6 +225,59 @@ export default function Globe({
 
         lastFrameTime = performance.now();
         animationFrame = requestAnimationFrame(animate);
+      };
+
+      const isDesktopGestureScaleEnabled = () => window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
+
+      const setRendererResolution = (isBoosted) => {
+        const pixelRatio = isBoosted
+          ? Math.min(window.devicePixelRatio * GESTURE_SCALE_MAX, MAX_GESTURE_DEVICE_PIXEL_RATIO)
+          : Math.min(window.devicePixelRatio, MAX_DEVICE_PIXEL_RATIO);
+
+        renderer.setPixelRatio(pixelRatio);
+        requestRender();
+      };
+
+      const clearGestureResolutionReset = () => {
+        if (!gestureResolutionResetTimer) return;
+
+        clearTimeout(gestureResolutionResetTimer);
+        gestureResolutionResetTimer = null;
+      };
+
+      const boostGestureResolution = () => {
+        if (!isDesktopGestureScaleEnabled() || prefersReducedMotion) return;
+
+        clearGestureResolutionReset();
+        if (isGestureResolutionBoosted) return;
+
+        isGestureResolutionBoosted = true;
+        setRendererResolution(true);
+      };
+
+      const scheduleGestureResolutionReset = () => {
+        clearGestureResolutionReset();
+
+        gestureResolutionResetTimer = setTimeout(() => {
+          isGestureResolutionBoosted = false;
+          setRendererResolution(false);
+          gestureResolutionResetTimer = null;
+        }, GESTURE_RESOLUTION_RESET_DELAY);
+      };
+
+      const setGestureScale = (nextScale) => {
+        gestureScale = clamp(nextScale, GESTURE_SCALE_MIN, GESTURE_SCALE_MAX);
+        globeElement.style.setProperty("--globe-gesture-scale", gestureScale.toFixed(3));
+        globeElement.style.setProperty("--globe-marker-inverse-scale", (1 / gestureScale).toFixed(3));
+        requestRender();
+      };
+
+      const resetGestureScale = () => {
+        gestureScale = 1;
+        globeElement.style.removeProperty("--globe-gesture-scale");
+        globeElement.style.removeProperty("--globe-marker-inverse-scale");
+        requestRender();
+        scheduleGestureResolutionReset();
       };
 
       const createMarkerSvg = (text) => {
@@ -384,16 +449,55 @@ export default function Globe({
         requestRender();
       };
 
+      const handleWheel = (event) => {
+        if (!isDesktopGestureScaleEnabled()) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        boostGestureResolution();
+        const sensitivity = event.ctrlKey ? GESTURE_PINCH_SENSITIVITY : GESTURE_WHEEL_SENSITIVITY;
+        setGestureScale(gestureScale * Math.exp(-event.deltaY * sensitivity));
+      };
+
+      const handleGestureStart = (event) => {
+        if (!isDesktopGestureScaleEnabled()) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        boostGestureResolution();
+        gestureStartScale = gestureScale;
+      };
+
+      const handleGestureChange = (event) => {
+        if (!isDesktopGestureScaleEnabled()) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        setGestureScale(gestureStartScale * Number(event.scale || 1));
+      };
+
       globeElement.addEventListener("pointerdown", handlePointerDown);
+      globeElement.addEventListener("pointerenter", boostGestureResolution);
       globeElement.addEventListener("pointermove", handlePointerMove);
       globeElement.addEventListener("pointerup", handlePointerUp);
       globeElement.addEventListener("pointercancel", handlePointerUp);
+      globeElement.addEventListener("pointerleave", resetGestureScale);
+      globeElement.addEventListener("wheel", handleWheel, { passive: false });
+      globeElement.addEventListener("gesturestart", handleGestureStart);
+      globeElement.addEventListener("gesturechange", handleGestureChange);
 
       removePointerListeners = () => {
         globeElement.removeEventListener("pointerdown", handlePointerDown);
+        globeElement.removeEventListener("pointerenter", boostGestureResolution);
         globeElement.removeEventListener("pointermove", handlePointerMove);
         globeElement.removeEventListener("pointerup", handlePointerUp);
         globeElement.removeEventListener("pointercancel", handlePointerUp);
+        globeElement.removeEventListener("pointerleave", resetGestureScale);
+        globeElement.removeEventListener("wheel", handleWheel);
+        globeElement.removeEventListener("gesturestart", handleGestureStart);
+        globeElement.removeEventListener("gesturechange", handleGestureChange);
+        clearGestureResolutionReset();
       };
 
       function animate(now = performance.now()) {

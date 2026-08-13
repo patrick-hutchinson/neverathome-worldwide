@@ -1,4 +1,7 @@
 .globe {
+  --globe-gesture-scale: 1;
+  --globe-marker-inverse-scale: 1;
+
   position: relative;
   overflow: visible;
   cursor: grab;
@@ -17,7 +20,8 @@
 .globe canvas,
 .markerLayer {
   transform-origin: center;
-  transition: transform 0.35s ease;
+  transform: scale(var(--globe-gesture-scale));
+  transition: transform 0.25s ease-out;
 }
 
 .globe:active {
@@ -70,6 +74,7 @@
 .cityMarkerText {
   display: block;
   transform-origin: center;
+  transform: scale(var(--globe-marker-inverse-scale));
   padding: 0.08em 0.12em;
   margin: -0.08em -0.12em;
   overflow: visible;
@@ -101,8 +106,9 @@
   transition: fill 0.2s ease-in-out;
 }
 
-.globeHoverScale:hover .cityMarkerText {
-  transform: scale(0.5);
+.globeHoverScale:hover {
+  --globe-gesture-scale: 2;
+  --globe-marker-inverse-scale: 0.5;
 }
 
 .cityMarker:hover .cityMarkerSvgOutline {
