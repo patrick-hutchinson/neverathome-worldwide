@@ -62,6 +62,7 @@ const h1MarqueeNavigationSpeed = 100;
 const h1MarqueeNavigationLeadInMs = 350;
 const h1MarqueeNavigationSettleDelay = 0;
 const h1MarqueeNavigationSpeedTransitionMs = 1000;
+const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 function getRandomNumber(min, max) {
   if (max <= min) return min;
@@ -156,6 +157,16 @@ function getRandomDestination(destinations = []) {
   return destinations[Math.floor(Math.random() * destinations.length)];
 }
 
+function getTextColorPalette(textColors = []) {
+  return (textColors || []).map((color) => color?.hexCode).filter((hexCode) => hexColorPattern.test(hexCode));
+}
+
+function getRandomTextColor(textColorPalette = []) {
+  if (textColorPalette.length === 0) return null;
+
+  return textColorPalette[Math.floor(Math.random() * textColorPalette.length)];
+}
+
 function getGlobeTextureUrl(textureUrl) {
   if (!textureUrl) return undefined;
 
@@ -189,6 +200,8 @@ export default function App({ Component, pageProps }) {
   const currentPhase = sharedData.currentPhase || page.phase || null;
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase)?.replaceAll(" ", "");
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
+  const textColorPalette = getTextColorPalette(page.textColors);
+  const textColorPaletteKey = textColorPalette.join("|");
   const h1MarqueeText = routeMarqueeLabels[router.pathname] || currentPhaseLabel;
   const isDestinationsPage = router.pathname === "/destinations";
   const is404Page = router.pathname === "/404";
@@ -210,6 +223,65 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     destinationsRef.current = destinations;
   }, [destinations]);
+
+  useEffect(() => {
+    if (textColorPalette.length === 0) {
+      document.documentElement.style.removeProperty("--selection-color");
+      document.documentElement.style.removeProperty("--interactive-hover-color");
+      return undefined;
+    }
+
+    let previousSelectionText = "";
+
+    const setRandomHoverColor = (element) => {
+      const nextColor = getRandomTextColor(textColorPalette);
+      if (!nextColor) return;
+
+      element.style.setProperty("--interactive-hover-color", nextColor);
+    };
+
+    const handlePointerOver = (event) => {
+      const interactiveElement = event.target.closest?.("a, button, [role='button']");
+      const previousElement = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+      if (!interactiveElement || (previousElement && interactiveElement.contains(previousElement))) return;
+
+      setRandomHoverColor(interactiveElement);
+    };
+
+    const handleFocusIn = (event) => {
+      const interactiveElement = event.target.closest?.("a, button, [role='button']");
+      if (!interactiveElement) return;
+
+      setRandomHoverColor(interactiveElement);
+    };
+
+    const handleSelectionChange = () => {
+      const selectionText = window.getSelection()?.toString() || "";
+
+      if (!selectionText.trim()) {
+        previousSelectionText = "";
+        return;
+      }
+
+      if (selectionText === previousSelectionText) return;
+
+      const nextColor = getRandomTextColor(textColorPalette);
+      if (!nextColor) return;
+
+      previousSelectionText = selectionText;
+      document.documentElement.style.setProperty("--selection-color", nextColor);
+    };
+
+    document.addEventListener("pointerover", handlePointerOver);
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("selectionchange", handleSelectionChange);
+
+    return () => {
+      document.removeEventListener("pointerover", handlePointerOver);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, [textColorPaletteKey]);
 
   const moveGlobeForNavigation = () => {
     const randomDestination = getRandomDestination(destinationsRef.current);

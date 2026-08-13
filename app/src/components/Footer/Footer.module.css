@@ -88,23 +88,23 @@
 }
 
 .footerButton:not(.applicationButton):hover {
-  background: var(--foreground);
+  background: var(--interactive-hover-color);
   color: var(--background);
 }
 
 .footerButton:global(.invert):hover {
   background: transparent;
-  color: var(--foreground);
+  color: var(--interactive-hover-color);
 }
 
 .buttonContainer:has(.applicationButton:hover) .footerButton:not(.applicationButton) {
-  background: var(--foreground);
+  background: var(--interactive-hover-color);
   color: var(--background);
 }
 
 .buttonContainer:has(.footerButton:not(.applicationButton):hover) .applicationButton {
   background: transparent;
-  color: var(--foreground);
+  color: var(--interactive-hover-color);
 }
 
 .buttonContainer .buttonLabel {

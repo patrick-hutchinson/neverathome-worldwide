@@ -40,6 +40,10 @@ export const pageQuery = `*[_type=="page"][0]{
       url
     }
   },
+  textColors[]{
+    colorName,
+    hexCode
+  },
   mediaPartner[]{
     asset->{
       url,
