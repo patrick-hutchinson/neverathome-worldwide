@@ -46,7 +46,11 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                   </div>
                 </div>
                 <div className={styles.destinationText}>
-                  <Text className={styles.destinationDescription} text={selectedDestination.description} typo="h5" />
+                  <Text
+                    className={styles.destinationDescription}
+                    text={selectedDestination.description}
+                    typo="h5 compensate"
+                  />
                   <div className={styles.trailText} typo="h6 compensate">
                     <Text text={selectedDestination.info} />
                   </div>

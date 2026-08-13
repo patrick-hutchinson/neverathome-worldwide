@@ -37,6 +37,13 @@ const pageTransitionVariants = {
   },
 };
 
+const cityListTransition = { duration: 0.45, ease: "easeInOut" };
+const cityListTransitionVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0, transition: cityListTransition },
+};
+
 // Updated Packages
 
 const routeMarqueeLabels = {
@@ -56,7 +63,7 @@ const mobileGlobeViewportPadding = 16;
 const mobileGlobeMinimumNavigationDistance = 180;
 const h1MarqueeDefaultSpeed = 1;
 const h1MarqueeNavigationSpeed = 100;
-const h1MarqueeNavigationLeadInMs = 300;
+const h1MarqueeNavigationLeadInMs = 500;
 const h1MarqueeNavigationSettleDelay = 0;
 const h1MarqueeNavigationSpeedTransitionMs = 1000;
 const navigationScrollToTopFallbackMs = 1400;
@@ -268,6 +275,7 @@ export default function App({ Component, pageProps }) {
   const [contentScrollRequest, setContentScrollRequest] = useState(0);
   const [cityListScrollRequest, setCityListScrollRequest] = useState(0);
   const [isDestinationCityListHidden, setIsDestinationCityListHidden] = useState(false);
+  const [shouldRenderCityList, setShouldRenderCityList] = useState(true);
   const globeMoverRef = useRef(null);
   const cityListLayerRef = useRef(null);
   const isDestinationCityListHiddenRef = useRef(false);
@@ -404,6 +412,7 @@ export default function App({ Component, pageProps }) {
     clearCityListRevealTimers();
     isCityListRouteRevealRef.current = true;
     setIsDestinationCityListHidden(false);
+    setShouldRenderCityList(false);
 
     const queueFrame = (callback) => {
       const id = requestAnimationFrame(callback);
@@ -415,10 +424,16 @@ export default function App({ Component, pageProps }) {
       cityListRevealTimersRef.current.push({ id, type: "timeout" });
     };
 
-    queueFrame(() => queueFrame(() => setIsDestinationCityListHidden(false)));
+    queueFrame(() =>
+      queueFrame(() => {
+        setIsDestinationCityListHidden(false);
+        setShouldRenderCityList(true);
+      }),
+    );
     queueTimeout(() => setIsDestinationCityListHidden(false), 120);
     queueTimeout(() => {
       setIsDestinationCityListHidden(false);
+      setShouldRenderCityList(true);
       isCityListRouteRevealRef.current = false;
       clearCityListRevealTimers();
     }, 360);
@@ -520,7 +535,13 @@ export default function App({ Component, pageProps }) {
       return stableHoverElement || eventTarget.closest?.("a, button, [role='button']");
     };
 
+    const clearRandomHoverColor = (element) => {
+      element.style.removeProperty("--interactive-hover-color");
+    };
+
     const setRandomHoverColor = (element) => {
+      if (element.style.getPropertyValue("--interactive-hover-color")) return;
+
       const nextColor = getRandomTextColor(textColorPalette);
       if (!nextColor) return;
 
@@ -533,6 +554,14 @@ export default function App({ Component, pageProps }) {
       if (!interactiveElement || (previousElement && interactiveElement.contains(previousElement))) return;
 
       setRandomHoverColor(interactiveElement);
+    };
+
+    const handlePointerOut = (event) => {
+      const interactiveElement = getRandomHoverElement(event.target);
+      const nextElement = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+      if (!interactiveElement || (nextElement && interactiveElement.contains(nextElement))) return;
+
+      clearRandomHoverColor(interactiveElement);
     };
 
     const handleFocusIn = (event) => {
@@ -560,11 +589,13 @@ export default function App({ Component, pageProps }) {
     };
 
     document.addEventListener("pointerover", handlePointerOver);
+    document.addEventListener("pointerout", handlePointerOut);
     document.addEventListener("focusin", handleFocusIn);
     document.addEventListener("selectionchange", handleSelectionChange);
 
     return () => {
       document.removeEventListener("pointerover", handlePointerOver);
+      document.removeEventListener("pointerout", handlePointerOut);
       document.removeEventListener("focusin", handleFocusIn);
       document.removeEventListener("selectionchange", handleSelectionChange);
     };
@@ -684,6 +715,7 @@ export default function App({ Component, pageProps }) {
       const shouldScrollToTop = isCityListVisibleInViewport();
 
       setIsContentContainerExiting(!shouldScrollToTop);
+      setShouldRenderCityList(shouldScrollToTop);
 
       const waitForNavigation = shouldScrollToTop
         ? scrollToPageTop()
@@ -715,6 +747,7 @@ export default function App({ Component, pageProps }) {
         const shouldScrollToTop = isCityListVisibleInViewport();
 
         setIsContentContainerExiting(!shouldScrollToTop);
+        setShouldRenderCityList(shouldScrollToTop);
 
         if (shouldScrollToTop) {
           setIsDestinationCityListHidden(false);
@@ -889,6 +922,7 @@ export default function App({ Component, pageProps }) {
     if (!isDestinationsPage) {
       setSelectedDestination(null);
       setIsDestinationCityListHidden(false);
+      setContentScrollRequest(0);
     }
   }, [isDestinationsPage]);
 
@@ -1040,15 +1074,28 @@ export default function App({ Component, pageProps }) {
                   .join(" ")}
                 ref={cityListLayerRef}
               >
-                <CityList
-                  accentInactive={isDestinationsPage}
-                  cities={destinations}
-                  highlightedCity={highlightedCity}
-                  isClickable={isDestinationsPage}
-                  onCityClick={isDestinationsPage ? handleCityClick : undefined}
-                  onCitySelect={setDestinationCity}
-                  selectedCity={isDestinationsPage ? selectedDestination : null}
-                />
+                <AnimatePresence initial={false}>
+                  {shouldRenderCityList ? (
+                    <motion.div
+                      animate="animate"
+                      exit="exit"
+                      initial="initial"
+                      key="city-list"
+                      transition={cityListTransition}
+                      variants={cityListTransitionVariants}
+                    >
+                      <CityList
+                        accentInactive={isDestinationsPage}
+                        cities={destinations}
+                        highlightedCity={highlightedCity}
+                        isClickable={isDestinationsPage}
+                        onCityClick={isDestinationsPage ? handleCityClick : undefined}
+                        onCitySelect={setDestinationCity}
+                        selectedCity={isDestinationsPage ? selectedDestination : null}
+                      />
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
               {isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
               <AnimatePresence initial={false} mode="wait">

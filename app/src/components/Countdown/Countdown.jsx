@@ -14,10 +14,13 @@ function formatMaxCountdown(deadline, now) {
 const removeSeconds = (countdown) => countdown?.replace(/\s*\d+s$/, "");
 
 function useCountdown(deadline) {
-  const [now, setNow] = useState(null);
+  const [now, setNow] = useState(() => (deadline ? new Date() : null));
 
   useEffect(() => {
-    if (!deadline) return undefined;
+    if (!deadline) {
+      setNow(null);
+      return undefined;
+    }
 
     setNow(new Date());
 

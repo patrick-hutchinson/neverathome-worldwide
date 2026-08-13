@@ -148,6 +148,12 @@ h6 p:not(:last-of-type),
   margin-top: calc(var(--h4-overshoot) * -1);
 }
 
+[typo~="h5"][typo~="compensate"] {
+  --h5-overshoot: 0.18em;
+
+  margin-top: calc(var(--h5-overshoot) * -1);
+}
+
 @media screen and (min-width: 769px) {
   :root {
     --fontSize-1: clamp(20rem, calc(22.3547vw + 2.808rem), 35rem);
