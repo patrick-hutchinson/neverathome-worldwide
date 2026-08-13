@@ -54,13 +54,15 @@
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
   align-items: end;
-  padding: var(--spacing-6) 0;
+  width: 100vw;
+  margin-left: calc(var(--spacing-6) * -1);
+  padding: var(--spacing-6);
   background: var(--foreground);
   color: var(--background);
 }
 
 .claim {
-  grid-column: 1 / 7;
+  grid-column: 1 / 6;
 }
 
 .submitButton {
