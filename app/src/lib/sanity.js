@@ -3,6 +3,7 @@ export {
   getDestinations,
   getDestinationsPage,
   getHomePage,
+  getImprint,
   getJuryMembers,
   getJuryPage,
   getPage,

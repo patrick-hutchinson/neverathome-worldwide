@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import ApplicationSubmission from "@/components/ApplicationSubmission/ApplicationSubmission";
+import ApplicationSubmission, { declarations } from "@/components/ApplicationSubmission/ApplicationSubmission";
 import styles from "./ApplicationForm.module.scss";
 
 const personalFields = [
@@ -12,7 +12,7 @@ const personalFields = [
   { name: "postalCode", label: "Postal Code" },
   { name: "city", label: "City" },
   { name: "country", label: "Country" },
-  { name: "website", label: "Website", type: "url" },
+  { name: "website", label: "Website", type: "url", optional: true, hideOptionalNote: true },
   { name: "instagram", label: "Instagram", optional: true },
 ];
 
@@ -39,6 +39,18 @@ const uploadFields = [
     label: "Artist Portrait",
     note: "(high-resolution JPG, max. 5 MB)",
     help: "The image will only be used and published if your application is selected.",
+  },
+];
+const textareaFields = [
+  {
+    name: "projectProposal",
+    label: "Project Proposal",
+    placeholder: "(max. 1,000 characters)",
+  },
+  {
+    name: "shortBiography",
+    label: "Short Biography",
+    placeholder: "(max. 1,000 characters)",
   },
 ];
 const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -110,21 +122,73 @@ const DestinationScrollList = ({ children }) => {
         .filter(Boolean)
         .join(" ")}
     >
-      <div className={styles.destinationList} ref={listRef} typo="h3">
+      <div className={styles.destinationList} data-lenis-prevent ref={listRef} typo="h3">
         {children}
       </div>
     </div>
   );
 };
 
-const ApplicationForm = ({ destinations = [], page = {} }) => {
+const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
   const textColorPalette = getTextColorPalette(page.textColors);
+  const formRef = useRef(null);
   const fileInputRefs = useRef({});
-  const [preferredDestination, setPreferredDestination] = useState("");
+  const [preferredDestinations, setPreferredDestinations] = useState([]);
   const [alternativeDestinations, setAlternativeDestinations] = useState([]);
   const [selectedQuarters, setSelectedQuarters] = useState([]);
   const [selectedColorMap, setSelectedColorMap] = useState({});
   const [uploads, setUploads] = useState({});
+  const [hasSubmitAttempted, setHasSubmitAttempted] = useState(false);
+  const [requiredErrors, setRequiredErrors] = useState({});
+
+  const getRequiredErrors = (form) => {
+    const formData = new FormData(form);
+    const nextErrors = {};
+
+    personalFields.forEach((field) => {
+      if (field.optional) return;
+
+      if (!String(formData.get(field.name) || "").trim()) {
+        nextErrors[field.name] = true;
+      }
+    });
+
+    textareaFields.forEach((field) => {
+      if (!String(formData.get(field.name) || "").trim()) {
+        nextErrors[field.name] = true;
+      }
+    });
+
+    if (preferredDestinations.length === 0) {
+      nextErrors.preferredDestinations = true;
+    }
+
+    if (alternativeDestinations.length === 0) {
+      nextErrors.alternativeDestinations = true;
+    }
+
+    if (selectedQuarters.length === 0) {
+      nextErrors.quarters = true;
+    }
+
+    uploadFields.forEach((field) => {
+      if (!uploads[field.name]?.fileName) {
+        nextErrors[field.name] = true;
+      }
+    });
+
+    if (formData.getAll("declarations").length !== declarations.length) {
+      nextErrors.declarations = true;
+    }
+
+    return nextErrors;
+  };
+
+  const updateRequiredErrors = () => {
+    if (!hasSubmitAttempted || !formRef.current) return;
+
+    setRequiredErrors(getRequiredErrors(formRef.current));
+  };
 
   useEffect(() => {
     const intervals = [];
@@ -156,9 +220,23 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
     return () => intervals.forEach(window.clearInterval);
   }, [uploads]);
 
+  useEffect(() => {
+    updateRequiredErrors();
+  }, [alternativeDestinations, hasSubmitAttempted, preferredDestinations, selectedQuarters, uploads]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const nextErrors = getRequiredErrors(event.currentTarget);
+    setHasSubmitAttempted(true);
+    setRequiredErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) return;
+  };
+
   const handlePreferredDestinationChange = (destinationId) => {
-    setPreferredDestination(destinationId);
     setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, destinationId, textColorPalette));
+    setPreferredDestinations((currentDestinations) => toggleValue(currentDestinations, destinationId));
     setAlternativeDestinations((currentDestinations) =>
       currentDestinations.filter((currentDestinationId) => currentDestinationId !== destinationId),
     );
@@ -195,10 +273,13 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
   };
 
   return (
-    <form className={styles.form} onSubmit={(event) => event.preventDefault()} typo="h4">
+    <form className={styles.form} noValidate onInput={updateRequiredErrors} onSubmit={handleSubmit} ref={formRef} typo="h4">
       <fieldset className={`${styles.fieldset} ${styles.personalInformation}`}>
-        <legend className={styles.legend} typo="h4">
-          Personal Information
+        <legend className={styles.legendRow} typo="h4">
+          <span>Personal Information</span>
+          <button className={styles.closeButton} onClick={onClose} type="button">
+            Close
+          </button>
         </legend>
 
         <div className={styles.personalGrid}>
@@ -208,10 +289,16 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
               key={field.name}
             >
               <span className={styles.visuallyHidden}>{field.label}</span>
-              <input autoComplete={field.name} name={field.name} placeholder={field.label} type={field.type || "text"} />
-              {field.optional ? (
-                <span className={styles.fieldNote} typo="h6">
-                  Optional
+              <input
+                autoComplete={field.name}
+                name={field.name}
+                placeholder={field.label}
+                required={!field.optional}
+                type={field.type || "text"}
+              />
+              {(field.optional && !field.hideOptionalNote) || requiredErrors[field.name] ? (
+                <span className={[styles.fieldNote, requiredErrors[field.name] ? styles.requiredNote : ""].filter(Boolean).join(" ")} typo="h6">
+                  {requiredErrors[field.name] ? "Required" : "Optional"}
                 </span>
               ) : null}
             </label>
@@ -221,8 +308,13 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
 
       <div className={styles.destinationGrid}>
         <fieldset className={styles.fieldset}>
-          <legend className={styles.legend} typo="h4">
-            Preferred Destination
+          <legend className={styles.legendRow} typo="h4">
+            <span>Preferred Destinations</span>
+            {requiredErrors.preferredDestinations ? (
+              <span className={`${styles.legendNote} ${styles.requiredNote}`} typo="h6">
+                Required
+              </span>
+            ) : null}
           </legend>
           <DestinationScrollList>
             {destinations.map((destination) => (
@@ -232,10 +324,11 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                 style={{ "--form-choice-selected-color": selectedColorMap[destination._id] }}
               >
                 <input
-                  checked={preferredDestination === destination._id}
-                  name="preferredDestination"
+                  checked={preferredDestinations.includes(destination._id)}
+                  name="preferredDestinations"
                   onChange={() => handlePreferredDestinationChange(destination._id)}
-                  type="radio"
+                  required
+                  type="checkbox"
                   value={destination._id}
                 />
                 <span>{destination.name}</span>
@@ -247,13 +340,18 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
         <fieldset className={styles.fieldset}>
           <legend className={styles.legendRow} typo="h4">
             <span>Alternative</span>
-            <span className={styles.legendNote} typo="h6">
-              One Or Multiple
+            <span
+              className={[styles.legendNote, requiredErrors.alternativeDestinations ? styles.requiredNote : ""]
+                .filter(Boolean)
+                .join(" ")}
+              typo="h6"
+            >
+              {requiredErrors.alternativeDestinations ? "Required" : "One Or Multiple"}
             </span>
           </legend>
           <DestinationScrollList>
             {destinations.map((destination) => {
-              const isDisabled = preferredDestination === destination._id;
+              const isDisabled = preferredDestinations.includes(destination._id);
 
               return (
                 <label
@@ -271,6 +369,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                       );
                       setAlternativeDestinations((currentDestinations) => toggleValue(currentDestinations, destination._id));
                     }}
+                    required
                     type="checkbox"
                     value={destination._id}
                   />
@@ -285,8 +384,8 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
       <fieldset className={`${styles.fieldset} ${styles.timeFrame}`}>
         <legend className={styles.legendRow} typo="h4">
           <span>Preferred time frame</span>
-          <span className={styles.legendNote} typo="h6">
-            One Or Multiple Presentation Periods
+          <span className={[styles.legendNote, requiredErrors.quarters ? styles.requiredNote : ""].filter(Boolean).join(" ")} typo="h6">
+            {requiredErrors.quarters ? "Required" : "One Or Multiple Presentation Periods"}
           </span>
         </legend>
         <div className={styles.quarterList} typo="h3">
@@ -305,6 +404,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                     );
                     setSelectedQuarters((currentQuarters) => toggleValue(currentQuarters, quarter.value));
                   }}
+                  required
                   type="checkbox"
                   value={quarter.value}
                 />
@@ -317,33 +417,34 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
         </div>
       </fieldset>
 
-      <label className={styles.textareaField}>
-        <span className={styles.legend} typo="h4">
-          Project Proposal
-        </span>
-        <textarea
-          maxLength={1000}
-          name="projectProposal"
-          onInput={handleTextareaInput}
-          placeholder="(max. 1,000 characters)"
-        />
-      </label>
-
-      <label className={styles.textareaField}>
-        <span className={styles.legend} typo="h4">
-          Short Biography
-        </span>
-        <textarea
-          maxLength={1000}
-          name="shortBiography"
-          onInput={handleTextareaInput}
-          placeholder="(max. 1,000 characters)"
-        />
-      </label>
+      {textareaFields.map((field) => (
+        <label className={styles.textareaField} key={field.name}>
+          <span className={styles.legendRow} typo="h4">
+            <span>{field.label}</span>
+            {requiredErrors[field.name] ? (
+              <span className={`${styles.legendNote} ${styles.requiredNote}`} typo="h6">
+                Required
+              </span>
+            ) : null}
+          </span>
+          <textarea
+            maxLength={1000}
+            name={field.name}
+            onInput={handleTextareaInput}
+            placeholder={field.placeholder}
+            required
+          />
+        </label>
+      ))}
 
       <fieldset className={styles.fieldset}>
-        <legend className={styles.legend} typo="h4">
-          Uploads
+          <legend className={styles.legendRow} typo="h4">
+          <span>Uploads</span>
+          {uploadFields.some((field) => requiredErrors[field.name]) ? (
+            <span className={`${styles.legendNote} ${styles.requiredNote}`} typo="h6">
+              Required
+            </span>
+          ) : null}
         </legend>
         <div className={styles.uploads}>
           {uploadFields.map((field) => {
@@ -382,6 +483,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                 </span>
               ) : null}
                 <span className={styles.uploadMeta} typo="h6">
+                  {requiredErrors[field.name] ? <span className={styles.requiredNote}>Required</span> : null}
                   {isComplete ? <span className={styles.uploadFileName}>{upload.fileName}</span> : null}
                   {isUploading ? <span className={styles.uploadStatus}>Uploading</span> : null}
                   <button
@@ -405,6 +507,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                   className={styles.uploadInput}
                   name={field.name}
                   onChange={(event) => handleUploadChange(field.name, event)}
+                  required
                   ref={(input) => {
                     fileInputRefs.current[field.name] = input;
                   }}
@@ -416,7 +519,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
         </div>
       </fieldset>
 
-      <ApplicationSubmission page={page} textColorPalette={textColorPalette} />
+      <ApplicationSubmission hasRequiredError={requiredErrors.declarations} page={page} textColorPalette={textColorPalette} />
     </form>
   );
 };

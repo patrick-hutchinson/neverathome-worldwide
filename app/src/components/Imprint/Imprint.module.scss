@@ -1,0 +1,54 @@
+.imprint {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: var(--inner-height);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.standalone {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: var(--spacing-6);
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.closeButton {
+  all: unset;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.closeButton:hover,
+.closeButton:focus,
+.closeButton:focus-visible {
+  background: transparent;
+  color: var(--interactive-hover-color, var(--accent));
+}
+
+.content {
+  align-self: end;
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  column-gap: var(--content-grid-gap, calc(var(--spacing-6) / 3));
+  width: 100%;
+}
+
+.textColumn {
+  grid-column: span 5;
+}
+
+.textColumn + .textColumn {
+  grid-column: span 7 12;
+}

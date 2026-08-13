@@ -4,7 +4,6 @@ import styles from "@/styles/OpenCall.module.scss";
 import Text from "@/components/Text/Text";
 import { LargeSection } from "@/components/Sections/Sections";
 import Accordion from "@/components/Accordion/Accordion";
-import ApplicationForm from "@/components/ApplicationForm/ApplicationForm";
 
 const OpenCallPage = ({ destinations = [], openCallPage, page }) => {
   if (!openCallPage || openCallPage.length === 0) return null;
@@ -17,10 +16,6 @@ const OpenCallPage = ({ destinations = [], openCallPage, page }) => {
 
         <LargeSection>
           <Accordion array={openCallPage.faq} />
-        </LargeSection>
-
-        <LargeSection>
-          <ApplicationForm destinations={destinations} page={page} />
         </LargeSection>
       </main>
     </div>

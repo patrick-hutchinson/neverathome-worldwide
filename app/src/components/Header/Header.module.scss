@@ -61,6 +61,13 @@
       color: var(--accent);
     }
 
+    .phaseItem:hover,
+    .phaseItem:focus-within {
+      .countdown {
+        color: var(--accent);
+      }
+    }
+
     .countdownSlot {
       display: inline-grid;
       font-variant-numeric: tabular-nums;

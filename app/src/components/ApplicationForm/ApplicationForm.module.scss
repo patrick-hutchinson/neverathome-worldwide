@@ -47,6 +47,23 @@
   color: var(--form-muted-color);
 }
 
+.requiredNote {
+  color: #ff1493;
+}
+
+.closeButton {
+  all: unset;
+  color: var(--form-muted-color);
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.closeButton:hover,
+.closeButton:focus,
+.closeButton:focus-visible {
+  color: var(--foreground);
+}
+
 .personalGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -161,11 +178,13 @@
   padding-top: var(--spacing-8);
   overflow-y: auto;
   overscroll-behavior: contain;
+  touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
 
 .choice,
 .quarterChoice {
+  position: relative;
   display: inline;
   color: var(--form-muted-color);
   cursor: pointer;
@@ -180,6 +199,8 @@
 .quarterChoice input,
 .uploadField input {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   opacity: 0;
@@ -201,7 +222,19 @@
 }
 
 .choiceDisabled span {
-  text-decoration: line-through;
+  position: relative;
+  text-decoration: none;
+}
+
+.choiceDisabled span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 55%;
+  height: 3px;
+  background: currentColor;
+  pointer-events: none;
 }
 
 .textareaField {

@@ -83,7 +83,7 @@ const LogoShuffle = ({ logos = [] }) => {
   );
 };
 
-const Footer = ({ onApplyClick, page = {}, site = {} }) => {
+const Footer = ({ onApplyClick, onImprintClick, page = {}, site = {} }) => {
   const { isMobile } = useContext(DeviceContext);
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
   const informationPDFUrl = getDownloadUrl(page.informationPDF);
@@ -113,9 +113,13 @@ const Footer = ({ onApplyClick, page = {}, site = {} }) => {
       </div>
 
       <nav className={styles.legalLinks} typo="h6">
-        <a href="/imprint">Imprint</a>
+        <button onClick={onImprintClick} type="button">
+          Imprint
+        </button>
         {",\u00a0"}
-        <a href="/legal">Legal</a>
+        <button onClick={onImprintClick} type="button">
+          Datapolicy
+        </button>
       </nav>
 
       <LogoShuffle logos={logos} />

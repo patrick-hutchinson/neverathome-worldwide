@@ -51,6 +51,23 @@
   flex-direction: row;
 }
 
+.legalLinks button {
+  all: unset;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.legalLinks button:hover,
+.legalLinks button:focus,
+.legalLinks button:focus-visible {
+  background: transparent;
+  color: var(--interactive-hover-color, var(--accent));
+}
+
 .logoShuffle a,
 .desktopLogos a {
   display: block;

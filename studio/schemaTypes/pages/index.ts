@@ -1,8 +1,9 @@
 import type {SchemaTypeDefinition} from 'sanity'
+import {imprint} from './imprint'
 
 const pageModules = import.meta.glob('./*Page.ts', {eager: true})
 
-export const pages = Object.values(pageModules)
+const pageDocuments = Object.values(pageModules)
   .flatMap((module) => Object.values(module as Record<string, unknown>))
   .filter((schema): schema is SchemaTypeDefinition => {
     return Boolean(
@@ -15,5 +16,7 @@ export const pages = Object.values(pageModules)
     )
   })
   .sort((a, b) => a.name.localeCompare(b.name))
+
+export const pages = [...pageDocuments, imprint].sort((a, b) => a.name.localeCompare(b.name))
 
 export const pageReferenceTypes = pages.map((page) => ({type: page.name}))

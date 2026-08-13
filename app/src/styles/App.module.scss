@@ -73,15 +73,20 @@
   position: fixed;
   z-index: 999;
   inset: calc(var(--margin) + var(--fontSize-4) + var(--spacing-6)) 0 0;
-  height: auto;
-  max-height: calc(100dvh - var(--margin) - var(--fontSize-4) - var(--spacing-6));
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  pointer-events: auto;
+}
+
+.applicationFormScroller {
+  height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   padding: var(--spacing-6);
   background: #000;
   color: #fff;
-  pointer-events: auto;
 }
 
 .applicationFormClose {

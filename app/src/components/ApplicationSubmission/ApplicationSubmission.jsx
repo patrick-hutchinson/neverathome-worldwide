@@ -5,7 +5,7 @@ import Text from "@/components/Text/Text";
 
 import styles from "./ApplicationSubmission.module.scss";
 
-const declarations = [
+export const declarations = [
   "I confirm that my primary place of residence is in Austria.",
   "I confirm that the submitted materials are my own work or that I hold all necessary rights to the submitted content.",
   "I accept the Terms and Conditions of the Open Call.",
@@ -38,11 +38,10 @@ function getNextColorMap(currentColorMap, value, textColorPalette) {
   };
 }
 
-const ApplicationSubmission = ({ page = {}, textColorPalette = [] }) => {
+const ApplicationSubmission = ({ hasRequiredError = false, page = {}, textColorPalette = [] }) => {
   const [acceptedDeclarations, setAcceptedDeclarations] = useState([]);
   const [selectedColorMap, setSelectedColorMap] = useState({});
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
-  const canSubmit = acceptedDeclarations.length === declarations.length;
 
   const toggleDeclaration = (declaration) => {
     setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, declaration, textColorPalette));
@@ -57,7 +56,12 @@ const ApplicationSubmission = ({ page = {}, textColorPalette = [] }) => {
     <section className={styles.submission}>
       <fieldset className={styles.declarations} typo="h5">
         <legend className={`${styles.declarationsLegend} ${styles.legend}`} typo="h4">
-          Declarations
+          <span>Declarations</span>
+          {hasRequiredError ? (
+            <span className={styles.requiredNote} typo="h6">
+              Required
+            </span>
+          ) : null}
         </legend>
         <p>Please confirm the following:</p>
         <div className={styles.declarationList}>
@@ -84,7 +88,7 @@ const ApplicationSubmission = ({ page = {}, textColorPalette = [] }) => {
       <div className={styles.submissionFooter}>
         <Text className={styles.claim} text={page.claim} typo="h6" />
 
-        <button className={styles.submitButton} disabled={!canSubmit} type="submit">
+        <button className={styles.submitButton} type="submit">
           <RenderSVG className={styles.submitLabel} text="SUBMIT NOW" />
         </button>
 

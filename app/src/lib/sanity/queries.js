@@ -117,6 +117,11 @@ export const aboutPageQuery = `*[_type=="aboutPage"][0]{
   }
 }`;
 
+export const imprintQuery = `*[_type=="imprint"][0]{
+  imprint,
+  dataPolicy
+}`;
+
 export const juryMembersQuery = `*[_type=="juryMember"] | order(name asc) {
   _id,
   name,

@@ -3,6 +3,7 @@ import {
   destinationsPageQuery,
   destinationsQuery,
   homePageQuery,
+  imprintQuery,
   juryMembersQuery,
   juryPageQuery,
   pageDeadlinesQuery,
@@ -89,6 +90,12 @@ export async function getJuryPage() {
   const juryPage = await getSanityClient().fetch(juryPageQuery);
 
   return juryPage || {};
+}
+
+export async function getImprint() {
+  const imprint = await getSanityClient().fetch(imprintQuery);
+
+  return imprint || {};
 }
 
 export async function getJuryMembers() {

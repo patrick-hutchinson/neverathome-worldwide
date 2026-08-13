@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { AnimatePresence, motion } from "framer-motion";
+import { ReactLenis } from "lenis/react";
 
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -15,6 +16,7 @@ import Marquee from "@/components/Marquee/Marquee";
 import { ViewportProvider } from "@/context/ViewportContext";
 import Header from "@/components/Header/Header";
 import SpacingDebugOverlay from "@/components/SpacingDebugOverlay/SpacingDebugOverlay";
+import Imprint from "@/components/Imprint/Imprint";
 
 import { getCurrentPhaseLabel } from "@/lib/phase";
 import { fallbackSiteData } from "@/lib/sanity";
@@ -168,6 +170,15 @@ function getRandomTextColor(textColorPalette = []) {
   return textColorPalette[Math.floor(Math.random() * textColorPalette.length)];
 }
 
+function getRootCssPixelValue(customPropertyName) {
+  if (typeof window === "undefined") return 0;
+
+  const rawValue = getComputedStyle(document.documentElement).getPropertyValue(customPropertyName).trim();
+  const parsedValue = parseFloat(rawValue);
+
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
+
 function getGlobeTextureUrl(textureUrl) {
   if (!textureUrl) return undefined;
 
@@ -184,7 +195,7 @@ function getGlobeTextureUrl(textureUrl) {
   return textureUrl;
 }
 
-function ApplicationFormOverlay({ destinations = [], isOpen, onClose, page = {} }) {
+function ApplicationFormOverlay({ destinations = [], isOpen, onClose, onOpenComplete, page = {} }) {
   const lenis = useLenisContext();
 
   useEffect(() => {
@@ -201,16 +212,30 @@ function ApplicationFormOverlay({ destinations = [], isOpen, onClose, page = {} 
     <AnimatePresence>
       {isOpen ? (
         <motion.div
-          animate={{ y: 0 }}
+          animate="open"
           className={styles.applicationFormLayer}
-          data-lenis-prevent
-          exit={{ y: "100%" }}
+          exit="closed"
           id="application-form-layer"
-          initial={{ y: "100%" }}
+          initial="closed"
+          onAnimationComplete={(definition) => {
+            if (definition === "open") {
+              onOpenComplete?.();
+            }
+          }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          variants={{
+            closed: { y: "100%" },
+            open: { y: 0 },
+          }}
         >
-          <ApplicationForm destinations={destinations} page={page} />
-          <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
+          <ReactLenis
+            className={styles.applicationFormScroller}
+            options={{ allowNestedScroll: true, lerp: 0.12, syncTouch: true }}
+            root={false}
+          >
+            <ApplicationForm destinations={destinations} onClose={onClose} page={page} />
+            <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
+          </ReactLenis>
         </motion.div>
       ) : null}
     </AnimatePresence>
@@ -224,12 +249,14 @@ export default function App({ Component, pageProps }) {
     page: pageProps.page || null,
     pageDeadlines: pageProps.pageDeadlines || null,
     destinations: pageProps.destinations || null,
+    imprint: pageProps.imprint || null,
     currentPhase: pageProps.currentPhase || pageProps.page?.phase || null,
   });
   const site = sharedData.site || fallbackSiteData;
   const page = sharedData.page || {};
   const pageDeadlines = sharedData.pageDeadlines || {};
   const destinations = sharedData.destinations || [];
+  const imprint = sharedData.imprint || {};
   const destinationsRef = useRef(destinations);
   const currentPhase = sharedData.currentPhase || page.phase || null;
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase)?.replaceAll(" ", "");
@@ -246,14 +273,71 @@ export default function App({ Component, pageProps }) {
   const [contentScrollRequest, setContentScrollRequest] = useState(0);
   const [cityListScrollRequest, setCityListScrollRequest] = useState(0);
   const globeMoverRef = useRef(null);
+  const footerRef = useRef(null);
+  const imprintRef = useRef(null);
+  const imprintCloseTimerRef = useRef(null);
+  const imprintTouchStartYRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
+  const [isApplicationFormEntered, setIsApplicationFormEntered] = useState(false);
+  const [isImprintOpen, setIsImprintOpen] = useState(false);
+  const [isImprintObscuring, setIsImprintObscuring] = useState(false);
   const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
   const pendingNavigationTimerRef = useRef(null);
   const h1MarqueeSettleTimerRef = useRef(null);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
+  const isApplicationFormObscuring = isApplicationFormOpen && isApplicationFormEntered;
+  const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
+
+  const openApplicationForm = () => {
+    setIsApplicationFormEntered(false);
+    setIsApplicationFormOpen(true);
+  };
+
+  const closeApplicationForm = () => {
+    setIsApplicationFormEntered(false);
+    setIsApplicationFormOpen(false);
+  };
+
+  const scrollToElement = (element, offset = 49) => {
+    if (!element) return;
+
+    const scrollTop = element.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
+  };
+
+  const scrollToElementBottom = (element, offset = 0) => {
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    const scrollTop = rect.bottom + window.scrollY - window.innerHeight + offset;
+    window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
+  };
+
+  const openImprint = () => {
+    if (imprintCloseTimerRef.current) {
+      window.clearTimeout(imprintCloseTimerRef.current);
+      imprintCloseTimerRef.current = null;
+    }
+
+    setIsImprintObscuring(true);
+    setIsImprintOpen(true);
+  };
+
+  const closeImprint = () => {
+    if (imprintCloseTimerRef.current) {
+      window.clearTimeout(imprintCloseTimerRef.current);
+    }
+
+    setIsImprintObscuring(false);
+    scrollToElementBottom(footerRef.current, getRootCssPixelValue("--margin"));
+    imprintCloseTimerRef.current = window.setTimeout(() => {
+      setIsImprintOpen(false);
+      imprintCloseTimerRef.current = null;
+    }, 450);
+  };
 
   useEffect(() => {
     destinationsRef.current = destinations;
@@ -264,7 +348,7 @@ export default function App({ Component, pageProps }) {
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setIsApplicationFormOpen(false);
+        closeApplicationForm();
       }
     };
 
@@ -272,6 +356,73 @@ export default function App({ Component, pageProps }) {
 
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isApplicationFormOpen]);
+
+  useEffect(() => {
+    if (isApplicationFormOpen) return;
+
+    setIsApplicationFormEntered(false);
+  }, [isApplicationFormOpen]);
+
+  useEffect(() => {
+    if (isImprintOpen) return;
+
+    setIsImprintObscuring(false);
+  }, [isImprintOpen]);
+
+  useEffect(() => {
+    if (!isImprintOpen) return undefined;
+
+    const scrollToImprintContainerBottom = () => {
+      scrollToElementBottom(document.getElementById(contentContainerId) || imprintRef.current);
+    };
+
+    const frameId = requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToImprintContainerBottom);
+    });
+    const timeoutId = window.setTimeout(scrollToImprintContainerBottom, 180);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [isImprintOpen]);
+
+  useEffect(() => {
+    if (!isImprintOpen) return undefined;
+
+    const handleWheel = (event) => {
+      if (event.deltaY >= 0) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      closeImprint();
+    };
+
+    const handleTouchStart = (event) => {
+      imprintTouchStartYRef.current = event.touches?.[0]?.clientY ?? null;
+    };
+
+    const handleTouchMove = (event) => {
+      const startY = imprintTouchStartYRef.current;
+      const currentY = event.touches?.[0]?.clientY;
+      if (startY === null || currentY === undefined || currentY - startY < 8) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      closeImprint();
+    };
+
+    window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { capture: true, passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { capture: true, passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel, { capture: true });
+      window.removeEventListener("touchstart", handleTouchStart, { capture: true });
+      window.removeEventListener("touchmove", handleTouchMove, { capture: true });
+      imprintTouchStartYRef.current = null;
+    };
+  }, [isImprintOpen]);
 
   useEffect(() => {
     if (textColorPalette.length === 0) {
@@ -411,6 +562,8 @@ export default function App({ Component, pageProps }) {
 
     const handleRouteChangeStart = () => {
       clearH1MarqueeSettleTimer();
+      setIsApplicationFormEntered(false);
+      setIsApplicationFormOpen(false);
       setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
       moveGlobeForNavigation();
     };
@@ -442,7 +595,8 @@ export default function App({ Component, pageProps }) {
     if (isAppReady || !router.isReady) return undefined;
 
     let isMounted = true;
-    const hasInitialSharedData = sharedData.site && sharedData.page && sharedData.pageDeadlines && sharedData.destinations;
+    const hasInitialSharedData =
+      sharedData.site && sharedData.page && sharedData.pageDeadlines && sharedData.destinations && sharedData.imprint;
     const fallbackTimeout = setTimeout(() => {
       if (isMounted) setIsAppReady(true);
     }, 2500);
@@ -482,6 +636,7 @@ export default function App({ Component, pageProps }) {
     isAppReady,
     router.isReady,
     sharedData.destinations,
+    sharedData.imprint,
     sharedData.page,
     sharedData.pageDeadlines,
     sharedData.site,
@@ -493,12 +648,22 @@ export default function App({ Component, pageProps }) {
       page: pageProps.page || previousData.page,
       pageDeadlines: pageProps.pageDeadlines || previousData.pageDeadlines,
       destinations: pageProps.destinations || previousData.destinations,
+      imprint: pageProps.imprint || previousData.imprint,
       currentPhase: pageProps.currentPhase || pageProps.page?.phase || previousData.currentPhase,
     }));
-  }, [pageProps.currentPhase, pageProps.destinations, pageProps.page, pageProps.pageDeadlines, pageProps.site]);
+  }, [
+    pageProps.currentPhase,
+    pageProps.destinations,
+    pageProps.imprint,
+    pageProps.page,
+    pageProps.pageDeadlines,
+    pageProps.site,
+  ]);
 
   useEffect(() => {
-    if (sharedData.site && sharedData.page && sharedData.pageDeadlines && sharedData.destinations) return undefined;
+    if (sharedData.site && sharedData.page && sharedData.pageDeadlines && sharedData.destinations && sharedData.imprint) {
+      return undefined;
+    }
 
     let isMounted = true;
 
@@ -514,6 +679,7 @@ export default function App({ Component, pageProps }) {
           page: previousData.page || nextSharedData.page,
           pageDeadlines: previousData.pageDeadlines || nextSharedData.pageDeadlines,
           destinations: previousData.destinations || nextSharedData.destinations,
+          imprint: previousData.imprint || nextSharedData.imprint,
           currentPhase: previousData.currentPhase || nextSharedData.currentPhase,
         }));
       }
@@ -524,7 +690,7 @@ export default function App({ Component, pageProps }) {
     return () => {
       isMounted = false;
     };
-  }, [sharedData.destinations, sharedData.page, sharedData.pageDeadlines, sharedData.site]);
+  }, [sharedData.destinations, sharedData.imprint, sharedData.page, sharedData.pageDeadlines, sharedData.site]);
 
   const scrollToContent = () => {
     const contentElement = document.getElementById(contentContainerId);
@@ -648,7 +814,9 @@ export default function App({ Component, pageProps }) {
             <LenisProvider>
               <Header currentPhase={currentPhase} pageDeadlines={pageDeadlines} site={site} />
               <div
-                className={[styles.sharedLayer, isApplicationFormOpen ? styles.pageObscured : ""].filter(Boolean).join(" ")}
+                className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""]
+                  .filter(Boolean)
+                  .join(" ")}
               >
                 <motion.div
                   animate={globePosition}
@@ -680,7 +848,7 @@ export default function App({ Component, pageProps }) {
                 </div>
               </div>
               <div
-                className={[styles.cityListLayer, isApplicationFormOpen ? styles.pageObscured : ""]
+                className={[styles.cityListLayer, isPageObscuring ? styles.pageObscured : ""]
                   .filter(Boolean)
                   .join(" ")}
               >
@@ -705,11 +873,13 @@ export default function App({ Component, pageProps }) {
                   </motion.div>
                 </AnimatePresence>
               </div>
-              {isApplicationFormOpen ? null : <SpacingDebugOverlay />}
+              {isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
               <AnimatePresence initial={false} mode="wait">
                 <motion.div
                   animate="animate"
-                  className={["pageTransition", isApplicationFormOpen ? styles.pageObscured : ""].filter(Boolean).join(" ")}
+                  className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
+                    .filter(Boolean)
+                    .join(" ")}
                   exit="exit"
                   initial="initial"
                   key={router.asPath}
@@ -720,10 +890,27 @@ export default function App({ Component, pageProps }) {
                     <Component {...pageProps} />
                   ) : (
                     <ContentContainer id={contentContainerId}>
-                      <div className="pageTransitionRoot">
-                        <Component {...pageProps} selectedDestination={selectedDestination} />
+                      <div className={isImprintObscuring ? styles.pageObscured : ""}>
+                        <div className="pageTransitionRoot">
+                          <Component {...pageProps} selectedDestination={selectedDestination} />
+                        </div>
+                        <div ref={footerRef}>
+                          <Footer onApplyClick={openApplicationForm} onImprintClick={openImprint} page={page} site={site} />
+                        </div>
                       </div>
-                      <Footer onApplyClick={() => setIsApplicationFormOpen(true)} page={page} site={site} />
+                      <AnimatePresence initial={false}>
+                        {isImprintOpen ? (
+                          <motion.div
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            initial={{ opacity: 0 }}
+                            ref={imprintRef}
+                            transition={{ duration: 0.35, ease: "easeInOut" }}
+                          >
+                            <Imprint imprint={imprint} onClose={closeImprint} />
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                     </ContentContainer>
                   )}
                 </motion.div>
@@ -731,7 +918,8 @@ export default function App({ Component, pageProps }) {
               <ApplicationFormOverlay
                 destinations={destinations}
                 isOpen={isApplicationFormOpen}
-                onClose={() => setIsApplicationFormOpen(false)}
+                onClose={closeApplicationForm}
+                onOpenComplete={() => setIsApplicationFormEntered(true)}
                 page={page}
               />
             </LenisProvider>
