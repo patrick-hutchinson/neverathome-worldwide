@@ -233,6 +233,12 @@ export default function App({ Component, pageProps }) {
 
     let hasActiveSelectionColor = false;
 
+    const getRandomHoverElement = (eventTarget) => {
+      const stableHoverElement = eventTarget.closest?.("[data-random-hover-color]");
+
+      return stableHoverElement || eventTarget.closest?.("a, button, [role='button']");
+    };
+
     const setRandomHoverColor = (element) => {
       const nextColor = getRandomTextColor(textColorPalette);
       if (!nextColor) return;
@@ -241,7 +247,7 @@ export default function App({ Component, pageProps }) {
     };
 
     const handlePointerOver = (event) => {
-      const interactiveElement = event.target.closest?.("a, button, [role='button'], [data-random-hover-color]");
+      const interactiveElement = getRandomHoverElement(event.target);
       const previousElement = event.relatedTarget instanceof Node ? event.relatedTarget : null;
       if (!interactiveElement || (previousElement && interactiveElement.contains(previousElement))) return;
 
@@ -249,7 +255,7 @@ export default function App({ Component, pageProps }) {
     };
 
     const handleFocusIn = (event) => {
-      const interactiveElement = event.target.closest?.("a, button, [role='button'], [data-random-hover-color]");
+      const interactiveElement = getRandomHoverElement(event.target);
       if (!interactiveElement) return;
 
       setRandomHoverColor(interactiveElement);

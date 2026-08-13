@@ -14,7 +14,7 @@ const DEFAULT_HEIGHT = 300;
 const FLOAT_PLAYBACK_RAMP_MS = 650;
 const DESKTOP_BREAKPOINT = 769;
 const GESTURE_SCALE_MIN = 1;
-const GESTURE_SCALE_MAX = 2.4;
+const GESTURE_SCALE_MAX = 1.75;
 const GESTURE_WHEEL_SENSITIVITY = 0.0025;
 const GESTURE_PINCH_SENSITIVITY = 0.01;
 const GESTURE_RESOLUTION_RESET_DELAY = 280;
@@ -193,13 +193,15 @@ export default function Globe({
     let isMounted = true;
 
     async function initGlobe() {
-      const [{ default: ThreeGlobe }, THREE, { CSS2DRenderer }, { default: opentype }, markerFontBuffer] = await Promise.all([
-        import("three-globe"),
-        import("three"),
-        import("three/examples/jsm/renderers/CSS2DRenderer.js"),
-        import("opentype.js"),
-        fetch(MARKER_FONT_URL).then((response) => (response.ok ? response.arrayBuffer() : null)),
-      ]);
+      const [{ default: ThreeGlobe }, THREE, { CSS2DRenderer }, { default: opentype }, markerFontBuffer] = await Promise.all(
+        [
+          import("three-globe"),
+          import("three"),
+          import("three/examples/jsm/renderers/CSS2DRenderer.js"),
+          import("opentype.js"),
+          fetch(MARKER_FONT_URL).then((response) => (response.ok ? response.arrayBuffer() : null)),
+        ],
+      );
 
       if (!isMounted || !globeRef.current) return;
 
@@ -234,11 +236,7 @@ export default function Globe({
       const hasInertia = () => Math.abs(dragVelocity.x) > 0.01 || Math.abs(dragVelocity.y) > 0.01;
 
       const hasActiveMotion = (now = performance.now()) =>
-        needsRender ||
-        focusTarget ||
-        isDragging ||
-        (!prefersReducedMotion && hasInertia()) ||
-        now < initialRenderBurstEndAt;
+        needsRender || focusTarget || isDragging || (!prefersReducedMotion && hasInertia()) || now < initialRenderBurstEndAt;
 
       const requestRender = () => {
         needsRender = true;

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 
-import { formatCountdown, getCountdownParts } from "@/lib/countdown";
+import { CountdownSlot, CountdownText } from "@/components/Countdown/Countdown";
 import { getCurrentPhaseLabel } from "@/lib/phase";
 import styles from "./Header.module.scss";
 import { DeviceContext } from "@/context/DeviceContext";
@@ -32,19 +32,9 @@ function getProgress(now) {
   return clamp(((now - progressStartDate) / total) * 100, 0, 100);
 }
 
-function formatMaxCountdown(deadline, now) {
-  const parts = getCountdownParts(deadline, now);
-  if (!parts) return null;
-
-  const dayWidth = Math.max(String(parts.days).length, 1);
-
-  return `${"0".repeat(dayWidth)}d23h59m59s`;
-}
-
 const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   const { isMobile } = useContext(DeviceContext);
   const router = useRouter();
-  const [now, setNow] = useState(null);
   const [progressNow, setProgressNow] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase);
@@ -52,23 +42,13 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     () =>
       links.map((link) => ({
         ...link,
-        countdown: now ? formatCountdown(pageDeadlines[link.deadlineKey], now) : null,
-        maxCountdown: now ? formatMaxCountdown(pageDeadlines[link.deadlineKey], now) : null,
+        deadline: pageDeadlines[link.deadlineKey],
       })),
-    [now, pageDeadlines],
+    [pageDeadlines],
   );
 
   useEffect(() => {
-    const initialNow = new Date();
-
-    setNow(initialNow);
-    setProgressNow(initialNow);
-
-    const interval = window.setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-
-    return () => window.clearInterval(interval);
+    setProgressNow(new Date());
   }, []);
 
   useEffect(() => {
@@ -110,17 +90,27 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   };
 
   const DesktopNav = () => {
+    const openCallLink = navLinks.find((link) => link.href === "/open-call");
+
     return (
       <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
           {currentPhaseLabel ? (
-            <Link
-              className={[getLinkClassName("/"), styles.phaseLink].filter(Boolean).join(" ")}
-              href="/"
-              onClick={handleHomeLinkClick}
-            >
-              {currentPhaseLabel}
-            </Link>
+            <span className={[styles.navItem, styles.phaseItem].filter(Boolean).join(" ")} data-random-hover-color>
+              <Link
+                className={[getLinkClassName("/"), styles.phaseLink].filter(Boolean).join(" ")}
+                href="/"
+                onClick={handleHomeLinkClick}
+              >
+                {currentPhaseLabel}
+              </Link>
+              <CountdownSlot
+                className={styles.countdown}
+                deadline={openCallLink?.deadline}
+                ghostClassName={styles.countdownGhost}
+                slotClassName={styles.countdownSlot}
+              />
+            </span>
           ) : null}
           {navLinks.map((link) => (
             <span
@@ -133,17 +123,8 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
                 {link.label}
               </Link>
-              {link.countdown ? (
-                link.href === "/open-call" ? (
-                  <span className={styles.countdownSlot}>
-                    <span className={styles.countdown}>{link.countdown}</span>
-                    <span className={styles.countdownGhost} aria-hidden="true">
-                      {link.maxCountdown}
-                    </span>
-                  </span>
-                ) : (
-                  <span className={styles.countdown}>{link.countdown}</span>
-                )
+              {link.href !== "/open-call" ? (
+                <CountdownText className={styles.countdown} deadline={link.deadline} />
               ) : null}
             </span>
           ))}
@@ -178,7 +159,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           >
             {openCallLink.label}
           </Link>
-          {openCallLink.countdown ? <span className={styles.countdown}>{openCallLink.countdown}</span> : null}
+          <CountdownText className={styles.countdown} deadline={openCallLink.deadline} />
         </span>
         <button
           className={[styles.menuButton, isMenuOpen ? styles.menuButtonOpen : ""].filter(Boolean).join(" ")}
