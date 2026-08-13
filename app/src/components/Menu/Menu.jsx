@@ -21,16 +21,13 @@ const Menu = ({ currentPhaseLabel = null, navLinks = [], email = null }) => {
       <nav className={styles.nav} typo="h2 compensate">
         <div className={styles.topSection}>
           {currentPhaseLabel ? <Link href="/">{currentPhaseLabel}</Link> : null}
-
-          {openCallLink ? (
-            <div typo="h2 compensate" className={styles.openCallLink}>
-              <Link href={openCallLink.href}>{openCallLink.label}</Link>
-              {openCallLink.countdown ? <span className={styles.countdown}>{formatMenuCountdown(openCallLink.countdown)}</span> : null}
-            </div>
+          {openCallLink.countdown ? (
+            <span className={styles.countdown}>{formatMenuCountdown(openCallLink.countdown)}</span>
           ) : null}
         </div>
 
         <div className={styles.bottomSection}>
+          <Link href={openCallLink.href}>{openCallLink.label}</Link>
           {juryLink ? <Link href={juryLink.href}>{juryLink.label}</Link> : null}
           {destinationsLink ? <Link href={destinationsLink.href}>{destinationsLink.label}</Link> : null}
           <br />
