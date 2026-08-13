@@ -23,5 +23,5 @@ export function formatCountdown(deadline, now) {
   const parts = getCountdownParts(deadline, now);
   if (!parts) return null;
 
-  return `${parts.days}d${parts.hours}h${parts.minutes}m${parts.seconds}s`;
+  return `${parts.days}d${parts.hours}h${parts.minutes}m${String(parts.seconds).padStart(2, "0")}s`;
 }

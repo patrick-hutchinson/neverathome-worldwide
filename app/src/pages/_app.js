@@ -39,12 +39,6 @@ const pageTransitionVariants = {
 
 // Updated Packages
 
-const sharedTransitionVariants = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-};
-
 const routeMarqueeLabels = {
   "/destinations": "Destinations",
   "/jury": "JuryIntl.",
@@ -62,7 +56,7 @@ const mobileGlobeViewportPadding = 16;
 const mobileGlobeMinimumNavigationDistance = 180;
 const h1MarqueeDefaultSpeed = 1;
 const h1MarqueeNavigationSpeed = 100;
-const h1MarqueeNavigationLeadInMs = 350;
+const h1MarqueeNavigationLeadInMs = 1000;
 const h1MarqueeNavigationSettleDelay = 0;
 const h1MarqueeNavigationSpeedTransitionMs = 1000;
 const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -318,6 +312,10 @@ export default function App({ Component, pageProps }) {
     window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
   };
 
+  const scrollToPageTop = (behavior = "smooth") => {
+    window.scrollTo({ top: 0, behavior });
+  };
+
   const openImprint = () => {
     if (imprintCloseTimerRef.current) {
       window.clearTimeout(imprintCloseTimerRef.current);
@@ -491,8 +489,10 @@ export default function App({ Component, pageProps }) {
     };
   }, [textColorPaletteKey]);
 
-  const moveGlobeForNavigation = () => {
-    const randomDestination = getRandomDestination(destinationsRef.current);
+  const moveGlobeForNavigation = (nextHref = "") => {
+    const nextPathname = nextHref ? new URL(nextHref, window.location.href).pathname : "";
+    const shouldRouteSelectRandomCity = nextPathname !== "/destinations";
+    const randomDestination = shouldRouteSelectRandomCity ? getRandomDestination(destinationsRef.current) : null;
 
     if (randomDestination) {
       setDestinationCity(randomDestination);
@@ -512,6 +512,53 @@ export default function App({ Component, pageProps }) {
     window.addEventListener("resize", updateViewportWidth);
 
     return () => window.removeEventListener("resize", updateViewportWidth);
+  }, []);
+
+  useEffect(() => {
+    const isInsideGlobe = (event) => event.target?.closest?.("[data-globe-interaction-root]");
+    const isBrowserZoomKey = (event) => {
+      if (!event.metaKey && !event.ctrlKey) return false;
+
+      return ["+", "=", "-", "_", "0"].includes(event.key);
+    };
+
+    const preventBrowserZoom = (event) => {
+      if (isInsideGlobe(event)) return;
+
+      event.preventDefault();
+    };
+
+    const handleKeyDown = (event) => {
+      if (!isBrowserZoomKey(event)) return;
+
+      event.preventDefault();
+    };
+
+    const handleWheel = (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+
+      preventBrowserZoom(event);
+    };
+
+    const handleTouchMove = (event) => {
+      if ((event.touches?.length || 0) < 2) return;
+
+      preventBrowserZoom(event);
+    };
+
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
+    window.addEventListener("gesturestart", preventBrowserZoom, { capture: true, passive: false });
+    window.addEventListener("gesturechange", preventBrowserZoom, { capture: true, passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { capture: true, passive: false });
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
+      window.removeEventListener("wheel", handleWheel, { capture: true });
+      window.removeEventListener("gesturestart", preventBrowserZoom, { capture: true });
+      window.removeEventListener("gesturechange", preventBrowserZoom, { capture: true });
+      window.removeEventListener("touchmove", handleTouchMove, { capture: true });
+    };
   }, []);
 
   useEffect(() => {
@@ -553,6 +600,8 @@ export default function App({ Component, pageProps }) {
       clearPendingNavigationTimer();
       clearH1MarqueeSettleTimer();
       setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+      setIsDestinationCityListHidden(false);
+      scrollToPageTop();
 
       pendingNavigationTimerRef.current = setTimeout(() => {
         pendingNavigationTimerRef.current = null;
@@ -562,12 +611,16 @@ export default function App({ Component, pageProps }) {
       }, h1MarqueeNavigationLeadInMs);
     };
 
-    const handleRouteChangeStart = () => {
+    const handleRouteChangeStart = (nextHref) => {
       clearH1MarqueeSettleTimer();
       setIsApplicationFormEntered(false);
       setIsApplicationFormOpen(false);
       setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
-      moveGlobeForNavigation();
+      if (!pendingNavigationTimerRef.current) {
+        setIsDestinationCityListHidden(false);
+        scrollToPageTop();
+      }
+      moveGlobeForNavigation(nextHref);
     };
 
     const settleH1MarqueeSpeed = () => {
@@ -828,7 +881,7 @@ export default function App({ Component, pageProps }) {
       <Head>
         <title>{site.title}</title>
         {site.description ? <meta name="description" content={site.description} /> : null}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <link rel="icon" href={site.faviconUrl} />
       </Head>
 
@@ -881,26 +934,15 @@ export default function App({ Component, pageProps }) {
                   .join(" ")}
                 ref={cityListLayerRef}
               >
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.div
-                    animate="animate"
-                    exit="exit"
-                    initial="initial"
-                    key={`city-list-${router.asPath}`}
-                    transition={pageTransition}
-                    variants={sharedTransitionVariants}
-                  >
-                    <CityList
-                      accentInactive={isDestinationsPage}
-                      cities={destinations}
-                      highlightedCity={highlightedCity}
-                      isClickable={isDestinationsPage}
-                      onCityClick={isDestinationsPage ? handleCityClick : undefined}
-                      onCitySelect={setDestinationCity}
-                      selectedCity={isDestinationsPage ? selectedDestination : null}
-                    />
-                  </motion.div>
-                </AnimatePresence>
+                <CityList
+                  accentInactive={isDestinationsPage}
+                  cities={destinations}
+                  highlightedCity={highlightedCity}
+                  isClickable={isDestinationsPage}
+                  onCityClick={isDestinationsPage ? handleCityClick : undefined}
+                  onCitySelect={setDestinationCity}
+                  selectedCity={isDestinationsPage ? selectedDestination : null}
+                />
               </div>
               {isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
               <AnimatePresence initial={false} mode="wait">

@@ -25,14 +25,14 @@ const AboutPage = ({ aboutPage }) => {
         </LargeSection>
         <LargeSection>
           <div className={styles.artBoardContainer}>
-            <h3 typo="h3 compesnate" className={styles.title}>
+            <h3 typo="h3 compensate" className={styles.title}>
               Art Board
             </h3>
             <Text text={aboutPage.artBoard.text} typo="h6 compensate" className={styles.text} />
             <Media medium={aboutPage.artBoard.medium.medium} className={styles.medium} />
           </div>
           <div className={styles.teamContainer}>
-            <h3 typo="h3 compesnate" className={styles.title}>
+            <h3 typo="h3 compensate" className={styles.title}>
               The Team
             </h3>
 

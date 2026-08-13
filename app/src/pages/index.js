@@ -11,9 +11,8 @@ import { getCurrentPhaseLabel } from "@/lib/phase";
 import Text from "@/components/Text/Text";
 import FormatDate from "@/components/FormatDate/FormatDate";
 
-export default function Home({ homePage = {}, currentPhase }) {
+export default function Home({ homePage = {} }) {
   const [now, setNow] = useState(null);
-  const currentPhaseLabel = getCurrentPhaseLabel(currentPhase);
 
   useEffect(() => {
     setNow(new Date());
@@ -36,7 +35,7 @@ export default function Home({ homePage = {}, currentPhase }) {
           <div id="home-schedule">
             {Object.entries(homePage.schedule || {}).map(([phase, entries]) => (
               <ul key={phase} className={styles.schedule}>
-                <h4>{currentPhaseLabel}</h4>
+                <h4>{getCurrentPhaseLabel(phase)}</h4>
 
                 {entries?.map((entry) => (
                   <li key={entry._key} className={styles.scheduleEntry}>

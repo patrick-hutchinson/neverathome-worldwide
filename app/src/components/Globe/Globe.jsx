@@ -752,6 +752,7 @@ export default function Globe({
     <div
       ref={globeRef}
       className={[styles.globe, enableHoverScale ? styles.globeHoverScale : ""].filter(Boolean).join(" ")}
+      data-globe-interaction-root
       style={{ width, height }}
     />
   );
