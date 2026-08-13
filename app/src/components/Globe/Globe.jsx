@@ -75,10 +75,18 @@ export default function Globe({
 
     let animationFrame = null;
 
-    const getFloatAnimations = () =>
-      globeElement
-        .getAnimations()
-        .filter((animation) => animation.animationName === "float" || animation.effect?.target === globeElement);
+    const isFloatAnimation = (animation) => {
+      const animationName = animation.animationName || "";
+      const keyframes = animation.effect?.getKeyframes?.() || [];
+
+      return (
+        animation.effect?.target === globeElement &&
+        (animationName.includes("float") ||
+          keyframes.some((keyframe) => typeof keyframe.transform === "string" && keyframe.transform.includes("translateY")))
+      );
+    };
+
+    const getFloatAnimations = () => globeElement.getAnimations().filter(isFloatAnimation);
 
     const cancelRamp = () => {
       if (!animationFrame) return;

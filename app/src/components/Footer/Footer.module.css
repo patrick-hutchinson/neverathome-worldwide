@@ -76,11 +76,18 @@
   height: 50px;
   border: 1px solid black;
   align-items: center;
+  background: transparent;
+  color: var(--foreground);
   display: flex;
   justify-content: center;
   padding: 0 var(--spacing-6);
   transition: var(--transtition);
   cursor: pointer;
+}
+
+.applicationButton {
+  background: var(--foreground);
+  color: var(--background);
 }
 
 .footerButton + .footerButton {
@@ -98,13 +105,13 @@
 }
 
 .buttonContainer:has(.applicationButton:hover) .footerButton:not(.applicationButton) {
-  background: var(--interactive-hover-color);
+  background: var(--foreground);
   color: var(--background);
 }
 
 .buttonContainer:has(.footerButton:not(.applicationButton):hover) .applicationButton {
   background: transparent;
-  color: var(--interactive-hover-color);
+  color: var(--foreground);
 }
 
 .buttonContainer .buttonLabel {
