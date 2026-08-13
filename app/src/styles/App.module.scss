@@ -15,6 +15,12 @@
   transition: opacity 0.35s ease-in-out;
 }
 
+.contentContainerExiting {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease-in-out;
+}
+
 .sharedLayer {
   position: fixed;
   inset: 0;
