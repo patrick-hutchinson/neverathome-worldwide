@@ -56,7 +56,7 @@ const mobileGlobeViewportPadding = 16;
 const mobileGlobeMinimumNavigationDistance = 180;
 const h1MarqueeDefaultSpeed = 1;
 const h1MarqueeNavigationSpeed = 100;
-const h1MarqueeNavigationLeadInMs = 1000;
+const h1MarqueeNavigationLeadInMs = 300;
 const h1MarqueeNavigationSettleDelay = 0;
 const h1MarqueeNavigationSpeedTransitionMs = 1000;
 const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -890,11 +890,7 @@ export default function App({ Component, pageProps }) {
           <DeviceProvider>
             <LenisProvider>
               <Header currentPhase={currentPhase} pageDeadlines={pageDeadlines} site={site} />
-              <div
-                className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
+              <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
                 <motion.div
                   animate={globePosition}
                   className={styles.globeMover}
