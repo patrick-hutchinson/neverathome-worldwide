@@ -53,6 +53,10 @@ const contentContainerId = "page-content";
 const desktopGlobeSize = 300;
 const desktopGlobeBasePosition = { x: 200, y: 200 };
 const desktopGlobeViewportPadding = 24;
+const desktopGlobeMinimumNavigationDistance = 300;
+const desktopGlobePositionAttempts = 24;
+const mobileGlobeViewportPadding = 16;
+const mobileGlobeMinimumNavigationDistance = 180;
 
 function getRandomNumber(min, max) {
   if (max <= min) return min;
@@ -60,7 +64,11 @@ function getRandomNumber(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-function getRandomDesktopGlobePosition() {
+function getPositionDistance(positionA, positionB) {
+  return Math.hypot(positionA.x - positionB.x, positionA.y - positionB.y);
+}
+
+function createRandomDesktopGlobePosition() {
   if (typeof window === "undefined") return { x: 0, y: 0 };
 
   const minLeft = desktopGlobeViewportPadding;
@@ -74,6 +82,67 @@ function getRandomDesktopGlobePosition() {
     x: left - desktopGlobeBasePosition.x,
     y: top - desktopGlobeBasePosition.y,
   };
+}
+
+function getRandomDesktopGlobePosition(currentPosition = { x: 0, y: 0 }) {
+  let farthestPosition = createRandomDesktopGlobePosition();
+  let farthestDistance = getPositionDistance(currentPosition, farthestPosition);
+
+  for (let attempt = 0; attempt < desktopGlobePositionAttempts; attempt += 1) {
+    const nextPosition = createRandomDesktopGlobePosition();
+    const nextDistance = getPositionDistance(currentPosition, nextPosition);
+
+    if (nextDistance >= desktopGlobeMinimumNavigationDistance) {
+      return nextPosition;
+    }
+
+    if (nextDistance > farthestDistance) {
+      farthestPosition = nextPosition;
+      farthestDistance = nextDistance;
+    }
+  }
+
+  return farthestPosition;
+}
+
+function createRandomMobileGlobePosition() {
+  if (typeof window === "undefined") return { x: 0, y: 0 };
+
+  const mobileGlobeSize = window.innerWidth * 0.5;
+  const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
+  const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
+  const minLeft = mobileGlobeViewportPadding;
+  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize - mobileGlobeViewportPadding, minLeft);
+  const minTop = mobileGlobeViewportPadding;
+  const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
+  const left = getRandomNumber(minLeft, maxLeft);
+  const top = getRandomNumber(minTop, maxTop);
+
+  return {
+    x: left - centeredLeft,
+    y: top - centeredTop,
+  };
+}
+
+function getRandomMobileGlobePosition(currentPosition = { x: 0, y: 0 }) {
+  let farthestPosition = createRandomMobileGlobePosition();
+  let farthestDistance = getPositionDistance(currentPosition, farthestPosition);
+
+  for (let attempt = 0; attempt < desktopGlobePositionAttempts; attempt += 1) {
+    const nextPosition = createRandomMobileGlobePosition();
+    const nextDistance = getPositionDistance(currentPosition, nextPosition);
+
+    if (nextDistance >= mobileGlobeMinimumNavigationDistance) {
+      return nextPosition;
+    }
+
+    if (nextDistance > farthestDistance) {
+      farthestPosition = nextPosition;
+      farthestDistance = nextDistance;
+    }
+  }
+
+  return farthestPosition;
 }
 
 function getRandomDestination(destinations = []) {
@@ -120,7 +189,9 @@ export default function App({ Component, pageProps }) {
     }
 
     if (window.innerWidth >= 769) {
-      setGlobePosition(getRandomDesktopGlobePosition());
+      setGlobePosition((currentPosition) => getRandomDesktopGlobePosition(currentPosition));
+    } else {
+      setGlobePosition((currentPosition) => getRandomMobileGlobePosition(currentPosition));
     }
   };
 

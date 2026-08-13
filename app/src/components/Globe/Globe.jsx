@@ -35,6 +35,7 @@ const MARKER_OUTLINE_OFFSETS = [
 
 const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+const getPointerDistance = (pointerA, pointerB) => Math.hypot(pointerA.x - pointerB.x, pointerA.y - pointerB.y);
 
 export default function Globe({
   cities = [],
@@ -160,6 +161,8 @@ export default function Globe({
     let lastFrameTime = 0;
     let lastRenderTime = 0;
     let dragVelocity = { x: 0, y: 0 };
+    const activePointers = new Map();
+    let pinchStartDistance = 0;
     let gestureScale = 1;
     let gestureStartScale = 1;
     let gestureResolutionResetTimer = null;
@@ -246,7 +249,7 @@ export default function Globe({
       };
 
       const boostGestureResolution = () => {
-        if (!isDesktopGestureScaleEnabled() || prefersReducedMotion) return;
+        if (prefersReducedMotion) return;
 
         clearGestureResolutionReset();
         if (isGestureResolutionBoosted) return;
@@ -273,6 +276,9 @@ export default function Globe({
       };
 
       const resetGestureScale = () => {
+        activePointers.clear();
+        isDragging = false;
+        pinchStartDistance = 0;
         gestureScale = 1;
         globeElement.style.removeProperty("--globe-gesture-scale");
         globeElement.style.removeProperty("--globe-marker-inverse-scale");
@@ -407,17 +413,48 @@ export default function Globe({
       focusCity(destinationCityRef.current);
 
       const handlePointerDown = (event) => {
+        activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        globeElement.setPointerCapture(event.pointerId);
+
+        if (activePointers.size >= 2) {
+          const [pointerA, pointerB] = Array.from(activePointers.values());
+
+          pinchStartDistance = getPointerDistance(pointerA, pointerB);
+          gestureStartScale = gestureScale;
+          isDragging = false;
+          focusTarget = null;
+          dragVelocity = { x: 0, y: 0 };
+          didDrag = true;
+          boostGestureResolution();
+          requestRender();
+          return;
+        }
+
         isDragging = true;
         focusTarget = null;
         dragVelocity = { x: 0, y: 0 };
         didDrag = false;
         lastPointer = { x: event.clientX, y: event.clientY };
         lastDragTime = performance.now();
-        globeElement.setPointerCapture(event.pointerId);
         requestRender();
       };
 
       const handlePointerMove = (event) => {
+        if (activePointers.has(event.pointerId)) {
+          activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        }
+
+        if (activePointers.size >= 2) {
+          const [pointerA, pointerB] = Array.from(activePointers.values());
+          const nextDistance = getPointerDistance(pointerA, pointerB);
+
+          if (pinchStartDistance > 0) {
+            setGestureScale(gestureStartScale * (nextDistance / pinchStartDistance));
+          }
+
+          return;
+        }
+
         if (!isDragging) return;
 
         const deltaX = event.clientX - lastPointer.x;
@@ -440,12 +477,24 @@ export default function Globe({
       };
 
       const handlePointerUp = (event) => {
+        activePointers.delete(event.pointerId);
         isDragging = false;
 
         if (globeElement.hasPointerCapture(event.pointerId)) {
           globeElement.releasePointerCapture(event.pointerId);
         }
 
+        if (activePointers.size === 1) {
+          const [pointer] = Array.from(activePointers.values());
+
+          lastPointer = { x: pointer.x, y: pointer.y };
+          lastDragTime = performance.now();
+          pinchStartDistance = 0;
+          gestureStartScale = gestureScale;
+          return;
+        }
+
+        pinchStartDistance = 0;
         requestRender();
       };
 
