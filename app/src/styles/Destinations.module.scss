@@ -10,7 +10,9 @@
   }
 
   .destinationGrid {
+    // Here
     min-height: calc(var(--content-height) - 85px);
+
     position: relative;
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));
@@ -51,14 +53,14 @@
           display: flex;
           align-items: flex-end;
           line-height: 0;
-          max-height: calc(var(--fontSize-1) * 0.76);
+          max-height: calc(var(--fontSize-1) * 0.725);
           overflow: visible;
         }
 
         .cityAbbreviationSvg {
           width: 100%;
           max-width: 100%;
-          max-height: calc(var(--fontSize-1) * 0.76);
+          max-height: calc(var(--fontSize-1) * 0.725);
           height: auto;
           object-fit: contain;
         }

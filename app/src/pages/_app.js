@@ -117,8 +117,8 @@ function createRandomMobileGlobePosition() {
   const mobileGlobeSize = window.innerWidth * 0.5;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
-  const minLeft = mobileGlobeViewportPadding;
-  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize - mobileGlobeViewportPadding, minLeft);
+  const minLeft = 0;
+  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize, minLeft);
   const minTop = mobileGlobeViewportPadding;
   const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
   const left = getRandomNumber(minLeft, maxLeft);
@@ -475,7 +475,8 @@ export default function App({ Component, pageProps }) {
     const contentElement = document.getElementById(contentContainerId);
     if (!contentElement) return;
 
-    const scrollTop = contentElement.getBoundingClientRect().top + window.scrollY - 65;
+    // HERE
+    const scrollTop = contentElement.getBoundingClientRect().top + window.scrollY - 49;
 
     window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
   };

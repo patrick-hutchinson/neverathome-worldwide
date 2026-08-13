@@ -13,9 +13,9 @@ plus bei accordion gleiche größe bei header ✅
 
 Buchstaben Abständ ✅
 
-links unten: hintergrund transparent, und abwechseln
+links unten: hintergrund transparent, und abwechseln ✅
 
-Banderln bewegen sich bei scroll schneller
+Banderln bewegen sich bei scroll schneller ✅
 
 Obere Linie immer ohne Randabstnad ✅
 
@@ -36,12 +36,12 @@ Destinations in der Liste schwarz ✅
 
 Bei Citykürzerl maxhöhe h1, modul immer volle höhe, dann mehr whitespace
 
-Text beim Bild raus bei destinations
+Text beim Bild raus bei destinations ✅
 
 überall:
 
-hover fade
+hover fade ✅
 
 Menu Schwupst sich rein und raus auf scroll
 
-Freitext nach Datum auf der Home Seite
+Freitext nach Datum auf der Home Seite ✅

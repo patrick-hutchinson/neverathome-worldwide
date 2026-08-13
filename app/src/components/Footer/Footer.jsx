@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import Text from "@/components/Text/Text";
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
 
 import styles from "./Footer.module.css";
+import { DeviceContext } from "@/context/DeviceContext";
 
 const getDownloadUrl = (file) => {
   const url = file?.asset?.url;
@@ -83,6 +84,7 @@ const LogoShuffle = ({ logos = [] }) => {
 };
 
 const Footer = ({ page = {}, site = {} }) => {
+  const { isMobile } = useContext(DeviceContext);
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
   const informationPDFUrl = getDownloadUrl(page.informationPDF);
 
@@ -92,21 +94,21 @@ const Footer = ({ page = {}, site = {} }) => {
 
       <div className={styles.buttonContainer} typo="h5">
         <FooterButton className={`${styles.applicationButton} invert`} ariaLabel="Apply now" href={page.formLink}>
-          <RenderSVG className={styles.buttonLabel} text="APPLY NOW" />
+          <RenderSVG className={styles.buttonLabel} text={isMobile ? "APPLY" : "APPLY NOW"} />
         </FooterButton>
         <FooterButton
           ariaLabel="Any questions"
           download={page.informationPDF?.asset?.originalFilename || true}
           href={informationPDFUrl}
         >
-          <RenderSVG className={styles.buttonLabel} text="INFO.PDF" />
+          <RenderSVG className={styles.buttonLabel} text={isMobile ? "INFO.PDF" : "INFO.PDF"} />
         </FooterButton>
         <FooterButton
           ariaLabel="Info PDF"
           download={page.informationPDF?.asset?.originalFilename || true}
           href={informationPDFUrl}
         >
-          <RenderSVG className={styles.buttonLabel} text="ANY QUESTIONS?" />
+          <RenderSVG className={styles.buttonLabel} text={isMobile ? "ASK" : "ANY QUESTIONS"} />
         </FooterButton>
       </div>
 

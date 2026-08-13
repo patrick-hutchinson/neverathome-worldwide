@@ -174,6 +174,13 @@ export default function Globe({
     let gestureStartScale = 1;
     let gestureResolutionResetTimer = null;
     let isGestureResolutionBoosted = false;
+    let isPageScrollLocked = false;
+    let lockedScrollY = 0;
+    let previousBodyPosition = "";
+    let previousBodyTop = "";
+    let previousBodyWidth = "";
+    let previousBodyOverflow = "";
+    let previousHtmlOverflow = "";
     let initialRenderBurstEndAt = 0;
     let entryAnimationStartAt = 0;
     let entryAnimationEndAt = 0;
@@ -243,6 +250,37 @@ export default function Globe({
       };
 
       const isDesktopGestureScaleEnabled = () => window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches;
+      const isMobilePageScrollLockEnabled = () => window.matchMedia(`(max-width: ${DESKTOP_BREAKPOINT - 1}px)`).matches;
+
+      const lockMobilePageScroll = () => {
+        if (isPageScrollLocked || !isMobilePageScrollLockEnabled()) return;
+
+        lockedScrollY = window.scrollY;
+        previousBodyPosition = document.body.style.position;
+        previousBodyTop = document.body.style.top;
+        previousBodyWidth = document.body.style.width;
+        previousBodyOverflow = document.body.style.overflow;
+        previousHtmlOverflow = document.documentElement.style.overflow;
+
+        isPageScrollLocked = true;
+        document.body.style.position = "fixed";
+        document.body.style.top = `${lockedScrollY * -1}px`;
+        document.body.style.width = "100%";
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+      };
+
+      const unlockMobilePageScroll = () => {
+        if (!isPageScrollLocked) return;
+
+        isPageScrollLocked = false;
+        document.body.style.position = previousBodyPosition;
+        document.body.style.top = previousBodyTop;
+        document.body.style.width = previousBodyWidth;
+        document.body.style.overflow = previousBodyOverflow;
+        document.documentElement.style.overflow = previousHtmlOverflow;
+        window.scrollTo(0, lockedScrollY);
+      };
 
       const setRendererResolution = (isBoosted) => {
         const pixelRatio = isBoosted
@@ -306,6 +344,7 @@ export default function Globe({
       const resetGestureScale = () => {
         activePointers.clear();
         isDragging = false;
+        unlockMobilePageScroll();
         pinchStartDistance = 0;
         gestureScale = 1;
         globeElement.style.removeProperty("--globe-gesture-scale");
@@ -439,6 +478,7 @@ export default function Globe({
       focusCity(destinationCityRef.current);
 
       const handlePointerDown = (event) => {
+        lockMobilePageScroll();
         activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         globeElement.setPointerCapture(event.pointerId);
 
@@ -521,6 +561,7 @@ export default function Globe({
         }
 
         pinchStartDistance = 0;
+        unlockMobilePageScroll();
         requestRender();
       };
 
@@ -573,6 +614,7 @@ export default function Globe({
         globeElement.removeEventListener("gesturestart", handleGestureStart);
         globeElement.removeEventListener("gesturechange", handleGestureChange);
         clearGestureResolutionReset();
+        unlockMobilePageScroll();
       };
 
       function animate(now = performance.now()) {
