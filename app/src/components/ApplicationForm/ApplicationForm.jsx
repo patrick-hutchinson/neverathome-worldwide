@@ -12,7 +12,7 @@ const personalFields = [
   { name: "postalCode", label: "Postal Code" },
   { name: "city", label: "City" },
   { name: "country", label: "Country" },
-  { name: "website", label: "Website", type: "url", optional: true },
+  { name: "website", label: "Website", type: "url" },
   { name: "instagram", label: "Instagram", optional: true },
 ];
 

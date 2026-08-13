@@ -225,6 +225,7 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr) auto;
+  // column-gap: var(--spacing-6);
 
   align-items: baseline;
   min-height: var(--spacing-4);
@@ -253,10 +254,17 @@
   -webkit-background-clip: text;
 }
 
+.uploadHelp {
+  justify-self: end;
+  text-align: right;
+  margin-right: var(--spacing-6);
+}
+
 .uploadMeta {
   display: flex;
   column-gap: var(--spacing-6);
   justify-content: flex-end;
+  justify-self: end;
 }
 
 .uploadFileName {
@@ -314,5 +322,7 @@
 
   .uploadHelp {
     grid-column: 1 / -1;
+    justify-self: end;
+    text-align: right;
   }
 }
