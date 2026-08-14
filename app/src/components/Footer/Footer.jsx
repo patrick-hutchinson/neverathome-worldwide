@@ -104,7 +104,7 @@ const Footer = ({ onApplyClick, onImprintClick, page = {}, site = {} }) => {
           <RenderSVG className={styles.buttonLabel} text={isMobile ? "INFO.PDF" : "INFO.PDF"} />
         </FooterButton>
         <FooterButton ariaLabel="Any questions" href={site.email ? `mailto:${site.email}` : null}>
-          <RenderSVG className={styles.buttonLabel} text={isMobile ? "ASK" : "ANY QUESTIONS"} />
+          <RenderSVG className={styles.buttonLabel} text={isMobile ? "ASK" : "ANY QUESTIONS?"} />
         </FooterButton>
       </div>
 
