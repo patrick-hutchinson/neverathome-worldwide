@@ -4,8 +4,20 @@ import Text from "@/components/Text/Text";
 
 import styles from "./Imprint.module.scss";
 
+const getDownloadUrl = (file) => {
+  const url = file?.asset?.url;
+  if (!url) return null;
+
+  const filename = file.asset.originalFilename;
+  if (!filename) return url;
+
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}dl=${encodeURIComponent(filename)}`;
+};
+
 const Imprint = ({ imprint = {}, isStandalone = false, onClose }) => {
   const router = useRouter();
+  const privacyPolicyDownloadUrl = getDownloadUrl(imprint.privacyPolicyFile);
 
   const handleClose = () => {
     if (onClose) {
@@ -32,7 +44,18 @@ const Imprint = ({ imprint = {}, isStandalone = false, onClose }) => {
 
       <div className={styles.content} typo="h6">
         <Text className={styles.textColumn} text={imprint.imprint} />
-        <Text className={styles.textColumn} text={imprint.dataPolicy} />
+        <div className={styles.textColumn}>
+          <Text text={imprint.dataPolicy} />
+          {privacyPolicyDownloadUrl ? (
+            <a
+              className={styles.downloadLink}
+              download={imprint.privacyPolicyFile?.asset?.originalFilename || true}
+              href={privacyPolicyDownloadUrl}
+            >
+              NAH Privacy Policy (download)
+            </a>
+          ) : null}
+        </div>
       </div>
     </main>
   );

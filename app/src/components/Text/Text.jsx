@@ -3,6 +3,15 @@ import { cloneElement, isValidElement } from "react";
 
 import Link from "next/link";
 
+const internalPageRoutes = {
+  aboutPage: "/about",
+  destinationsPage: "/destinations",
+  homePage: "/",
+  imprint: "/imprint",
+  juryPage: "/jury",
+  openCallPage: "/open-call",
+};
+
 const isPortableTextBlockEmpty = (value) => {
   if (!value?.children?.length) return true;
 
@@ -33,6 +42,48 @@ const PortableTextParagraph = ({ children, value }) => {
   return <p>{renderSoftBreaks(children)}</p>;
 };
 
+const getMailtoHref = (email) => {
+  if (!email) return null;
+  if (/^mailto:/i.test(email)) return email;
+
+  return `mailto:${email}`;
+};
+
+const getInternalHref = (internalLink) => {
+  const referenceId = internalLink?._ref;
+  if (!referenceId) return null;
+
+  return internalPageRoutes[referenceId] || null;
+};
+
+const PortableTextLink = ({ children, value }) => {
+  if (!value) return children;
+
+  if (value.type === "email") {
+    const href = getMailtoHref(value.email);
+
+    return href ? <a href={href}>{children}</a> : children;
+  }
+
+  if (value.type === "external") {
+    return value.url ? (
+      <a href={value.url} rel="noreferrer" target="_blank">
+        {children}
+      </a>
+    ) : (
+      children
+    );
+  }
+
+  if (value.type === "internal") {
+    const href = getInternalHref(value.internalLink);
+
+    return href ? <Link href={href}>{children}</Link> : children;
+  }
+
+  return children;
+};
+
 const Text = ({ text, typo, className, components, style }) => {
   if (!Array.isArray(text)) {
     return text ? (
@@ -53,11 +104,7 @@ const Text = ({ text, typo, className, components, style }) => {
             ...components?.block,
           },
           marks: {
-            link: ({ value, children }) => {
-              if (!value) return children;
-
-              return <Link link={value}>{children}</Link>;
-            },
+            link: PortableTextLink,
             ...components?.marks,
           },
         }}

@@ -50,3 +50,8 @@
 .textColumn + .textColumn {
   grid-column: span 7 12;
 }
+
+.downloadLink {
+  display: inline-block;
+  color: inherit;
+}

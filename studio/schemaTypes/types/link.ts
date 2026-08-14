@@ -15,6 +15,7 @@ export const link = defineType({
         list: [
           {title: 'Internal', value: 'internal', icon: LinkIcon},
           {title: 'External', value: 'external', icon: LinkIcon},
+          {title: 'Email', value: 'email', icon: LinkIcon},
         ],
       },
     },
@@ -28,6 +29,13 @@ export const link = defineType({
       name: 'url',
       type: 'url',
       hidden: ({parent}) => parent?.type !== 'external',
+    },
+    {
+      name: 'email',
+      title: 'Email',
+      type: 'string',
+      hidden: ({parent}) => parent?.type !== 'email',
+      validation: (Rule) => Rule.email(),
     },
   ],
 })
