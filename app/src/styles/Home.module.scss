@@ -28,7 +28,7 @@
   }
 
   h4 {
-    margin: var(--spacing-6) 0 var(--spacing-7) 0;
+    margin: var(--spacing-6) 0 var(--spacing-6-5) 0;
   }
 
   &:first-child h4 {
@@ -42,8 +42,8 @@
 
 .quoteContainer {
   width: 100%;
-  margin-bottom: var(--spacing-6);
-  padding-top: var(--spacing-7);
+  margin-bottom: var(--spacing-5);
+  padding-top: var(--spacing-6-5);
   border-top: 1px solid black;
 
   display: flex;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const spacingKeys = ["1", "2", "3", "4", "5", "6", "7", "8"];
+const spacingKeys = ["1", "2", "3", "4", "5", "6", "6-5", "7", "8"];
 const defaultOverlayId = "spacing-debug-overlay";
 const formOverlayId = "spacing-debug-overlay-form";
 

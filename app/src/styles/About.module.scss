@@ -76,7 +76,7 @@
       grid-column: span 12;
       display: flex;
       flex-direction: column;
-      row-gap: calc(var(--spacing-7) / 2);
+      row-gap: calc(var(--content-grid-gap));
       margin-bottom: var(--spacing-7);
     }
     .teamMember:last-child {

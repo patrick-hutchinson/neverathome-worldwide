@@ -64,7 +64,7 @@ export default function Home({ homePage = {} }) {
               return (
                 <div className={styles.quoteContainer} key={quote._key}>
                   <Text text={quote.text} className={styles.quoteText} typo="h4 compensate" />
-                  <div className={styles.quoteAttribution} typo="h6">
+                  <div className={styles.quoteAttribution} typo="h6 compensate">
                     {quote.person}, {quote.role}
                   </div>
                 </div>

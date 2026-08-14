@@ -8,6 +8,7 @@
   --spacing-4: 40px; /* #FF9D00 */
   --spacing-5: 25px; /* #E8FD1C */
   --spacing-6: 15px; /* #E8842E */
+  --spacing-6-5: 10px; /* #E8842E */
   --spacing-7: 9px; /* #0A00FF */
   --spacing-8: 5px; /* #00EBFF */
   --spacing-debug-1: #2ee844;
@@ -16,6 +17,7 @@
   --spacing-debug-4: #ff9d00;
   --spacing-debug-5: #e8fd1c;
   --spacing-debug-6: #e8842e;
+  --spacing-debug-6-5: #f9b5ff;
   --spacing-debug-7: #0a00ff;
   --spacing-debug-8: #00ebff;
 
@@ -137,7 +139,7 @@ button:hover {
     --spacing-5: 25px; /* #E8FD1C */
 
     --spacing-6: 15px; /* #E8842E */
-    --spacing-6-5: 12px; /* #E8842E */
+    --spacing-6-5: 10px; /* #E8842E */
     --spacing-7: 6px; /* #0A00FF */
     --spacing-8: 5px; /* #00EBFF */
   }
