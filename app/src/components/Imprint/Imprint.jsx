@@ -24,7 +24,7 @@ const Imprint = ({ imprint = {}, isStandalone = false, onClose }) => {
   return (
     <main className={[styles.imprint, isStandalone ? styles.standalone : ""].filter(Boolean).join(" ")}>
       <header className={styles.header} typo="h4">
-        <div>Imprint, Datapolicy</div>
+        <div>Legal Notice, Privacy Policy</div>
         <button className={styles.closeButton} onClick={handleClose} type="button">
           Close
         </button>

@@ -114,7 +114,7 @@ const Footer = ({ onApplyClick, onImprintClick, page = {}, site = {} }) => {
         </button>
         {",\u00a0"}
         <button onClick={onImprintClick} type="button">
-          Datapolicy
+          Privacy Policy
         </button>
       </nav>
 
