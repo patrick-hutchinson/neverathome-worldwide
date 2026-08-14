@@ -21,17 +21,27 @@ export const structure: StructureResolver = (S) =>
         .child(S.document().schemaType('site').documentId('site')),
 
       S.listItem()
-        .id('page')
-        .title('Page')
+        .id('pages')
+        .title('Seiten')
         .icon(DashboardIcon)
-        .child(S.document().schemaType('page').documentId('page')),
+        .child(
+          S.list()
+            .title('Seiten')
+            .items([
+              S.listItem()
+                .id('page')
+                .title('Page')
+                .icon(DashboardIcon)
+                .child(S.document().schemaType('page').documentId('page')),
 
-      ...pages.map((page) =>
-        S.listItem()
-          .id(page.name)
-          .title(page.title || page.name)
-          .child(S.document().schemaType(page.name).documentId(page.name)),
-      ),
+              ...pages.map((page) =>
+                S.listItem()
+                  .id(page.name)
+                  .title(page.title || page.name)
+                  .child(S.document().schemaType(page.name).documentId(page.name)),
+              ),
+            ]),
+        ),
 
       S.divider(),
 

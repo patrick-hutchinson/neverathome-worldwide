@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export const juryMember = defineType({
   name: 'juryMember',
-  title: 'Jury Member',
+  title: 'Jury Members',
   type: 'document',
   fields: [
     defineField({

@@ -3,9 +3,9 @@ import GalleryDropzoneInput from '../../../components/GalleryDropzoneInput'
 
 export const gallery = defineType({
   name: 'gallery',
-  title: 'Image & Video Gallery',
+  title: 'Image Gallery',
   type: 'array',
-  of: [{type: 'imageAsset'}, {type: 'videoAsset'}],
+  of: [{type: 'imageAsset'}],
   components: {
     input: GalleryDropzoneInput,
   },
