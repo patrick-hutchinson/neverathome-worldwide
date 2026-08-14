@@ -85,7 +85,7 @@ const ApplicationSubmission = ({ hasRequiredError = false, page = {}, textColorP
         </div>
       </fieldset>
 
-      <div className={styles.submissionFooter}>
+      <div className={styles.submissionFooter} typo="h5">
         <Text className={styles.claim} text={page.claim} typo="h6" />
 
         <button className={styles.submitButton} type="submit">
