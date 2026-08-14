@@ -45,3 +45,7 @@ hover fade ✅
 Menu Schwupst sich rein und raus auf scroll
 
 Freitext nach Datum auf der Home Seite ✅
+
+city list nur bei desitanations der hover farbe
+
+Phase A {countdown} space dann Application Form

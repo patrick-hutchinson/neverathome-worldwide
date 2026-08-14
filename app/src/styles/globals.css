@@ -135,7 +135,9 @@ button:hover {
     --spacing-3: 60px; /* #E82E4B */
     --spacing-4: 40px; /* #FF9D00 */
     --spacing-5: 25px; /* #E8FD1C */
+
     --spacing-6: 15px; /* #E8842E */
+    --spacing-6-5: 12px; /* #E8842E */
     --spacing-7: 6px; /* #0A00FF */
     --spacing-8: 5px; /* #00EBFF */
   }
