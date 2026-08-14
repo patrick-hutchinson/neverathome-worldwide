@@ -79,6 +79,17 @@
       row-gap: calc(var(--content-grid-gap));
       margin-bottom: var(--spacing-7);
     }
+
+    .teamMemberPortrait {
+      aspect-ratio: 4 / 5;
+      height: auto;
+
+      & > :global(div) {
+        aspect-ratio: 4 / 5 !important;
+        height: 100% !important;
+      }
+    }
+
     .teamMember:last-child {
       margin-bottom: 0;
     }

@@ -42,7 +42,7 @@ const AboutPage = ({ aboutPage }) => {
               {aboutPage.team.map((teamMember, index) => {
                 return (
                   <div className={styles.teamMember}>
-                    <Media medium={teamMember.portrait.medium} />
+                    <Media className={styles.teamMemberPortrait} medium={teamMember.portrait.medium} />
                     <div typo="h6">
                       {teamMember.name}
                       {",\u00a0"}
