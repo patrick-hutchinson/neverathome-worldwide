@@ -276,7 +276,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
     <form className={styles.form} noValidate onInput={updateRequiredErrors} onSubmit={handleSubmit} ref={formRef} typo="h4">
       <fieldset className={`${styles.fieldset} ${styles.personalInformation}`} typo="h4 compensate">
         <legend className={styles.legendRow} typo="h4">
-          <span typo="h4 compensate">Personal Information</span>
+          <span typo="h4">Personal Information</span>
         </legend>
 
         <div className={styles.personalGrid}>
