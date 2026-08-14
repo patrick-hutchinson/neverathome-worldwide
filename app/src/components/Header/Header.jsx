@@ -152,7 +152,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
               key={link.href}
             >
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
-                {link.label}
+                {link.label}+
               </Link>
               {link.href !== "/open-call" ? <CountdownText className={styles.countdown} deadline={link.deadline} /> : null}
             </span>
