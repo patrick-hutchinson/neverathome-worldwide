@@ -7,6 +7,11 @@ export const siteQuery = `*[_type=="site"][0]{
       url
     }
   },
+  shareImage{
+    asset->{
+      url
+    }
+  },
   description,
   address,
   email,
@@ -119,7 +124,13 @@ export const aboutPageQuery = `*[_type=="aboutPage"][0]{
 
 export const imprintQuery = `*[_type=="imprint"][0]{
   imprint,
-  dataPolicy
+  dataPolicy,
+  privacyPolicyFile{
+    asset->{
+      url,
+      originalFilename
+    }
+  }
 }`;
 
 export const juryMembersQuery = `*[_type=="juryMember"] | order(name asc) {

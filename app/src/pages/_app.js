@@ -1128,6 +1128,12 @@ export default function App({ Component, pageProps }) {
       <Head>
         <title>{site.title}</title>
         {site.description ? <meta name="description" content={site.description} /> : null}
+        <meta property="og:title" content={site.title} />
+        {site.description ? <meta property="og:description" content={site.description} /> : null}
+        <meta property="og:type" content="website" />
+        {site.shareImageUrl ? <meta property="og:image" content={site.shareImageUrl} /> : null}
+        {site.shareImageUrl ? <meta name="twitter:card" content="summary_large_image" /> : null}
+        {site.shareImageUrl ? <meta name="twitter:image" content={site.shareImageUrl} /> : null}
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
         <link rel="icon" href={site.faviconUrl} />
       </Head>

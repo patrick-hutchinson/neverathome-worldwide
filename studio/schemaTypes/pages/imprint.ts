@@ -16,6 +16,11 @@ export const imprint = defineType({
       title: 'Data Policy',
       type: 'portableText',
     }),
+    defineField({
+      name: 'privacyPolicyFile',
+      title: 'NAH Privacy Policy',
+      type: 'file',
+    }),
   ],
   preview: {
     prepare: () => ({title: 'Imprint Page'}),

@@ -17,6 +17,7 @@ export const fallbackSiteData = {
   title: "Patrick Hutchinson",
   description: "",
   faviconUrl: "/favicon.ico",
+  shareImageUrl: null,
 };
 
 export function getSanityClient() {
@@ -41,6 +42,7 @@ function normalizeSite(site) {
     ...fallbackSiteData,
     ...site,
     faviconUrl: site?.favicon?.asset?.url || fallbackSiteData.faviconUrl,
+    shareImageUrl: site?.shareImage?.asset?.url || fallbackSiteData.shareImageUrl,
   };
 }
 

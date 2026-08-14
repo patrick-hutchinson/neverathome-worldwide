@@ -30,6 +30,16 @@ export const site = defineType({
       },
     }),
     defineField({
+      name: 'shareImage',
+      title: 'Share Image',
+      description:
+        'Image used when sharing the website on social platforms. Recommended around 1200px wide, for example 1200x630 or 1200x706.',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
       name: 'address',
       type: 'object',
       options: {
