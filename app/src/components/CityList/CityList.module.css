@@ -15,6 +15,7 @@
   user-select: none; /* Standard */
 
   transition: color 0.3s ease-in-out;
+  /* cursor: pointer; */
 }
 
 .cityEntryClickable {

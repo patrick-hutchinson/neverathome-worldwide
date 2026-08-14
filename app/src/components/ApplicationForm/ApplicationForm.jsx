@@ -129,7 +129,7 @@ const DestinationScrollList = ({ children }) => {
   );
 };
 
-const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
+const ApplicationForm = ({ destinations = [], page = {} }) => {
   const textColorPalette = getTextColorPalette(page.textColors);
   const formRef = useRef(null);
   const fileInputRefs = useRef({});
@@ -277,9 +277,6 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
       <fieldset className={`${styles.fieldset} ${styles.personalInformation}`} typo="h4 compensate">
         <legend className={styles.legendRow} typo="h4">
           <span typo="h4 compensate">Personal Information</span>
-          <button className={styles.closeButton} onClick={onClose} type="button">
-            Close
-          </button>
         </legend>
 
         <div className={styles.personalGrid}>
@@ -479,7 +476,7 @@ const ApplicationForm = ({ destinations = [], onClose, page = {} }) => {
                 role="button"
                 tabIndex={0}
               >
-                <span className={styles.uploadTitle}>
+                <span className={styles.uploadTitle} typo="h4 compensate">
                   <span className={styles.uploadTitleText} style={{ "--upload-progress": `${upload?.progress || 0}%` }}>
                     {field.label}
                   </span>

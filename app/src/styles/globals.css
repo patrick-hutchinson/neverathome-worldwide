@@ -117,13 +117,12 @@ button {
 }
 
 button.invert:hover {
-  background: var(--background);
   color: var(--interactive-hover-color);
 }
 
 button:hover {
-  background: var(--interactive-hover-color);
-  color: var(--background);
+  background: transparent;
+  color: var(--interactive-hover-color);
 }
 
 #home-schedule {

@@ -15,6 +15,7 @@ import LenisProvider, { useLenisContext } from "@/context/LenisContext";
 import Marquee from "@/components/Marquee/Marquee";
 import { ViewportProvider } from "@/context/ViewportContext";
 import Header from "@/components/Header/Header";
+import { CountdownSlot } from "@/components/Countdown/Countdown";
 import SpacingDebugOverlay from "@/components/SpacingDebugOverlay/SpacingDebugOverlay";
 import Imprint from "@/components/Imprint/Imprint";
 
@@ -198,8 +199,17 @@ function getGlobeTextureUrl(textureUrl) {
   return textureUrl;
 }
 
-function ApplicationFormOverlay({ destinations = [], isOpen, onClose, onOpenComplete, page = {} }) {
+function ApplicationFormOverlay({
+  currentPhaseLabel = null,
+  destinations = [],
+  isOpen,
+  onClose,
+  onOpenComplete,
+  page = {},
+  pageDeadlines = {},
+}) {
   const lenis = useLenisContext();
+  const openCallDeadline = pageDeadlines.openCallPage;
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -231,12 +241,31 @@ function ApplicationFormOverlay({ destinations = [], isOpen, onClose, onOpenComp
             open: { y: 0 },
           }}
         >
+          <div className={styles.applicationFormHeader} typo="h4 compensate">
+            <div className={styles.applicationFormHeaderLeft}>
+              {currentPhaseLabel ? (
+                <span className={styles.applicationFormHeaderPhase}>
+                  <span>{currentPhaseLabel}</span>
+                  <CountdownSlot
+                    className={styles.applicationFormHeaderCountdown}
+                    deadline={openCallDeadline}
+                    ghostClassName={styles.applicationFormHeaderCountdownGhost}
+                    slotClassName={styles.applicationFormHeaderCountdownSlot}
+                  />
+                </span>
+              ) : null}
+              <span>Application Form</span>
+            </div>
+            <button className={styles.applicationFormHeaderClose} onClick={onClose} type="button">
+              Close
+            </button>
+          </div>
           <ReactLenis
             className={styles.applicationFormScroller}
             options={{ allowNestedScroll: true, lerp: 0.12, syncTouch: true }}
             root={false}
           >
-            <ApplicationForm destinations={destinations} onClose={onClose} page={page} />
+            <ApplicationForm destinations={destinations} page={page} />
             <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
           </ReactLenis>
         </motion.div>
@@ -1163,11 +1192,13 @@ export default function App({ Component, pageProps }) {
                 </motion.div>
               </AnimatePresence>
               <ApplicationFormOverlay
+                currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
                 destinations={destinations}
                 isOpen={isApplicationFormOpen}
                 onClose={closeApplicationForm}
                 onOpenComplete={() => setIsApplicationFormEntered(true)}
                 page={page}
+                pageDeadlines={pageDeadlines}
               />
             </LenisProvider>
           </DeviceProvider>
