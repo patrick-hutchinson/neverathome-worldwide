@@ -5,6 +5,13 @@ import styles from "@/styles/Jury.module.scss";
 import Text from "@/components/Text/Text";
 import { LargeSection } from "@/components/Sections/Sections";
 
+function getSocialHref(link) {
+  if (!link) return null;
+  if (/^(mailto:|tel:|https?:\/\/)/i.test(link)) return link;
+
+  return `https://${link}`;
+}
+
 const JuryPage = ({ juryMembers, juryPage }) => {
   if (!juryMembers || juryMembers.length === 0) return;
 
@@ -24,7 +31,26 @@ const JuryPage = ({ juryMembers, juryPage }) => {
                     {juryMember?.portrait?.medium ? (
                       <Media className={styles.juryMemberMedia} medium={juryMember.portrait.medium} />
                     ) : null}
-                    <Text className={styles.juryMemberBio} text={juryMember.bio} typo="h6" />
+                    <div className={styles.juryMemberText}>
+                      <Text className={styles.juryMemberBio} text={juryMember.bio} typo="h6" />
+                      {juryMember.socials?.length > 0 ? (
+                        <ul className={styles.juryMemberSocials} typo="h6">
+                          {juryMember.socials.map((social) => {
+                            const href = getSocialHref(social.link);
+                            const label = social.platform || social.link;
+                            if (!href || !label) return null;
+
+                            return (
+                              <li key={`${juryMember._id}-${social.platform || social.link}`}>
+                                <a href={href} rel="noreferrer" target="_blank">
+                                  {label}
+                                </a>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               );
