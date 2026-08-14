@@ -18,6 +18,7 @@ const links = [
 
 const progressStartDate = new Date("2026-08-03T00:00:00");
 const progressEndDate = new Date("2026-12-31T23:59:59");
+const showHeaderEventName = "neverathome:show-header";
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -55,16 +56,21 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
 
   useEffect(() => {
     const closeMenu = () => setIsMenuOpen(false);
-    const showHeader = () => setIsHeaderHidden(false);
+    const showHeader = () => {
+      setIsHeaderHidden(false);
+      lastScrollYRef.current = window.scrollY;
+    };
 
     router.events.on("routeChangeComplete", closeMenu);
     router.events.on("routeChangeError", closeMenu);
     router.events.on("routeChangeStart", showHeader);
+    window.addEventListener(showHeaderEventName, showHeader);
 
     return () => {
       router.events.off("routeChangeComplete", closeMenu);
       router.events.off("routeChangeError", closeMenu);
       router.events.off("routeChangeStart", showHeader);
+      window.removeEventListener(showHeaderEventName, showHeader);
     };
   }, [router.events]);
 

@@ -55,6 +55,7 @@ const routeMarqueeLabels = {
   "/404": "404NotFound",
 };
 const contentContainerId = "page-content";
+const showHeaderEventName = "neverathome:show-header";
 const desktopGlobeSize = 300;
 const desktopGlobeBasePosition = { x: 200, y: 200 };
 const desktopGlobeViewportPadding = 24;
@@ -311,6 +312,7 @@ export default function App({ Component, pageProps }) {
   const isDestinationCityListHiddenRef = useRef(false);
   const isCityListRouteRevealRef = useRef(false);
   const cityListRevealTimersRef = useRef([]);
+  const destinationHeaderRevealRef = useRef({ frame: null, timeout: null });
   const footerRef = useRef(null);
   const imprintRef = useRef(null);
   const imprintCloseTimerRef = useRef(null);
@@ -937,14 +939,66 @@ export default function App({ Component, pageProps }) {
     };
   }, [sharedData.destinations, sharedData.imprint, sharedData.page, sharedData.pageDeadlines, sharedData.site]);
 
+  const clearDestinationHeaderReveal = () => {
+    const { frame, timeout } = destinationHeaderRevealRef.current;
+
+    if (frame) {
+      cancelAnimationFrame(frame);
+    }
+
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    destinationHeaderRevealRef.current = { frame: null, timeout: null };
+  };
+
+  const showHeaderAfterDestinationScroll = (targetScrollTop) => {
+    clearDestinationHeaderReveal();
+
+    const startScrollY = window.scrollY;
+    const startTime = performance.now();
+    let lastScrollY = startScrollY;
+    let hasMoved = Math.abs(startScrollY - targetScrollTop) <= 2;
+    let stableFrames = 0;
+
+    const showHeader = () => {
+      clearDestinationHeaderReveal();
+      window.dispatchEvent(new CustomEvent(showHeaderEventName));
+    };
+
+    destinationHeaderRevealRef.current.timeout = setTimeout(showHeader, 1400);
+
+    const checkScroll = () => {
+      const currentScrollY = window.scrollY;
+      const elapsed = performance.now() - startTime;
+      const isAtTarget = Math.abs(currentScrollY - targetScrollTop) <= 2;
+
+      hasMoved = hasMoved || Math.abs(currentScrollY - startScrollY) > 2;
+      stableFrames = hasMoved && elapsed > 150 && Math.abs(currentScrollY - lastScrollY) < 0.25 ? stableFrames + 1 : 0;
+
+      if (isAtTarget || stableFrames >= 6) {
+        showHeader();
+        return;
+      }
+
+      lastScrollY = currentScrollY;
+      destinationHeaderRevealRef.current.frame = requestAnimationFrame(checkScroll);
+    };
+
+    destinationHeaderRevealRef.current.frame = requestAnimationFrame(checkScroll);
+  };
+
   const scrollToContent = () => {
     const contentElement = document.getElementById(contentContainerId);
     if (!contentElement) return;
 
     // HERE
     const scrollTop = contentElement.getBoundingClientRect().top + window.scrollY - 49;
+    const targetScrollTop = Math.max(scrollTop, 0);
 
-    window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
+    window.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+    showHeaderAfterDestinationScroll(targetScrollTop);
   };
 
   const handleCityClick = (city) => {
