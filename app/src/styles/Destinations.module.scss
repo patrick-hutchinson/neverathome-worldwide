@@ -11,11 +11,12 @@
 
   .destinationGrid {
     // Here
-    min-height: calc(var(--content-height) - 85px);
+    min-height: calc(var(--content-height) - 75px);
 
     position: relative;
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));
+    grid-template-rows: auto auto auto 1fr;
     column-gap: var(--content-grid-gap);
     row-gap: var(--spacing-5);
 
@@ -40,6 +41,7 @@
         .cityAbbreviation {
           grid-row: 4;
           grid-column: 1 / 12;
+          align-self: end;
           display: flex;
           align-items: flex-end;
           line-height: 0;
@@ -81,6 +83,7 @@
       .trailText {
         grid-column: 13 / 25;
         grid-row: 4;
+        align-self: end;
       }
     }
 
@@ -93,6 +96,7 @@
 @media screen and (min-width: 769px) {
   .destinationContainer {
     .destinationGrid {
+      min-height: calc(var(--content-height) - 85px);
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       grid-template-rows: auto 1fr;
