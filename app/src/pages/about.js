@@ -31,7 +31,7 @@ const AboutPage = ({ aboutPage }) => {
             <Text text={aboutPage.artBoard.text} typo="h6 compensate" className={styles.text} />
             <Media medium={aboutPage.artBoard.medium.medium} className={styles.medium} />
           </div>
-          <div className={styles.teamContainer}>
+          <div className={styles.teamContainer} id="about-team">
             <h3 typo="h3 compensate" className={styles.title}>
               The Team
             </h3>

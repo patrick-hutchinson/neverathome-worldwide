@@ -566,17 +566,6 @@ export default function App({ Component, pageProps }) {
     });
   };
 
-  const scrollToPageBottom = (behavior = "smooth") => {
-    const pageHeight = Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.offsetHeight,
-    );
-
-    scrollWindowTo({ top: pageHeight, behavior, lock: behavior === "smooth" });
-  };
-
   const openImprint = () => {
     if (imprintCloseTimerRef.current) {
       window.clearTimeout(imprintCloseTimerRef.current);
@@ -1414,7 +1403,10 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     if (!shouldScrollAboutToBottom || router.pathname !== "/about" || !isPageTransitionSettled) return undefined;
 
-    const frameId = requestAnimationFrame(() => requestAnimationFrame(() => scrollToPageBottom()));
+    const scrollToAboutTeam = () => {
+      scrollToElement(document.getElementById("about-team"));
+    };
+    const frameId = requestAnimationFrame(() => requestAnimationFrame(scrollToAboutTeam));
     const timeoutId = setTimeout(() => {
       shouldScrollAboutToBottomRef.current = false;
       setShouldScrollAboutToBottom(false);
