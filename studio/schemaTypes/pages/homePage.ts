@@ -79,6 +79,11 @@ export const homePage = defineType({
 
   fields: [
     defineField({
+      name: 'marqueeText',
+      title: 'Text für das durchlaufende Band',
+      type: 'string',
+    }),
+    defineField({
       name: 'aboutText',
       title: 'About (Text)',
       type: 'portableText',

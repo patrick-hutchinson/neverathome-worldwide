@@ -48,14 +48,38 @@ const cityListTransitionVariants = {
 // Updated Packages
 
 const routeMarqueeLabels = {
+  "/": "OpenCall",
   "/destinations": "Destinations",
   "/jury": "JuryIntl.",
-  "/open-call": "OpenCall",
+  "/info": "PhaseA",
   "/about": "About",
   "/404": "404NotFound",
 };
+
+const routePagePropKeys = {
+  "/": "homePage",
+  "/destinations": "destinationsPage",
+  "/jury": "juryPage",
+  "/info": "infoPage",
+  "/about": "aboutPage",
+  "/imprint": "imprint",
+};
+
+const contentAutoScrollRoutes = new Set(["/jury", "/info", "/about"]);
+
+function getRouteMarqueeText(pathname, pageProps = {}) {
+  const pagePropKey = routePagePropKeys[pathname];
+  const marqueeText = pagePropKey ? pageProps[pagePropKey]?.marqueeText : null;
+
+  return typeof marqueeText === "string" && marqueeText.trim()
+    ? marqueeText
+    : routeMarqueeLabels[pathname];
+}
+
 const contentContainerId = "page-content";
 const showHeaderEventName = "neverathome:show-header";
+const pageTransitionCompleteEventName = "neverathome:page-transition-complete";
+const aboutBottomScrollRequestEventName = "neverathome:about-bottom-scroll-request";
 const desktopGlobeSize = 300;
 const desktopGlobeBasePosition = { x: 200, y: 200 };
 const desktopGlobeViewportPadding = 24;
@@ -210,7 +234,7 @@ function ApplicationFormOverlay({
   pageDeadlines = {},
 }) {
   const lenis = useLenisContext();
-  const openCallDeadline = pageDeadlines.openCallPage;
+  const infoDeadline = pageDeadlines.infoPage;
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -249,7 +273,7 @@ function ApplicationFormOverlay({
                   <span>{currentPhaseLabel}</span>
                   <CountdownSlot
                     className={styles.applicationFormHeaderCountdown}
-                    deadline={openCallDeadline}
+                    deadline={infoDeadline}
                     ghostClassName={styles.applicationFormHeaderCountdownGhost}
                     slotClassName={styles.applicationFormHeaderCountdownSlot}
                   />
@@ -296,12 +320,15 @@ export default function App({ Component, pageProps }) {
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
   const textColorPalette = getTextColorPalette(page.textColors);
   const textColorPaletteKey = textColorPalette.join("|");
-  const h1MarqueeText = routeMarqueeLabels[router.pathname] || currentPhaseLabel;
+  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps);
   const isDestinationsPage = router.pathname === "/destinations";
+  const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
+  const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
 
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
+  const [pendingDestinationSelection, setPendingDestinationSelection] = useState(null);
   const [highlightedCity, setHighlightedCity] = useState(null);
   const [contentScrollRequest, setContentScrollRequest] = useState(0);
   const [cityListScrollRequest, setCityListScrollRequest] = useState(0);
@@ -324,10 +351,13 @@ export default function App({ Component, pageProps }) {
   const [isApplicationFormEntered, setIsApplicationFormEntered] = useState(false);
   const [isImprintOpen, setIsImprintOpen] = useState(false);
   const [isImprintObscuring, setIsImprintObscuring] = useState(false);
-  const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
-  const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
-  const pendingNavigationTimerRef = useRef(null);
-  const h1MarqueeSettleTimerRef = useRef(null);
+	  const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
+	  const [isPageTransitionSettled, setIsPageTransitionSettled] = useState(true);
+	  const [shouldScrollAboutToBottom, setShouldScrollAboutToBottom] = useState(false);
+	  const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
+	  const pendingNavigationTimerRef = useRef(null);
+	  const h1MarqueeSettleTimerRef = useRef(null);
+	  const shouldScrollAboutToBottomRef = useRef(false);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
   const isApplicationFormObscuring = isApplicationFormOpen && isApplicationFormEntered;
   const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
@@ -397,6 +427,17 @@ export default function App({ Component, pageProps }) {
     });
   };
 
+  const scrollToPageBottom = (behavior = "smooth") => {
+    const pageHeight = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight,
+    );
+
+    window.scrollTo({ top: pageHeight, behavior });
+  };
+
   const openImprint = () => {
     if (imprintCloseTimerRef.current) {
       window.clearTimeout(imprintCloseTimerRef.current);
@@ -424,9 +465,24 @@ export default function App({ Component, pageProps }) {
     destinationsRef.current = destinations;
   }, [destinations]);
 
-  useEffect(() => {
-    isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
-  }, [isDestinationCityListHidden]);
+	  useEffect(() => {
+	    isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
+	  }, [isDestinationCityListHidden]);
+
+	  useEffect(() => {
+	    shouldScrollAboutToBottomRef.current = shouldScrollAboutToBottom;
+	  }, [shouldScrollAboutToBottom]);
+
+	  useEffect(() => {
+	    const handleAboutBottomScrollRequest = () => {
+	      shouldScrollAboutToBottomRef.current = true;
+	      setShouldScrollAboutToBottom(true);
+	    };
+
+	    window.addEventListener(aboutBottomScrollRequestEventName, handleAboutBottomScrollRequest);
+
+	    return () => window.removeEventListener(aboutBottomScrollRequestEventName, handleAboutBottomScrollRequest);
+	  }, []);
 
   const clearCityListRevealTimers = () => {
     cityListRevealTimersRef.current.forEach(({ id, type }) => {
@@ -740,7 +796,7 @@ export default function App({ Component, pageProps }) {
       }
 
       const anchor = event.target.closest?.("a[href]");
-      if (!anchor || anchor.target || anchor.hasAttribute("download")) return null;
+	      if (!anchor || anchor.target || anchor.hasAttribute("download") || anchor.dataset.manualNavigation) return null;
 
       const nextUrl = new URL(anchor.href, window.location.href);
       if (nextUrl.origin !== window.location.origin) return null;
@@ -749,16 +805,19 @@ export default function App({ Component, pageProps }) {
       return `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
     };
 
-    const handleDocumentClick = (event) => {
-      const nextHref = getInternalNavigationHref(event);
-      if (!nextHref) return;
+	    const handleDocumentClick = (event) => {
+	      const nextHref = getInternalNavigationHref(event);
+	      if (!nextHref) return;
 
-      event.preventDefault();
+	      event.preventDefault();
 
-      clearPendingNavigationTimer();
-      clearH1MarqueeSettleTimer();
-      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
-      const shouldScrollToTop = isCityListVisibleInViewport();
+	      clearPendingNavigationTimer();
+	      clearH1MarqueeSettleTimer();
+	      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+	      const nextPathname = new URL(nextHref, window.location.href).pathname;
+	      const shouldPreserveScroll =
+	        nextPathname === "/destinations" || (nextPathname === "/about" && shouldScrollAboutToBottomRef.current);
+	      const shouldScrollToTop = !shouldPreserveScroll && isCityListVisibleInViewport();
 
       setIsContentContainerExiting(!shouldScrollToTop);
       setShouldRenderCityList(shouldScrollToTop);
@@ -783,19 +842,23 @@ export default function App({ Component, pageProps }) {
         if (shouldScrollToTop) {
           scrollToPageTop("auto");
         }
-        router.push(nextHref).catch(() => {
-          setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
-        });
-      });
-    };
+	        router.push(nextHref, undefined, { scroll: !shouldPreserveScroll }).catch(() => {
+	          setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
+	        });
+	      });
+	    };
 
     const handleRouteChangeStart = (nextHref) => {
       clearH1MarqueeSettleTimer();
       setIsApplicationFormEntered(false);
       setIsApplicationFormOpen(false);
-      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
-      if (!pendingNavigationTimerRef.current) {
-        const shouldScrollToTop = isCityListVisibleInViewport();
+	      setIsPageTransitionSettled(false);
+	      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+	      if (!pendingNavigationTimerRef.current) {
+	        const nextPathname = new URL(nextHref, window.location.href).pathname;
+	        const shouldPreserveScroll =
+	          nextPathname === "/destinations" || (nextPathname === "/about" && shouldScrollAboutToBottomRef.current);
+	        const shouldScrollToTop = !shouldPreserveScroll && isCityListVisibleInViewport();
 
         setIsContentContainerExiting(!shouldScrollToTop);
         setShouldRenderCityList(shouldScrollToTop);
@@ -822,10 +885,15 @@ export default function App({ Component, pageProps }) {
       queueCityListReveal();
     };
 
+    const handleRouteChangeError = () => {
+      setIsPageTransitionSettled(true);
+      settleH1MarqueeSpeed();
+    };
+
     document.addEventListener("click", handleDocumentClick, true);
     router.events.on("routeChangeStart", handleRouteChangeStart);
     router.events.on("routeChangeComplete", handleRouteChangeComplete);
-    router.events.on("routeChangeError", settleH1MarqueeSpeed);
+    router.events.on("routeChangeError", handleRouteChangeError);
 
     return () => {
       clearPendingNavigationTimer();
@@ -834,7 +902,7 @@ export default function App({ Component, pageProps }) {
       document.removeEventListener("click", handleDocumentClick, true);
       router.events.off("routeChangeStart", handleRouteChangeStart);
       router.events.off("routeChangeComplete", handleRouteChangeComplete);
-      router.events.off("routeChangeError", settleH1MarqueeSpeed);
+      router.events.off("routeChangeError", handleRouteChangeError);
     };
   }, [router.events]);
 
@@ -1005,7 +1073,28 @@ export default function App({ Component, pageProps }) {
     setHighlightedCity(null);
     setDestinationCity(city);
 
-    if (!isDestinationsPage) return;
+    if (!isDestinationsPage) {
+      setPendingDestinationSelection(city);
+      setIsDestinationCityListHidden(false);
+
+      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+      setIsContentContainerExiting(false);
+      setShouldRenderCityList(true);
+
+      Promise.all([
+        scrollToPageTop(),
+        new Promise((resolve) => {
+          pendingNavigationTimerRef.current = setTimeout(resolve, h1MarqueeScrollNavigationLeadInMs);
+        }),
+      ]).then(() => {
+        pendingNavigationTimerRef.current = null;
+        scrollToPageTop("auto");
+        router.push("/destinations").catch(() => {
+          setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
+        });
+      });
+      return;
+    }
 
     setSelectedDestination(city);
     setContentScrollRequest((requestCount) => requestCount + 1);
@@ -1030,7 +1119,17 @@ export default function App({ Component, pageProps }) {
   }, [isDestinationsPage]);
 
   useEffect(() => {
-    if (!isDestinationsPage) {
+    if (!isDestinationsPage || !pendingDestinationSelection) return;
+
+    setHighlightedCity(null);
+    setDestinationCity(pendingDestinationSelection);
+    setSelectedDestination(pendingDestinationSelection);
+    setContentScrollRequest((requestCount) => requestCount + 1);
+    setPendingDestinationSelection(null);
+  }, [isDestinationsPage, pendingDestinationSelection]);
+
+  useEffect(() => {
+    if (!shouldFadeCityListOnScroll) {
       setIsDestinationCityListHidden(false);
       return undefined;
     }
@@ -1050,7 +1149,7 @@ export default function App({ Component, pageProps }) {
     observer.observe(cityListLayer);
 
     return () => observer.disconnect();
-  }, [isDestinationsPage]);
+  }, [shouldFadeCityListOnScroll]);
 
   useEffect(() => {
     if (!is404Page) {
@@ -1077,15 +1176,16 @@ export default function App({ Component, pageProps }) {
   }, [is404Page]);
 
   useEffect(() => {
-    if (!isDestinationsPage || selectedDestination || destinations.length === 0) return;
+    if (!isDestinationsPage || pendingDestinationSelection || selectedDestination || destinations.length === 0) return;
 
     const randomDestination = destinations[Math.floor(Math.random() * destinations.length)];
     setDestinationCity(randomDestination);
     setSelectedDestination(randomDestination);
-  }, [destinations, isDestinationsPage, selectedDestination]);
+  }, [destinations, isDestinationsPage, pendingDestinationSelection, selectedDestination]);
 
   useEffect(() => {
-    if (!isDestinationsPage || !selectedDestination || contentScrollRequest === 0) return undefined;
+    if (!isDestinationsPage || !isPageTransitionSettled || !selectedDestination || contentScrollRequest === 0)
+      return undefined;
 
     const frameIds = [];
     const timeoutIds = [];
@@ -1106,7 +1206,47 @@ export default function App({ Component, pageProps }) {
       frameIds.forEach(cancelAnimationFrame);
       timeoutIds.forEach(clearTimeout);
     };
-  }, [contentScrollRequest, isDestinationsPage, selectedDestination]);
+  }, [contentScrollRequest, isDestinationsPage, isPageTransitionSettled, selectedDestination]);
+
+	  useEffect(() => {
+	    if (!isContentAutoScrollPage || !isPageTransitionSettled || (router.pathname === "/about" && shouldScrollAboutToBottom))
+	      return undefined;
+
+    const frameIds = [];
+    const timeoutIds = [];
+    const queueFrame = (callback) => {
+      const id = requestAnimationFrame(callback);
+      frameIds.push(id);
+    };
+    const queueTimeout = (callback, delay) => {
+      const id = setTimeout(callback, delay);
+      timeoutIds.push(id);
+    };
+
+    queueFrame(() => queueFrame(scrollToContent));
+    queueTimeout(scrollToContent, 120);
+    queueTimeout(scrollToContent, 360);
+
+    return () => {
+      frameIds.forEach(cancelAnimationFrame);
+      timeoutIds.forEach(clearTimeout);
+    };
+  }, [isContentAutoScrollPage, isPageTransitionSettled, router.asPath, router.pathname, shouldScrollAboutToBottom]);
+
+  useEffect(() => {
+    if (!shouldScrollAboutToBottom || router.pathname !== "/about" || !isPageTransitionSettled) return undefined;
+
+    const frameId = requestAnimationFrame(() => requestAnimationFrame(() => scrollToPageBottom()));
+    const timeoutId = setTimeout(() => {
+      shouldScrollAboutToBottomRef.current = false;
+      setShouldScrollAboutToBottom(false);
+    }, 900);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearTimeout(timeoutId);
+    };
+  }, [isPageTransitionSettled, router.pathname, shouldScrollAboutToBottom]);
 
   useEffect(() => {
     if (!highlightedCity?._id || cityListScrollRequest === 0) return undefined;
@@ -1197,8 +1337,8 @@ export default function App({ Component, pageProps }) {
                         accentInactive={isDestinationsPage}
                         cities={destinations}
                         highlightedCity={highlightedCity}
-                        isClickable={isDestinationsPage}
-                        onCityClick={isDestinationsPage ? handleCityClick : undefined}
+                        isClickable
+                        onCityClick={handleCityClick}
                         onCitySelect={setDestinationCity}
                         selectedCity={isDestinationsPage ? selectedDestination : null}
                       />
@@ -1216,6 +1356,12 @@ export default function App({ Component, pageProps }) {
                   exit="exit"
                   initial="initial"
                   key={router.asPath}
+	                  onAnimationComplete={(definition) => {
+	                    if (definition === "animate") {
+	                      setIsPageTransitionSettled(true);
+	                      window.dispatchEvent(new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }));
+	                    }
+	                  }}
                   transition={pageTransition}
                   variants={pageTransitionVariants}
                 >

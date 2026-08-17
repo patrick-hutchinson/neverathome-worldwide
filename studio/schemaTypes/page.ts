@@ -2,7 +2,7 @@ import {defineField, defineType, defineArrayMember} from 'sanity'
 
 export const page = defineType({
   name: 'page',
-  title: 'Page',
+  title: 'Page (Seitenübergreifender Content)',
   type: 'document',
 
   fields: [

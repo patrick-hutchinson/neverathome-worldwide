@@ -1,7 +1,9 @@
 import styles from "./Accordion.module.css";
 import AccordionEntry from "./AccordionEntry";
 
-const Accordion = ({ array }) => {
+const Accordion = ({ array = [] }) => {
+  if (!Array.isArray(array) || array.length === 0) return null;
+
   return (
     <div className={styles.accordion}>
       {array.map((entry, index) => (

@@ -16,41 +16,54 @@ const personalFields = [
   { name: "instagram", label: "Instagram", optional: true },
 ];
 
-const quarters = [
-  { value: "q1", label: "1" },
-  { value: "q2", label: "2" },
-  { value: "q3", label: "3" },
-  { value: "q4", label: "4" },
+const months = [
+  { value: "january", label: "January" },
+  { value: "february", label: "February" },
+  { value: "march", label: "March" },
+  { value: "april", label: "April" },
+  { value: "may", label: "May" },
+  { value: "june", label: "June" },
+  { value: "july", label: "July" },
+  { value: "august", label: "August" },
+  { value: "september", label: "September" },
+  { value: "october", label: "October" },
+  { value: "november", label: "November" },
+  { value: "december", label: "December" },
 ];
 
 const uploadFields = [
   {
     name: "portfolio",
     label: "Portfolio",
-    note: "incl. CV (PDF, max 10 pages, max. 15 MB)",
+    maxBytes: 10 * 1024 * 1024,
+    note: "incl. CV (PDF, max 10 pages, max. 10 MB)",
   },
   {
     name: "projectProposalUpload",
-    label: "Project Proposal",
-    note: "incl. Budget (PDF, max 5 pages, max. 15 MB)",
+    label: "Project Proposal Summary",
+    maxBytes: 10 * 1024 * 1024,
+    note: "incl. Budget (PDF, max 5 pages, max. 10 MB)",
   },
   {
     name: "artistPortrait",
     label: "Artist Portrait",
-    note: "(high-resolution JPG, max. 5 MB)",
+    maxBytes: 2 * 1024 * 1024,
+    note: "(high-resolution JPG, max. 2 MB)",
     help: "The image will only be used and published if your application is selected.",
   },
 ];
 const textareaFields = [
   {
     name: "projectProposal",
-    label: "Project Proposal",
-    placeholder: "(max. 1,000 characters)",
+    label: "Project Proposal Summary",
+    maxLength: 500,
+    placeholder: "(max 500 characters incl. spacing)",
   },
   {
-    name: "shortBiography",
-    label: "Short Biography",
-    placeholder: "(max. 1,000 characters)",
+    name: "biography",
+    label: "Biography",
+    maxLength: 500,
+    placeholder: "(max 500 characters incl. spacing)",
   },
 ];
 const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
@@ -135,7 +148,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
   const fileInputRefs = useRef({});
   const [preferredDestinations, setPreferredDestinations] = useState([]);
   const [alternativeDestinations, setAlternativeDestinations] = useState([]);
-  const [selectedQuarters, setSelectedQuarters] = useState([]);
+  const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedColorMap, setSelectedColorMap] = useState({});
   const [uploads, setUploads] = useState({});
   const [hasSubmitAttempted, setHasSubmitAttempted] = useState(false);
@@ -154,8 +167,15 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
     });
 
     textareaFields.forEach((field) => {
-      if (!String(formData.get(field.name) || "").trim()) {
+      const fieldValue = String(formData.get(field.name) || "");
+
+      if (!fieldValue.trim()) {
         nextErrors[field.name] = true;
+        return;
+      }
+
+      if (field.maxLength && fieldValue.length > field.maxLength) {
+        nextErrors[field.name] = `Max ${field.maxLength} characters`;
       }
     });
 
@@ -163,17 +183,18 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
       nextErrors.preferredDestinations = true;
     }
 
-    if (alternativeDestinations.length === 0) {
-      nextErrors.alternativeDestinations = true;
-    }
-
-    if (selectedQuarters.length === 0) {
-      nextErrors.quarters = true;
+    if (selectedMonths.length === 0) {
+      nextErrors.months = true;
     }
 
     uploadFields.forEach((field) => {
       if (!uploads[field.name]?.fileName) {
         nextErrors[field.name] = true;
+        return;
+      }
+
+      if (uploads[field.name]?.status === "error") {
+        nextErrors[field.name] = uploads[field.name].errorMessage || true;
       }
     });
 
@@ -222,7 +243,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
 
   useEffect(() => {
     updateRequiredErrors();
-  }, [alternativeDestinations, hasSubmitAttempted, preferredDestinations, selectedQuarters, uploads]);
+  }, [alternativeDestinations, hasSubmitAttempted, preferredDestinations, selectedMonths, uploads]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -236,9 +257,16 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
 
   const handlePreferredDestinationChange = (destinationId) => {
     setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, destinationId, textColorPalette));
-    setPreferredDestinations((currentDestinations) => toggleValue(currentDestinations, destinationId));
+    setPreferredDestinations((currentDestinations) => (currentDestinations.includes(destinationId) ? [] : [destinationId]));
     setAlternativeDestinations((currentDestinations) =>
       currentDestinations.filter((currentDestinationId) => currentDestinationId !== destinationId),
+    );
+  };
+
+  const handleAlternativeDestinationChange = (destinationId) => {
+    setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, destinationId, textColorPalette));
+    setAlternativeDestinations((currentDestinations) =>
+      currentDestinations.includes(destinationId) ? [] : [destinationId],
     );
   };
 
@@ -249,6 +277,22 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
   const handleUploadChange = (fieldName, event) => {
     const file = event.currentTarget.files?.[0];
     if (!file) return;
+
+    const field = uploadFields.find((uploadField) => uploadField.name === fieldName);
+
+    if (field?.maxBytes && file.size > field.maxBytes) {
+      event.currentTarget.value = "";
+      setUploads((currentUploads) => ({
+        ...currentUploads,
+        [fieldName]: {
+          errorMessage: "File is too large",
+          fileName: file.name,
+          progress: 0,
+          status: "error",
+        },
+      }));
+      return;
+    }
 
     setUploads((currentUploads) => ({
       ...currentUploads,
@@ -311,7 +355,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
       <div className={styles.destinationGrid}>
         <fieldset className={styles.fieldset} typo="h4 compensate">
           <legend className={styles.legendRow} typo="h4">
-            <span>Preferred Destinations</span>
+            <span>Preferred Destination</span>
             {requiredErrors.preferredDestinations ? (
               <span className={`${styles.legendNote} ${styles.requiredNote}`} typo="h6">
                 Required
@@ -341,14 +385,9 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
 
         <fieldset className={styles.fieldset} typo="h4 compensate">
           <legend className={styles.legendRow} typo="h4">
-            <span>Alternative</span>
-            <span
-              className={[styles.legendNote, requiredErrors.alternativeDestinations ? styles.requiredNote : ""]
-                .filter(Boolean)
-                .join(" ")}
-              typo="h6"
-            >
-              {requiredErrors.alternativeDestinations ? "Required" : "One Or Multiple"}
+            <span>Alternative Destination </span>
+            <span typo="h6" style={{ color: "var(--form-muted-color)" }}>
+              (Optional)
             </span>
           </legend>
           <DestinationScrollList>
@@ -365,13 +404,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                     checked={alternativeDestinations.includes(destination._id)}
                     disabled={isDisabled}
                     name="alternativeDestinations"
-                    onChange={() => {
-                      setSelectedColorMap((currentColorMap) =>
-                        getNextColorMap(currentColorMap, destination._id, textColorPalette),
-                      );
-                      setAlternativeDestinations((currentDestinations) => toggleValue(currentDestinations, destination._id));
-                    }}
-                    required
+                    onChange={() => handleAlternativeDestinationChange(destination._id)}
                     type="checkbox"
                     value={destination._id}
                   />
@@ -381,46 +414,43 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
             })}
           </DestinationScrollList>
         </fieldset>
-      </div>
 
-      <fieldset className={`${styles.fieldset} ${styles.timeFrame}`} typo="h4 compensate">
-        <legend className={styles.legendRow} typo="h4">
-          <span>Preferred time frame</span>
-          <span
-            className={[styles.legendNote, requiredErrors.quarters ? styles.requiredNote : ""].filter(Boolean).join(" ")}
-            typo="h6"
-          >
-            {requiredErrors.quarters ? "Required" : "One Or Multiple Presentation Periods"}
-          </span>
-        </legend>
-        <div className={styles.quarterList} typo="h3">
-          {quarters.map((quarter, index) => (
-            <span className={styles.quarterGroup} key={quarter.value}>
+        <fieldset className={styles.fieldset} typo="h4 compensate">
+          <legend className={styles.legendRow} typo="h4">
+            <span>Preferred Month</span>
+            <span
+              className={[styles.legendNote, requiredErrors.months ? styles.requiredNote : ""].filter(Boolean).join(" ")}
+              typo="h6"
+            >
+              {requiredErrors.months ? "Required" : ""}
+            </span>
+          </legend>
+          <DestinationScrollList>
+            {months.map((month) => (
               <label
-                className={styles.quarterChoice}
-                style={{ "--form-choice-selected-color": selectedColorMap[quarter.value] }}
+                className={styles.choice}
+                key={month.value}
+                style={{ "--form-choice-selected-color": selectedColorMap[month.value] }}
               >
                 <input
-                  checked={selectedQuarters.includes(quarter.value)}
-                  name="quarters"
+                  checked={selectedMonths.includes(month.value)}
+                  name="months"
                   onChange={() => {
                     setSelectedColorMap((currentColorMap) =>
-                      getNextColorMap(currentColorMap, quarter.value, textColorPalette),
+                      getNextColorMap(currentColorMap, month.value, textColorPalette),
                     );
-                    setSelectedQuarters((currentQuarters) => toggleValue(currentQuarters, quarter.value));
+                    setSelectedMonths((currentMonths) => (currentMonths.includes(month.value) ? [] : [month.value]));
                   }}
                   required
                   type="checkbox"
-                  value={quarter.value}
+                  value={month.value}
                 />
-                <span>{quarter.label}</span>
+                <span>{month.label}</span>
               </label>
-              {index < quarters.length - 1 ? <span className={styles.quarterSeparator}>/</span> : null}
-            </span>
-          ))}
-          <span className={styles.quarterSuffix}>Quarter 2027</span>
-        </div>
-      </fieldset>
+            ))}
+          </DestinationScrollList>
+        </fieldset>
+      </div>
 
       {textareaFields.map((field) => (
         <label className={styles.textareaField} key={field.name} typo="h4 compensate">
@@ -428,12 +458,12 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
             <span>{field.label}</span>
             {requiredErrors[field.name] ? (
               <span className={`${styles.legendNote} ${styles.requiredNote}`} typo="h6">
-                Required
+                {typeof requiredErrors[field.name] === "string" ? requiredErrors[field.name] : "Required"}
               </span>
             ) : null}
           </span>
           <textarea
-            maxLength={1000}
+            maxLength={field.maxLength}
             name={field.name}
             onInput={handleTextareaInput}
             placeholder={field.placeholder}
@@ -456,6 +486,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
             const upload = uploads[field.name];
             const isUploading = upload?.status === "loading";
             const isComplete = upload?.status === "complete";
+            const uploadError = upload?.status === "error" ? upload.errorMessage : requiredErrors[field.name];
 
             return (
               <div
@@ -488,7 +519,9 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                   </span>
                 ) : null}
                 <span className={styles.uploadMeta} typo="h6">
-                  {requiredErrors[field.name] ? <span className={styles.requiredNote}>Required</span> : null}
+                  {uploadError ? (
+                    <span className={styles.requiredNote}>{typeof uploadError === "string" ? uploadError : "Required"}</span>
+                  ) : null}
                   {isComplete ? <span className={styles.uploadFileName}>{upload.fileName}</span> : null}
                   {isUploading ? <span className={styles.uploadStatus}>Uploading</span> : null}
                   <button

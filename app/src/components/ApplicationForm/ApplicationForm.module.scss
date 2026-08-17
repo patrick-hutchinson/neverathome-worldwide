@@ -15,9 +15,6 @@
 .destinationGrid {
   margin-bottom: var(--spacing-5);
 }
-.timeFrame {
-  margin-bottom: var(--spacing-5);
-}
 
 .fieldset {
   min-width: 0;
@@ -112,8 +109,9 @@
 
 .destinationGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   column-gap: var(--content-grid-gap);
+  row-gap: var(--spacing-5);
   align-items: stretch;
 
   border-bottom: 1px solid var(--form-line-color);
@@ -124,27 +122,6 @@
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 0;
-}
-
-.quarterList {
-  display: flex;
-  flex-wrap: wrap;
-  padding-top: var(--spacing-8);
-}
-
-.quarterGroup {
-  display: inline-flex;
-}
-
-.quarterSeparator {
-  display: inline-block;
-  padding: 0 0.25em;
-  color: var(--form-muted-color);
-}
-
-.quarterSuffix {
-  color: var(--form-muted-color);
-  margin-left: var(--spacing-6);
 }
 
 .destinationListFrame {
@@ -189,21 +166,15 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.choice,
-.quarterChoice {
+.choice {
   position: relative;
-  display: inline;
   color: var(--form-muted-color);
   cursor: pointer;
   transition: color 0.2s ease-in-out;
-}
-
-.choice {
   display: block;
 }
 
 .choice input,
-.quarterChoice input,
 .uploadField input {
   position: absolute;
   top: 0;
@@ -218,8 +189,7 @@
   color: var(--form-choice-selected-color, var(--accent));
 }
 
-.destinationGrid .fieldset:nth-child(2) .choice:has(input:checked),
-.quarterChoice:has(input:checked) {
+.destinationGrid .fieldset:nth-child(2) .choice:has(input:checked) {
   color: var(--form-choice-selected-color, var(--accent));
 }
 
@@ -349,9 +319,14 @@
   border: 0;
 }
 
-@media screen and (max-width: 768px) {
-  .personalGrid,
+@media screen and (min-width: 1024px) {
   .destinationGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .personalGrid {
     grid-template-columns: 1fr;
   }
 

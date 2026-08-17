@@ -11,7 +11,7 @@ import { DeviceContext } from "@/context/DeviceContext";
 import Menu from "@/components/Menu/Menu";
 
 const links = [
-  { href: "/open-call", label: "Open Call", deadlineKey: "openCallPage" },
+  { href: "/info", label: "Info", deadlineKey: "infoPage" },
   { href: "/jury", label: "Jury", deadlineKey: "juryPage" },
   { href: "/destinations", label: "Destinations", deadlineKey: "destinationsPage" },
 ];
@@ -19,6 +19,7 @@ const links = [
 const progressStartDate = new Date("2026-08-03T00:00:00");
 const progressEndDate = new Date("2026-12-31T23:59:59");
 const showHeaderEventName = "neverathome:show-header";
+const aboutBottomScrollRequestEventName = "neverathome:about-bottom-scroll-request";
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -126,8 +127,17 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     document.getElementById("home-schedule")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const handleContactClick = (event) => {
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent(aboutBottomScrollRequestEventName));
+
+    if (router.pathname === "/about") return;
+
+    router.push("/about", undefined, { scroll: false }).catch(() => {});
+  };
+
   const DesktopNav = () => {
-    const openCallLink = navLinks.find((link) => link.href === "/open-call");
+    const infoLink = navLinks.find((link) => link.href === "/info");
 
     return (
       <nav className={styles.nav} typo="h4 compensate">
@@ -143,7 +153,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
               </Link>
               <CountdownSlot
                 className={styles.countdown}
-                deadline={openCallLink?.deadline}
+                deadline={infoLink?.deadline}
                 ghostClassName={styles.countdownGhost}
                 slotClassName={styles.countdownSlot}
               />
@@ -151,16 +161,14 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           ) : null}
           {navLinks.map((link) => (
             <span
-              className={[styles.navItem, link.href === "/open-call" ? styles.navItemOpenCall : ""]
-                .filter(Boolean)
-                .join(" ")}
+              className={[styles.navItem, link.href === "/info" ? styles.navItemInfoPage : ""].filter(Boolean).join(" ")}
               data-random-hover-color
               key={link.href}
             >
               <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
                 {link.label}
               </Link>
-              {link.href !== "/open-call" ? <CountdownText className={styles.countdown} deadline={link.deadline} /> : null}
+              {link.href !== "/info" ? <CountdownText className={styles.countdown} deadline={link.deadline} /> : null}
             </span>
           ))}
         </div>
@@ -169,32 +177,30 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
             About
           </Link>
           {",\u00a0"}
-          {site.email ? (
-            <a className={styles.link} href={`mailto:${site.email}`}>
-              Contact
-            </a>
-          ) : null}
+          <a className={styles.link} data-manual-navigation href="/about" onClick={handleContactClick}>
+            Contact
+          </a>
         </div>
       </nav>
     );
   };
 
   const MobileNav = () => {
-    const openCallLink = navLinks.find((link) => link.href === "/open-call");
+    const infoLink = navLinks.find((link) => link.href === "/info");
 
-    if (!openCallLink) return null;
+    if (!infoLink) return null;
 
     return (
       <nav className={styles.nav} typo="h4 compensate">
         <span className={styles.navItem} data-random-hover-color>
           <Link
-            className={getLinkClassName(openCallLink.href)}
-            href={openCallLink.href}
-            onClick={preventSameRouteNavigation(openCallLink.href)}
+            className={getLinkClassName(infoLink.href)}
+            href={infoLink.href}
+            onClick={preventSameRouteNavigation(infoLink.href)}
           >
-            {openCallLink.label}
+            {infoLink.label}
           </Link>
-          <CountdownText className={styles.countdown} deadline={openCallLink.deadline} />
+          <CountdownText className={styles.countdown} deadline={infoLink.deadline} />
         </span>
         <button
           className={[styles.menuButton, isMenuOpen ? styles.menuButtonOpen : ""].filter(Boolean).join(" ")}
@@ -216,7 +222,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
       {isMobile ? <MobileNav /> : <DesktopNav />}
       <AnimatePresence>
         {isMobile && isMenuOpen ? (
-          <Menu currentPhaseLabel={currentPhaseLabel} navLinks={navLinks} email={site.email} />
+          <Menu currentPhaseLabel={currentPhaseLabel} navLinks={navLinks} email={site.email} onContactClick={handleContactClick} />
         ) : null}
       </AnimatePresence>
     </header>

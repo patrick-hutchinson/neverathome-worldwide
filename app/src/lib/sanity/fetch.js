@@ -7,7 +7,7 @@ import {
   juryMembersQuery,
   juryPageQuery,
   pageDeadlinesQuery,
-  openCallPageQuery,
+  infoPageQuery,
   pageQuery,
   aboutPageQuery,
   siteQuery,
@@ -76,10 +76,10 @@ export async function getHomePage() {
   return homePage || {};
 }
 
-export async function getOpenCallPage() {
-  const openCallPage = await getSanityClient().fetch(openCallPageQuery);
+export async function getInfoPage() {
+  const infoPage = await getSanityClient().fetch(infoPageQuery);
 
-  return openCallPage || {};
+  return infoPage || {};
 }
 
 export async function getDestinationsPage() {

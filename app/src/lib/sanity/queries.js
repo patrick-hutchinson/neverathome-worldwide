@@ -24,7 +24,7 @@ export const siteQuery = `*[_type=="site"][0]{
 }`;
 
 export const pageDeadlinesQuery = `{
-  "openCallPage": *[_type=="openCallPage"][0].deadline,
+  "infoPage": *[_type=="infoPage"][0].deadline,
   "juryPage": *[_type=="juryPage"][0].deadline,
   "destinationsPage": *[_type=="destinationsPage"][0].deadline
 }`;
@@ -59,6 +59,7 @@ export const pageQuery = `*[_type=="page"][0]{
 }`;
 
 export const homePageQuery = `*[_type=="homePage"][0]{
+  marqueeText,
   aboutText,
   schedule{
     phaseA[]{
@@ -92,21 +93,25 @@ export const homePageQuery = `*[_type=="homePage"][0]{
 }`;
 
 export const destinationsPageQuery = `*[_type=="destinationsPage"][0]{
+  marqueeText,
   deadline,
   text
 
 }`;
-export const openCallPageQuery = `*[_type=="openCallPage"][0]{
+export const infoPageQuery = `*[_type=="infoPage"][0]{
+  marqueeText,
   deadline,
   info,
   faq,
 }`;
 
 export const juryPageQuery = `*[_type=="juryPage"][0]{
+  marqueeText,
   deadline
 }`;
 
 export const aboutPageQuery = `*[_type=="aboutPage"][0]{
+  marqueeText,
   lead,
   aboutNeverAtHome,
   aboutAustriaKulturInternational,
@@ -123,6 +128,7 @@ export const aboutPageQuery = `*[_type=="aboutPage"][0]{
 }`;
 
 export const imprintQuery = `*[_type=="imprint"][0]{
+  marqueeText,
   imprint,
   dataPolicy,
   privacyPolicyFile{

@@ -5,7 +5,14 @@ export const juryPage = defineType({
   title: 'Jury Seite',
   type: 'document',
 
-  fields: [defineField({name: 'deadline', type: 'datetime'})],
+  fields: [
+    defineField({
+      name: 'marqueeText',
+      title: 'Text für das durchlaufende Band',
+      type: 'string',
+    }),
+    defineField({name: 'deadline', type: 'datetime'}),
+  ],
   preview: {
     prepare: () => ({title: 'Jury Seite'}),
   },

@@ -9,7 +9,7 @@ const internalPageRoutes = {
   homePage: "/",
   imprint: "/imprint",
   juryPage: "/jury",
-  openCallPage: "/open-call",
+  infoPage: "/info",
 };
 
 const isPortableTextBlockEmpty = (value) => {

@@ -7,6 +7,11 @@ export const imprint = defineType({
 
   fields: [
     defineField({
+      name: 'marqueeText',
+      title: 'Text für das durchlaufende Band',
+      type: 'string',
+    }),
+    defineField({
       name: 'imprint',
       title: 'Imprint',
       type: 'portableText',

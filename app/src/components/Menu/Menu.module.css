@@ -11,7 +11,7 @@
   padding: var(--spacing-6);
 }
 
-.openCallLink {
+.infoLink {
   width: 100%;
   display: flex;
   flex-direction: row;

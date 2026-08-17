@@ -26,6 +26,11 @@ export const aboutPage = defineType({
 
   fields: [
     defineField({
+      name: 'marqueeText',
+      title: 'Text für das durchlaufende Band',
+      type: 'string',
+    }),
+    defineField({
       name: 'lead',
       title: 'Lead Text',
       type: 'portableText',
