@@ -137,6 +137,28 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     router.push("/about", undefined, { scroll: false }).catch(() => {});
   };
 
+  const handleSpacingDebugToggle = () => {
+    const url = new URL(window.location.href);
+    const queryValue = url.searchParams.get("spacingDebug");
+    const isEnabled = queryValue ? queryValue === "1" : window.localStorage.getItem("spacingDebug") === "1";
+    const nextIsEnabled = !isEnabled;
+
+    url.searchParams.set("spacingDebug", nextIsEnabled ? "1" : "0");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+
+    if (nextIsEnabled) {
+      window.localStorage.setItem("spacingDebug", "1");
+      document.documentElement.dataset.spacingDebug = "true";
+    } else {
+      window.localStorage.removeItem("spacingDebug");
+      delete document.documentElement.dataset.spacingDebug;
+      document.getElementById("spacing-debug-overlay")?.remove();
+      document.getElementById("spacing-debug-overlay-form")?.remove();
+    }
+
+    setIsMenuOpen(false);
+  };
+
   const DesktopNav = () => {
     const infoLink = navLinks.find((link) => link.href === "/info");
 
@@ -228,6 +250,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
             navLinks={navLinks}
             email={site.email}
             onContactClick={handleContactClick}
+            onSpacingDebugToggle={handleSpacingDebugToggle}
           />
         ) : null}
       </AnimatePresence>

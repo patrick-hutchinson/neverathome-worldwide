@@ -4,7 +4,13 @@ import { motion } from "framer-motion";
 import { CountdownText } from "@/components/Countdown/Countdown";
 import styles from "./Menu.module.css";
 
-const Menu = ({ currentPhaseLabel = null, navLinks = [], email = null, onContactClick = null }) => {
+const Menu = ({
+  currentPhaseLabel = null,
+  navLinks = [],
+  email = null,
+  onContactClick = null,
+  onSpacingDebugToggle = null,
+}) => {
   const infoLink = navLinks.find((link) => link.href === "/info");
   const juryLink = navLinks.find((link) => link.href === "/jury");
   const destinationsLink = navLinks.find((link) => link.href === "/destinations");
@@ -36,6 +42,9 @@ const Menu = ({ currentPhaseLabel = null, navLinks = [], email = null, onContact
 
           <br />
           {email ? <a href="#">Apply</a> : <span>Contact</span>}
+          <button className={styles.debugButton} type="button" onClick={onSpacingDebugToggle}>
+            Spacing Debug
+          </button>
         </div>
       </nav>
     </motion.div>

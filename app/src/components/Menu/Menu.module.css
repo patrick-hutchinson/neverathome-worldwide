@@ -35,8 +35,14 @@
 }
 
 .nav a,
-.nav span {
+.nav span,
+.debugButton {
   color: inherit;
+}
+
+.debugButton {
+  all: unset;
+  cursor: pointer;
 }
 
 .countdown {
