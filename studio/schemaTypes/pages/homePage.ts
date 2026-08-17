@@ -18,16 +18,9 @@ const scheduleEntry = {
       type: 'date',
       fieldset: 'dates',
     }),
-    defineField({
-      name: 'title',
-      title: 'Titel',
-      type: 'string',
-    }),
-    defineField({
-      name: 'keyword',
-      title: 'Keyword',
-      type: 'string',
-    }),
+    defineField({name: 'title', title: 'Titel', type: 'string'}),
+    defineField({name: 'link', type: 'link'}),
+    defineField({name: 'keyword', title: 'Keyword', type: 'string'}),
   ],
   preview: {
     select: {

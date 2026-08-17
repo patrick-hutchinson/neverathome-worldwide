@@ -109,9 +109,12 @@
 }
 
 .applicationFormHeaderPhase {
+  all: unset;
   display: flex;
   align-items: baseline;
   gap: 5px;
+  cursor: pointer;
+  border: 0;
 }
 
 .applicationFormHeaderCountdown,

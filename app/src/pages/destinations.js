@@ -45,7 +45,7 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                     </div>
                   </div>
                 </div>
-                <div className={styles.destinationText}>
+                <div className={[styles.destinationText, styles.destinationTextSelected].filter(Boolean).join(" ")}>
                   <Text
                     className={styles.destinationDescription}
                     text={selectedDestination.description}

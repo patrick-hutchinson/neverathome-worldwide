@@ -6,7 +6,7 @@
 
   --fontSize-2: 3.4rem;
   --lineHeight-2: 1;
-  --letterSpacing-2: -0.2rem;
+  --letterSpacing-2: -0.02em;
   ----paragraphSpacing-2: 0rem;
 
   --fontSize-3: 1.9rem;
@@ -169,7 +169,7 @@ h6 p:not(:last-of-type),
 
     --fontSize-2: clamp(5.8rem, calc(0.7299vw + 5.2386rem), 6.5rem);
     --lineHeight-2: 1;
-    --letterSpacing-2: -0.2rem;
+    --letterSpacing-2: -0.04em;
     ----paragraphSpacing-2: 0rem;
 
     --fontSize-3: clamp(3.3rem, calc(0.5214vw + 2.8989rem), 3.8rem);

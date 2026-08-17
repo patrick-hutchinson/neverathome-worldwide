@@ -2,6 +2,8 @@ import {defineType} from 'sanity'
 import {LinkIcon} from '@sanity/icons/Link'
 import {pageReferenceTypes} from '../pages'
 
+const internalReferenceTypes = [...pageReferenceTypes, {type: 'destination'}]
+
 export const link = defineType({
   name: 'link',
   title: 'Link',
@@ -22,7 +24,7 @@ export const link = defineType({
     {
       name: 'internalLink',
       type: 'reference',
-      to: [...pageReferenceTypes],
+      to: internalReferenceTypes,
       hidden: ({parent}) => parent?.type !== 'internal',
     },
     {

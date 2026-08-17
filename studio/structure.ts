@@ -4,7 +4,7 @@ import {pages} from './schemaTypes/pages'
 
 // Define singleton document IDs here
 const singletonTypes = ['site', 'page', ...pages.map((page) => page.name)]
-const definitions = ['category']
+const definitions = ['category', 'videoAsset']
 
 // Add other types you want to hide from Desk here
 const hiddenTypes = [...singletonTypes, ...definitions]
@@ -30,7 +30,7 @@ export const structure: StructureResolver = (S) =>
             .items([
               S.listItem()
                 .id('page')
-                .title('Page')
+                .title('Seitenübergreifender Content')
                 .icon(DashboardIcon)
                 .child(S.document().schemaType('page').documentId('page')),
 

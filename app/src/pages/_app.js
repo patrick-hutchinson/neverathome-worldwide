@@ -162,6 +162,27 @@ function createRandomMobileGlobePosition() {
   };
 }
 
+function clampMobileGlobePosition(position = { x: 0, y: 0 }) {
+  if (typeof window === "undefined") return position;
+
+  const mobileGlobeSize = window.innerWidth * 0.5;
+  const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
+  const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
+  const minLeft = 0;
+  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize, minLeft);
+  const minTop = mobileGlobeViewportPadding;
+  const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
+  const currentLeft = centeredLeft + position.x;
+  const currentTop = centeredTop + position.y;
+  const left = Math.min(Math.max(currentLeft, minLeft), maxLeft);
+  const top = Math.min(Math.max(currentTop, minTop), maxTop);
+
+  return {
+    x: left - centeredLeft,
+    y: top - centeredTop,
+  };
+}
+
 function getRandomMobileGlobePosition(currentPosition = { x: 0, y: 0 }) {
   let farthestPosition = createRandomMobileGlobePosition();
   let farthestDistance = getPositionDistance(currentPosition, farthestPosition);
@@ -229,6 +250,8 @@ function ApplicationFormOverlay({
   destinations = [],
   isOpen,
   onClose,
+  onDirtyChange,
+  onHomeClick,
   onOpenComplete,
   page = {},
   pageDeadlines = {},
@@ -269,7 +292,7 @@ function ApplicationFormOverlay({
           <div className={styles.applicationFormHeader} typo="h4 compensate">
             <div className={styles.applicationFormHeaderLeft}>
               {currentPhaseLabel ? (
-                <span className={styles.applicationFormHeaderPhase}>
+                <button className={styles.applicationFormHeaderPhase} onClick={onHomeClick} type="button">
                   <span>{currentPhaseLabel}</span>
                   <CountdownSlot
                     className={styles.applicationFormHeaderCountdown}
@@ -277,7 +300,7 @@ function ApplicationFormOverlay({
                     ghostClassName={styles.applicationFormHeaderCountdownGhost}
                     slotClassName={styles.applicationFormHeaderCountdownSlot}
                   />
-                </span>
+                </button>
               ) : null}
               <span>Application Form</span>
             </div>
@@ -290,7 +313,7 @@ function ApplicationFormOverlay({
             options={{ allowNestedScroll: true, lerp: 0.12, syncTouch: true }}
             root={false}
           >
-            <ApplicationForm destinations={destinations} page={page} />
+            <ApplicationForm destinations={destinations} onDirtyChange={onDirtyChange} page={page} />
             <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
           </ReactLenis>
         </motion.div>
@@ -340,6 +363,8 @@ export default function App({ Component, pageProps }) {
   const isCityListRouteRevealRef = useRef(false);
   const cityListRevealTimersRef = useRef([]);
   const destinationHeaderRevealRef = useRef({ frame: null, timeout: null });
+  const hasInitializedMobileGlobePositionRef = useRef(false);
+  const programmaticScrollLockRef = useRef(null);
   const footerRef = useRef(null);
   const imprintRef = useRef(null);
   const imprintCloseTimerRef = useRef(null);
@@ -349,6 +374,7 @@ export default function App({ Component, pageProps }) {
   const [isAppReady, setIsAppReady] = useState(false);
   const [isApplicationFormOpen, setIsApplicationFormOpen] = useState(false);
   const [isApplicationFormEntered, setIsApplicationFormEntered] = useState(false);
+  const [isApplicationFormDirty, setIsApplicationFormDirty] = useState(false);
   const [isImprintOpen, setIsImprintOpen] = useState(false);
   const [isImprintObscuring, setIsImprintObscuring] = useState(false);
 	  const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
@@ -363,6 +389,7 @@ export default function App({ Component, pageProps }) {
   const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
 
   const openApplicationForm = () => {
+    setIsApplicationFormDirty(false);
     setIsApplicationFormEntered(false);
     setIsApplicationFormOpen(true);
   };
@@ -370,21 +397,123 @@ export default function App({ Component, pageProps }) {
   const closeApplicationForm = () => {
     setIsApplicationFormEntered(false);
     setIsApplicationFormOpen(false);
+    setIsApplicationFormDirty(false);
+  };
+
+  const confirmApplicationFormDiscard = () => {
+    if (!isApplicationFormDirty) return true;
+
+    return window.confirm("Your changes will be lost. Do you want to continue?");
+  };
+
+  const handleApplicationFormHomeClick = () => {
+    if (!confirmApplicationFormDiscard()) return;
+
+    closeApplicationForm();
+    router.push("/").catch(() => {});
+  };
+
+  const stopProgrammaticScrollLock = () => {
+    const lock = programmaticScrollLockRef.current;
+    if (!lock) return;
+
+    lock.cleanup();
+    programmaticScrollLockRef.current = null;
+  };
+
+  const lockUserScrollUntil = (targetScrollTop, maxDuration = 1800) => {
+    stopProgrammaticScrollLock();
+
+    const preventUserScroll = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const preventUserScrollKey = (event) => {
+      const scrollKeys = [" ", "ArrowDown", "ArrowUp", "End", "Home", "PageDown", "PageUp"];
+      if (!scrollKeys.includes(event.key)) return;
+
+      preventUserScroll(event);
+    };
+    let frameId = null;
+    let timeoutId = null;
+    let lastScrollY = window.scrollY;
+    let stableFrames = 0;
+    const startedAt = performance.now();
+
+    const cleanup = () => {
+      window.removeEventListener("wheel", preventUserScroll, { capture: true });
+      window.removeEventListener("touchmove", preventUserScroll, { capture: true });
+      window.removeEventListener("keydown", preventUserScrollKey, { capture: true });
+
+      if (frameId) cancelAnimationFrame(frameId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+
+    const release = () => {
+      if (programmaticScrollLockRef.current?.cleanup !== cleanup) return;
+
+      cleanup();
+      programmaticScrollLockRef.current = null;
+    };
+
+    const checkScrollLanding = () => {
+      const currentScrollY = window.scrollY;
+      const isAtTarget = Math.abs(currentScrollY - targetScrollTop) <= 2;
+      const hasSettled = performance.now() - startedAt > 150 && Math.abs(currentScrollY - lastScrollY) < 0.25;
+
+      stableFrames = hasSettled ? stableFrames + 1 : 0;
+
+      if (isAtTarget || stableFrames >= 6) {
+        release();
+        return;
+      }
+
+      lastScrollY = currentScrollY;
+      frameId = requestAnimationFrame(checkScrollLanding);
+    };
+
+    window.addEventListener("wheel", preventUserScroll, { capture: true, passive: false });
+    window.addEventListener("touchmove", preventUserScroll, { capture: true, passive: false });
+    window.addEventListener("keydown", preventUserScrollKey, { capture: true, passive: false });
+
+    timeoutId = setTimeout(release, maxDuration);
+    frameId = requestAnimationFrame(checkScrollLanding);
+    programmaticScrollLockRef.current = { cleanup };
+  };
+
+  const scrollWindowTo = ({ top, behavior = "smooth", lock = behavior === "smooth" }) => {
+    const maxScrollTop = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.body.offsetHeight,
+    ) - window.innerHeight;
+    const targetScrollTop = Math.max(Math.min(top, Math.max(maxScrollTop, 0)), 0);
+
+    if (lock) {
+      lockUserScrollUntil(targetScrollTop);
+    } else {
+      stopProgrammaticScrollLock();
+    }
+
+    window.scrollTo({ top: targetScrollTop, behavior });
+
+    return targetScrollTop;
   };
 
   const scrollToElement = (element, offset = 49) => {
-    if (!element) return;
+    if (!element) return null;
 
     const scrollTop = element.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
+    return scrollWindowTo({ top: scrollTop });
   };
 
   const scrollToElementBottom = (element, offset = 0) => {
-    if (!element) return;
+    if (!element) return null;
 
     const rect = element.getBoundingClientRect();
     const scrollTop = rect.bottom + window.scrollY - window.innerHeight + offset;
-    window.scrollTo({ top: Math.max(scrollTop, 0), behavior: "smooth" });
+    return scrollWindowTo({ top: scrollTop });
   };
 
   const isCityListVisibleInViewport = () => {
@@ -397,9 +526,10 @@ export default function App({ Component, pageProps }) {
   };
 
   const scrollToPageTop = (behavior = "smooth") => {
-    window.scrollTo({ top: 0, behavior });
+    scrollWindowTo({ top: 0, behavior, lock: behavior === "smooth" });
 
     if (behavior === "auto") {
+      stopProgrammaticScrollLock();
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
 
@@ -435,7 +565,7 @@ export default function App({ Component, pageProps }) {
       document.documentElement.offsetHeight,
     );
 
-    window.scrollTo({ top: pageHeight, behavior });
+    scrollWindowTo({ top: pageHeight, behavior, lock: behavior === "smooth" });
   };
 
   const openImprint = () => {
@@ -461,12 +591,16 @@ export default function App({ Component, pageProps }) {
     }, 450);
   };
 
-  useEffect(() => {
-    destinationsRef.current = destinations;
-  }, [destinations]);
-
 	  useEffect(() => {
-	    isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
+	    destinationsRef.current = destinations;
+	  }, [destinations]);
+
+  useEffect(() => {
+    return () => stopProgrammaticScrollLock();
+  }, []);
+
+		  useEffect(() => {
+		    isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
 	  }, [isDestinationCityListHidden]);
 
 	  useEffect(() => {
@@ -540,6 +674,19 @@ export default function App({ Component, pageProps }) {
 
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isApplicationFormOpen]);
+
+  useEffect(() => {
+    if (!isApplicationFormOpen || !isApplicationFormDirty) return undefined;
+
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isApplicationFormDirty, isApplicationFormOpen]);
 
   useEffect(() => {
     if (!isImprintOpen) return undefined;
@@ -727,6 +874,24 @@ export default function App({ Component, pageProps }) {
 
     return () => window.removeEventListener("resize", updateViewportWidth);
   }, []);
+
+  useEffect(() => {
+    if (viewportWidth <= 0) return;
+
+    if (viewportWidth >= 769) {
+      hasInitializedMobileGlobePositionRef.current = false;
+      return;
+    }
+
+    setGlobePosition((currentPosition) => {
+      if (hasInitializedMobileGlobePositionRef.current) {
+        return clampMobileGlobePosition(currentPosition);
+      }
+
+      hasInitializedMobileGlobePositionRef.current = true;
+      return getRandomMobileGlobePosition(currentPosition);
+    });
+  }, [viewportWidth]);
 
   useEffect(() => {
     const isInsideGlobe = (event) => event.target?.closest?.("[data-globe-interaction-root]");
@@ -1065,8 +1230,8 @@ export default function App({ Component, pageProps }) {
     const scrollTop = contentElement.getBoundingClientRect().top + window.scrollY - 49;
     const targetScrollTop = Math.max(scrollTop, 0);
 
-    window.scrollTo({ top: targetScrollTop, behavior: "smooth" });
-    showHeaderAfterDestinationScroll(targetScrollTop);
+    const finalTargetScrollTop = scrollWindowTo({ top: targetScrollTop });
+    showHeaderAfterDestinationScroll(finalTargetScrollTop);
   };
 
   const handleCityClick = (city) => {
@@ -1406,6 +1571,8 @@ export default function App({ Component, pageProps }) {
                 destinations={destinations}
                 isOpen={isApplicationFormOpen}
                 onClose={closeApplicationForm}
+                onDirtyChange={setIsApplicationFormDirty}
+                onHomeClick={handleApplicationFormHomeClick}
                 onOpenComplete={() => setIsApplicationFormEntered(true)}
                 page={page}
                 pageDeadlines={pageDeadlines}

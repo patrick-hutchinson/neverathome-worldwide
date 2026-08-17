@@ -142,7 +142,7 @@ const DestinationScrollList = ({ children }) => {
   );
 };
 
-const ApplicationForm = ({ destinations = [], page = {} }) => {
+const ApplicationForm = ({ destinations = [], onDirtyChange, page = {} }) => {
   const textColorPalette = getTextColorPalette(page.textColors);
   const formRef = useRef(null);
   const fileInputRefs = useRef({});
@@ -209,6 +209,11 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
     if (!hasSubmitAttempted || !formRef.current) return;
 
     setRequiredErrors(getRequiredErrors(formRef.current));
+  };
+
+  const handleFormChange = () => {
+    onDirtyChange?.(true);
+    updateRequiredErrors();
   };
 
   useEffect(() => {
@@ -321,7 +326,15 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
   };
 
   return (
-    <form className={styles.form} noValidate onInput={updateRequiredErrors} onSubmit={handleSubmit} ref={formRef} typo="h4">
+    <form
+      className={styles.form}
+      noValidate
+      onChange={handleFormChange}
+      onInput={handleFormChange}
+      onSubmit={handleSubmit}
+      ref={formRef}
+      typo="h4"
+    >
       <fieldset className={`${styles.fieldset} ${styles.personalInformation}`} typo="h4 compensate">
         <legend className={styles.legendRow} typo="h4">
           <span typo="h4">Personal Information</span>
@@ -393,7 +406,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
           <legend className={styles.legendRow} typo="h4">
             <span>Alternative Destination </span>
             <span typo="h6" style={{ color: "var(--form-muted-color)" }}>
-              (Optional)
+              Optional
             </span>
           </legend>
           <DestinationScrollList>
@@ -521,7 +534,7 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                   <span className={styles.uploadTitleText} style={{ "--upload-progress": `${upload?.progress || 0}%` }}>
                     {field.label}
                   </span>
-                  {!upload ? <span className={styles.muted}> {field.note}</span> : null}
+                  {!upload ? <span className={`${styles.muted} ${styles.note}`}> {field.note}</span> : null}
                 </span>
                 {field.help && !upload ? (
                   <span className={styles.uploadHelp} typo="h6">

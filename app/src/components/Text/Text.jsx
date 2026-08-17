@@ -5,6 +5,7 @@ import Link from "next/link";
 
 const internalPageRoutes = {
   aboutPage: "/about",
+  destination: "/destinations",
   destinationsPage: "/destinations",
   homePage: "/",
   imprint: "/imprint",
@@ -53,7 +54,9 @@ const getInternalHref = (internalLink) => {
   const referenceId = internalLink?._ref;
   if (!referenceId) return null;
 
-  return internalPageRoutes[referenceId] || null;
+  const normalizedReferenceId = referenceId.replace(/^drafts\./, "");
+
+  return internalPageRoutes[normalizedReferenceId] || "/destinations";
 };
 
 const PortableTextLink = ({ children, value }) => {

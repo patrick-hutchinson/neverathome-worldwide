@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import Text from "@/components/Text/Text";
 
 import styles from "./Marquee.module.css";
+import { DeviceContext } from "@/context/DeviceContext";
 
 const MARQUEE_TARGET_SPEED = 1;
 const MARQUEE_BASE_DURATION = 42;
 const MARQUEE_MIN_REPEAT_COUNT = 2;
 const MARQUEE_SCROLLABLE_WIDTH_MULTIPLIER = 3;
-const MARQUEE_SCROLL_SPEED_MULTIPLIER = 40;
 const MARQUEE_SCROLL_SPEED_DAMPING = 0.075;
 const MARQUEE_SCROLL_VELOCITY_VARIABLE = "--lenis-scroll-velocity";
 const MARQUEE_DEFAULT_SPEED_TRANSITION_MS = 600;
@@ -43,6 +43,8 @@ const Marquee = ({
   const slides = useMemo(() => Array.from({ length: repeatCount }), [repeatCount]);
   const duration = getMarqueeDuration(itemWidth, targetSpeed);
   const animationDirection = direction === "backward" ? "reverse" : "normal";
+  const { isMobile } = useContext(DeviceContext);
+  const marqueeScrollSpeedMultiplier = isMobile ? 20 : 40;
 
   useEffect(() => {
     speedMultiplierRef.current = speedMultiplier;
@@ -142,7 +144,7 @@ const Marquee = ({
       const scrollVelocity = Number.parseFloat(
         document.documentElement.style.getPropertyValue(MARQUEE_SCROLL_VELOCITY_VARIABLE),
       );
-      const targetScrollBoost = (Number.isFinite(scrollVelocity) ? scrollVelocity : 0) * MARQUEE_SCROLL_SPEED_MULTIPLIER;
+      const targetScrollBoost = (Number.isFinite(scrollVelocity) ? scrollVelocity : 0) * marqueeScrollSpeedMultiplier;
 
       scrollBoostPlaybackRate += (targetScrollBoost - scrollBoostPlaybackRate) * MARQUEE_SCROLL_SPEED_DAMPING;
       setAnimationPlaybackRate(visibleSpeedMultiplierRef.current + scrollBoostPlaybackRate);
@@ -156,7 +158,7 @@ const Marquee = ({
       if (animationFrame) cancelAnimationFrame(animationFrame);
       setAnimationPlaybackRate(1);
     };
-  }, [isAnimating]);
+  }, [isAnimating, marqueeScrollSpeedMultiplier]);
 
   return (
     <div

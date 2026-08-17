@@ -9,6 +9,12 @@
   width: 100%;
 }
 
+.note {
+  font-size: var(--fontSize-6);
+  line-height: var(--lineHeight-6);
+  letter-spacing: var(--letterSpacing-6);
+}
+
 .personalInformation {
   margin-bottom: var(--spacing-2);
 }
@@ -42,6 +48,10 @@
 .uploadHelp,
 .uploadAction {
   color: var(--form-muted-color);
+}
+
+.uploadHelp {
+  display: none;
 }
 
 .requiredNote {
@@ -328,9 +338,22 @@
   .destinationGrid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
   }
+  .uploadHelp {
+    display: block;
+  }
+
+  .note {
+    font-size: var(--fontSize-4);
+    line-height: var(--lineHeight-4);
+    letter-spacing: var(--letterSpacing-4);
+  }
 }
 
 @media screen and (max-width: 768px) {
+  .note {
+    display: block;
+  }
+
   .personalGrid {
     grid-template-columns: 1fr;
   }
