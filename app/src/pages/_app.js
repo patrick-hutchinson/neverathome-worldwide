@@ -1208,9 +1208,13 @@ export default function App({ Component, pageProps }) {
     };
   }, [contentScrollRequest, isDestinationsPage, isPageTransitionSettled, selectedDestination]);
 
-	  useEffect(() => {
-	    if (!isContentAutoScrollPage || !isPageTransitionSettled || (router.pathname === "/about" && shouldScrollAboutToBottom))
-	      return undefined;
+  useEffect(() => {
+    if (
+      !isContentAutoScrollPage ||
+      !isPageTransitionSettled ||
+      (router.pathname === "/about" && shouldScrollAboutToBottomRef.current)
+    )
+      return undefined;
 
     const frameIds = [];
     const timeoutIds = [];
@@ -1231,7 +1235,7 @@ export default function App({ Component, pageProps }) {
       frameIds.forEach(cancelAnimationFrame);
       timeoutIds.forEach(clearTimeout);
     };
-  }, [isContentAutoScrollPage, isPageTransitionSettled, router.asPath, router.pathname, shouldScrollAboutToBottom]);
+  }, [isContentAutoScrollPage, isPageTransitionSettled, router.asPath, router.pathname]);
 
   useEffect(() => {
     if (!shouldScrollAboutToBottom || router.pathname !== "/about" || !isPageTransitionSettled) return undefined;
