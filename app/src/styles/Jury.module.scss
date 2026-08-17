@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
-  row-gap: var(--spacing-3);
+  row-gap: var(--spacing-5);
 
   .juryMemberContainer {
     grid-column: 1 / 25;

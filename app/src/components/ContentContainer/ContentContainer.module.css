@@ -8,7 +8,7 @@
   z-index: 100;
   position: relative;
   isolation: isolate;
-  padding: var(--spacing-6);
+  padding: var(--margin);
   margin-top: var(--spacing-6);
 }
 

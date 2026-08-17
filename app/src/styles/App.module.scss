@@ -51,7 +51,7 @@
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
-  padding: 0 var(--spacing-6);
+  padding: 0 var(--margin);
   pointer-events: none;
   transition: opacity 0.35s ease-in-out;
 }
