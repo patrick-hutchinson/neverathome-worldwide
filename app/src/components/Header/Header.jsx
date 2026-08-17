@@ -217,11 +217,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     return (
       <nav className={styles.nav} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
         <span className={styles.navItem} data-random-hover-color>
-          <Link
-            className={getLinkClassName(infoLink.href)}
-            href={infoLink.href}
-            onClick={preventSameRouteNavigation(infoLink.href)}
-          >
+          <Link className={getLinkClassName(infoLink.href)} href={"/"} onClick={preventSameRouteNavigation(infoLink.href)}>
             Open Call
           </Link>
           <CountdownText className={styles.countdown} deadline={infoLink.deadline} />
