@@ -41,17 +41,35 @@
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap, calc(var(--spacing-6) / 3));
   width: 100%;
+  row-gap: var(--spacing-5);
 }
 
 .textColumn {
-  grid-column: span 5;
+  grid-column: 1 / 25;
+  grid-row: 1;
 }
 
 .textColumn + .textColumn {
-  grid-column: span 7 12;
+  grid-column: 1 / 25;
+  grid-row: 2;
 }
 
 .downloadLink {
   display: inline-block;
   color: inherit;
+}
+
+@media screen and (min-width: 769px) {
+  .content {
+    row-gap: 0;
+  }
+  .textColumn {
+    grid-row: 1;
+    grid-column: 1 / 6;
+  }
+
+  .textColumn + .textColumn {
+    grid-row: 1;
+    grid-column: 6 / 11;
+  }
 }

@@ -367,6 +367,8 @@ export default function App({ Component, pageProps }) {
   const footerRef = useRef(null);
   const imprintRef = useRef(null);
   const imprintCloseTimerRef = useRef(null);
+  const imprintScrollTimerRef = useRef(null);
+  const imprintScrollFrameRef = useRef({ first: null, second: null });
   const imprintTouchStartYRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
@@ -375,6 +377,7 @@ export default function App({ Component, pageProps }) {
   const [isApplicationFormEntered, setIsApplicationFormEntered] = useState(false);
   const [isApplicationFormDirty, setIsApplicationFormDirty] = useState(false);
   const [isImprintOpen, setIsImprintOpen] = useState(false);
+  const isImprintOpenRef = useRef(false);
   const [isImprintObscuring, setIsImprintObscuring] = useState(false);
   const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
   const [isPageTransitionSettled, setIsPageTransitionSettled] = useState(true);
@@ -441,6 +444,8 @@ export default function App({ Component, pageProps }) {
     let frameId = null;
     let timeoutId = null;
     let lastScrollY = window.scrollY;
+    const startScrollY = window.scrollY;
+    let hasMoved = Math.abs(startScrollY - targetScrollTop) <= 2;
     let stableFrames = 0;
     const startedAt = performance.now();
 
@@ -464,8 +469,10 @@ export default function App({ Component, pageProps }) {
     const checkScrollLanding = () => {
       const currentScrollY = window.scrollY;
       const isAtTarget = Math.abs(currentScrollY - targetScrollTop) <= 2;
-      const hasSettled = performance.now() - startedAt > 150 && Math.abs(currentScrollY - lastScrollY) < 0.25;
+      const hasSettled =
+        hasMoved && performance.now() - startedAt > 150 && Math.abs(currentScrollY - lastScrollY) < 0.25;
 
+      hasMoved = hasMoved || Math.abs(currentScrollY - startScrollY) > 2;
       stableFrames = hasSettled ? stableFrames + 1 : 0;
 
       if (isAtTarget || stableFrames >= 6) {
@@ -502,9 +509,7 @@ export default function App({ Component, pageProps }) {
       stopProgrammaticScrollLock();
     }
 
-    if (!lock) {
-      window.scrollTo({ top: targetScrollTop, behavior });
-    }
+    window.scrollTo({ top: targetScrollTop, behavior });
 
     return targetScrollTop;
   };
@@ -570,8 +575,20 @@ export default function App({ Component, pageProps }) {
       window.clearTimeout(imprintCloseTimerRef.current);
       imprintCloseTimerRef.current = null;
     }
+    if (imprintScrollTimerRef.current) {
+      window.clearTimeout(imprintScrollTimerRef.current);
+      imprintScrollTimerRef.current = null;
+    }
+    if (imprintScrollFrameRef.current.first) {
+      cancelAnimationFrame(imprintScrollFrameRef.current.first);
+    }
+    if (imprintScrollFrameRef.current.second) {
+      cancelAnimationFrame(imprintScrollFrameRef.current.second);
+    }
+    imprintScrollFrameRef.current = { first: null, second: null };
 
     setIsImprintObscuring(true);
+    isImprintOpenRef.current = true;
     setIsImprintOpen(true);
   };
 
@@ -579,13 +596,36 @@ export default function App({ Component, pageProps }) {
     if (imprintCloseTimerRef.current) {
       window.clearTimeout(imprintCloseTimerRef.current);
     }
+    if (imprintScrollTimerRef.current) {
+      window.clearTimeout(imprintScrollTimerRef.current);
+      imprintScrollTimerRef.current = null;
+    }
+    if (imprintScrollFrameRef.current.first) {
+      cancelAnimationFrame(imprintScrollFrameRef.current.first);
+    }
+    if (imprintScrollFrameRef.current.second) {
+      cancelAnimationFrame(imprintScrollFrameRef.current.second);
+    }
+    imprintScrollFrameRef.current = { first: null, second: null };
 
     setIsImprintObscuring(false);
     scrollToElementBottom(footerRef.current, getRootCssPixelValue("--margin"));
     imprintCloseTimerRef.current = window.setTimeout(() => {
+      isImprintOpenRef.current = false;
       setIsImprintOpen(false);
       imprintCloseTimerRef.current = null;
     }, 450);
+  };
+
+  const scrollToRenderedImprint = () => {
+    if (!isImprintOpenRef.current || !imprintRef.current) return;
+
+    imprintScrollFrameRef.current.first = requestAnimationFrame(() => {
+      imprintScrollFrameRef.current.second = requestAnimationFrame(() => {
+        scrollToElement(imprintRef.current, 0);
+        imprintScrollFrameRef.current = { first: null, second: null };
+      });
+    });
   };
 
   useEffect(() => {
@@ -593,12 +633,27 @@ export default function App({ Component, pageProps }) {
   }, [destinations]);
 
   useEffect(() => {
-    return () => stopProgrammaticScrollLock();
+    return () => {
+      stopProgrammaticScrollLock();
+      if (imprintScrollTimerRef.current) {
+        window.clearTimeout(imprintScrollTimerRef.current);
+      }
+      if (imprintScrollFrameRef.current.first) {
+        cancelAnimationFrame(imprintScrollFrameRef.current.first);
+      }
+      if (imprintScrollFrameRef.current.second) {
+        cancelAnimationFrame(imprintScrollFrameRef.current.second);
+      }
+    };
   }, []);
 
   useEffect(() => {
     isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
   }, [isDestinationCityListHidden]);
+
+  useEffect(() => {
+    isImprintOpenRef.current = isImprintOpen;
+  }, [isImprintOpen]);
 
   useEffect(() => {
     shouldScrollAboutToBottomRef.current = shouldScrollAboutToBottom;
@@ -709,24 +764,6 @@ export default function App({ Component, pageProps }) {
     if (isImprintOpen) return;
 
     setIsImprintObscuring(false);
-  }, [isImprintOpen]);
-
-  useEffect(() => {
-    if (!isImprintOpen) return undefined;
-
-    const scrollToImprintContainerBottom = () => {
-      scrollToElementBottom(document.getElementById(contentContainerId) || imprintRef.current);
-    };
-
-    const frameId = requestAnimationFrame(() => {
-      requestAnimationFrame(scrollToImprintContainerBottom);
-    });
-    const timeoutId = window.setTimeout(scrollToImprintContainerBottom, 180);
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
-    };
   }, [isImprintOpen]);
 
   useEffect(() => {
@@ -1557,6 +1594,9 @@ export default function App({ Component, pageProps }) {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             initial={{ opacity: 0 }}
+                            onAnimationComplete={() => {
+                              imprintScrollTimerRef.current = window.setTimeout(scrollToRenderedImprint, 0);
+                            }}
                             ref={imprintRef}
                             transition={{ duration: 0.35, ease: "easeInOut" }}
                           >

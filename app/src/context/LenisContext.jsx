@@ -70,9 +70,9 @@ function LenisContextProvider({ children }) {
         const targetScrollTop = Number(event.detail?.targetScrollTop);
 
         if (Number.isFinite(targetScrollTop)) {
+          lenis?.start?.();
           lenis?.scrollTo?.(targetScrollTop, {
             force: true,
-            lock: true,
           });
         } else {
           lenis?.stop?.();
