@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 const spacingKeys = ["1", "2", "3", "4", "5", "6", "6-5", "7", "8"];
 const defaultOverlayId = "spacing-debug-overlay";
 const formOverlayId = "spacing-debug-overlay-form";
+const spacingDebugChangeEventName = "neverathome:spacing-debug-change";
 
 function parsePixelValue(value) {
   const number = Number.parseFloat(value);
@@ -437,10 +438,17 @@ const SpacingDebugOverlay = ({ overlayId = defaultOverlayId, rootSelector = "bod
         return nextIsEnabled;
       });
     };
+    const handleSpacingDebugChange = (event) => {
+      setIsEnabled(Boolean(event.detail?.isEnabled));
+    };
 
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener(spacingDebugChangeEventName, handleSpacingDebugChange);
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(spacingDebugChangeEventName, handleSpacingDebugChange);
+    };
   }, []);
 
   useEffect(() => {

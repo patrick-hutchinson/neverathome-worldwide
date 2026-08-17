@@ -160,14 +160,14 @@ h6 p:not(:last-of-type),
   margin-top: calc(var(--h6-overshoot) * -1);
 }
 
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 1024px) {
   :root {
     --fontSize-1: clamp(20rem, calc(22.3547vw + 2.808rem), 35rem);
     --lineHeight-1: 1;
     --letterSpacing-1: clamp(-2rem, calc(-1.2774vw - 0.1605rem), -1.1429rem);
     --paragraphSpacing-1: 0rem;
 
-    --fontSize-2: clamp(5.8rem, calc(0.7299vw + 5.2386rem), 6.5rem);
+    --fontSize-2: clamp(5.5rem, calc(0.7299vw + 5.2386rem), 6.5rem);
     --lineHeight-2: 1;
     --letterSpacing-2: -0.04em;
     ----paragraphSpacing-2: 0rem;

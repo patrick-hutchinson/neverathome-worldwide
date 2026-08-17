@@ -163,6 +163,12 @@
   margin-bottom: var(--spacing-6);
 }
 
+.smallMarquee {
+  font-size: var(--fontSize-3);
+  line-height: var(--lineHeight-3);
+  letter-spacing: var(--letterSpacing-3);
+}
+
 @media screen and (min-width: 769px) {
   .cityListLayer > * {
     grid-column: 16 / 25;
@@ -176,5 +182,11 @@
 
   .applicationFormLayer {
     --content-grid-gap: calc(var(--spacing-6) / 2);
+  }
+
+  .smallMarquee {
+    font-size: var(--fontSize-4);
+    line-height: var(--lineHeight-4);
+    letter-spacing: var(--letterSpacing-4);
   }
 }

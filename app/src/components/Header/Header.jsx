@@ -156,6 +156,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
       document.getElementById("spacing-debug-overlay-form")?.remove();
     }
 
+    window.dispatchEvent(new CustomEvent("neverathome:spacing-debug-change", { detail: { isEnabled: nextIsEnabled } }));
     setIsMenuOpen(false);
   };
 
@@ -214,7 +215,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     if (!infoLink) return null;
 
     return (
-      <nav className={styles.nav} typo="h4 compensate">
+      <nav className={styles.nav} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
         <span className={styles.navItem} data-random-hover-color>
           <Link
             className={getLinkClassName(infoLink.href)}

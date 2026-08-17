@@ -71,9 +71,7 @@ function getRouteMarqueeText(pathname, pageProps = {}) {
   const pagePropKey = routePagePropKeys[pathname];
   const marqueeText = pagePropKey ? pageProps[pagePropKey]?.marqueeText : null;
 
-  return typeof marqueeText === "string" && marqueeText.trim()
-    ? marqueeText
-    : routeMarqueeLabels[pathname];
+  return typeof marqueeText === "string" && marqueeText.trim() ? marqueeText : routeMarqueeLabels[pathname];
 }
 
 const contentContainerId = "page-content";
@@ -378,13 +376,13 @@ export default function App({ Component, pageProps }) {
   const [isApplicationFormDirty, setIsApplicationFormDirty] = useState(false);
   const [isImprintOpen, setIsImprintOpen] = useState(false);
   const [isImprintObscuring, setIsImprintObscuring] = useState(false);
-	  const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
-	  const [isPageTransitionSettled, setIsPageTransitionSettled] = useState(true);
-	  const [shouldScrollAboutToBottom, setShouldScrollAboutToBottom] = useState(false);
-	  const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
-	  const pendingNavigationTimerRef = useRef(null);
-	  const h1MarqueeSettleTimerRef = useRef(null);
-	  const shouldScrollAboutToBottomRef = useRef(false);
+  const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
+  const [isPageTransitionSettled, setIsPageTransitionSettled] = useState(true);
+  const [shouldScrollAboutToBottom, setShouldScrollAboutToBottom] = useState(false);
+  const [h1MarqueeSpeedMultiplier, setH1MarqueeSpeedMultiplier] = useState(h1MarqueeDefaultSpeed);
+  const pendingNavigationTimerRef = useRef(null);
+  const h1MarqueeSettleTimerRef = useRef(null);
+  const shouldScrollAboutToBottomRef = useRef(false);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
   const isApplicationFormObscuring = isApplicationFormOpen && isApplicationFormEntered;
   const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
@@ -489,12 +487,13 @@ export default function App({ Component, pageProps }) {
   };
 
   const scrollWindowTo = ({ top, behavior = "smooth", lock = behavior === "smooth" }) => {
-    const maxScrollTop = Math.max(
-      document.documentElement.scrollHeight,
-      document.body.scrollHeight,
-      document.documentElement.offsetHeight,
-      document.body.offsetHeight,
-    ) - window.innerHeight;
+    const maxScrollTop =
+      Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+        document.documentElement.offsetHeight,
+        document.body.offsetHeight,
+      ) - window.innerHeight;
     const targetScrollTop = Math.max(Math.min(top, Math.max(maxScrollTop, 0)), 0);
 
     if (lock) {
@@ -589,32 +588,32 @@ export default function App({ Component, pageProps }) {
     }, 450);
   };
 
-	  useEffect(() => {
-	    destinationsRef.current = destinations;
-	  }, [destinations]);
+  useEffect(() => {
+    destinationsRef.current = destinations;
+  }, [destinations]);
 
   useEffect(() => {
     return () => stopProgrammaticScrollLock();
   }, []);
 
-		  useEffect(() => {
-		    isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
-	  }, [isDestinationCityListHidden]);
+  useEffect(() => {
+    isDestinationCityListHiddenRef.current = isDestinationCityListHidden;
+  }, [isDestinationCityListHidden]);
 
-	  useEffect(() => {
-	    shouldScrollAboutToBottomRef.current = shouldScrollAboutToBottom;
-	  }, [shouldScrollAboutToBottom]);
+  useEffect(() => {
+    shouldScrollAboutToBottomRef.current = shouldScrollAboutToBottom;
+  }, [shouldScrollAboutToBottom]);
 
-	  useEffect(() => {
-	    const handleAboutBottomScrollRequest = () => {
-	      shouldScrollAboutToBottomRef.current = true;
-	      setShouldScrollAboutToBottom(true);
-	    };
+  useEffect(() => {
+    const handleAboutBottomScrollRequest = () => {
+      shouldScrollAboutToBottomRef.current = true;
+      setShouldScrollAboutToBottom(true);
+    };
 
-	    window.addEventListener(aboutBottomScrollRequestEventName, handleAboutBottomScrollRequest);
+    window.addEventListener(aboutBottomScrollRequestEventName, handleAboutBottomScrollRequest);
 
-	    return () => window.removeEventListener(aboutBottomScrollRequestEventName, handleAboutBottomScrollRequest);
-	  }, []);
+    return () => window.removeEventListener(aboutBottomScrollRequestEventName, handleAboutBottomScrollRequest);
+  }, []);
 
   const clearCityListRevealTimers = () => {
     cityListRevealTimersRef.current.forEach(({ id, type }) => {
@@ -959,7 +958,7 @@ export default function App({ Component, pageProps }) {
       }
 
       const anchor = event.target.closest?.("a[href]");
-	      if (!anchor || anchor.target || anchor.hasAttribute("download") || anchor.dataset.manualNavigation) return null;
+      if (!anchor || anchor.target || anchor.hasAttribute("download") || anchor.dataset.manualNavigation) return null;
 
       const nextUrl = new URL(anchor.href, window.location.href);
       if (nextUrl.origin !== window.location.origin) return null;
@@ -968,19 +967,19 @@ export default function App({ Component, pageProps }) {
       return `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
     };
 
-	    const handleDocumentClick = (event) => {
-	      const nextHref = getInternalNavigationHref(event);
-	      if (!nextHref) return;
+    const handleDocumentClick = (event) => {
+      const nextHref = getInternalNavigationHref(event);
+      if (!nextHref) return;
 
-	      event.preventDefault();
+      event.preventDefault();
 
-	      clearPendingNavigationTimer();
-	      clearH1MarqueeSettleTimer();
-	      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
-	      const nextPathname = new URL(nextHref, window.location.href).pathname;
-	      const shouldPreserveScroll =
-	        nextPathname === "/destinations" || (nextPathname === "/about" && shouldScrollAboutToBottomRef.current);
-	      const shouldScrollToTop = !shouldPreserveScroll && isCityListVisibleInViewport();
+      clearPendingNavigationTimer();
+      clearH1MarqueeSettleTimer();
+      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+      const nextPathname = new URL(nextHref, window.location.href).pathname;
+      const shouldPreserveScroll =
+        nextPathname === "/destinations" || (nextPathname === "/about" && shouldScrollAboutToBottomRef.current);
+      const shouldScrollToTop = !shouldPreserveScroll && isCityListVisibleInViewport();
 
       setIsContentContainerExiting(!shouldScrollToTop);
       setShouldRenderCityList(shouldScrollToTop);
@@ -1005,23 +1004,23 @@ export default function App({ Component, pageProps }) {
         if (shouldScrollToTop) {
           scrollToPageTop("auto");
         }
-	        router.push(nextHref, undefined, { scroll: !shouldPreserveScroll }).catch(() => {
-	          setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
-	        });
-	      });
-	    };
+        router.push(nextHref, undefined, { scroll: !shouldPreserveScroll }).catch(() => {
+          setH1MarqueeSpeedMultiplier(h1MarqueeDefaultSpeed);
+        });
+      });
+    };
 
     const handleRouteChangeStart = (nextHref) => {
       clearH1MarqueeSettleTimer();
       setIsApplicationFormEntered(false);
       setIsApplicationFormOpen(false);
-	      setIsPageTransitionSettled(false);
-	      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
-	      if (!pendingNavigationTimerRef.current) {
-	        const nextPathname = new URL(nextHref, window.location.href).pathname;
-	        const shouldPreserveScroll =
-	          nextPathname === "/destinations" || (nextPathname === "/about" && shouldScrollAboutToBottomRef.current);
-	        const shouldScrollToTop = !shouldPreserveScroll && isCityListVisibleInViewport();
+      setIsPageTransitionSettled(false);
+      setH1MarqueeSpeedMultiplier(h1MarqueeNavigationSpeed);
+      if (!pendingNavigationTimerRef.current) {
+        const nextPathname = new URL(nextHref, window.location.href).pathname;
+        const shouldPreserveScroll =
+          nextPathname === "/destinations" || (nextPathname === "/about" && shouldScrollAboutToBottomRef.current);
+        const shouldScrollToTop = !shouldPreserveScroll && isCityListVisibleInViewport();
 
         setIsContentContainerExiting(!shouldScrollToTop);
         setShouldRenderCityList(shouldScrollToTop);
@@ -1480,7 +1479,7 @@ export default function App({ Component, pageProps }) {
                       typo="h1"
                     />
                   ) : null}
-                  {page.marqueeText ? <Marquee text={page.marqueeText} typo="h4" /> : null}
+                  {page.marqueeText ? <Marquee text={page.marqueeText} className={styles.smallMarquee} /> : null}
                 </div>
               </div>
               <div
@@ -1526,12 +1525,14 @@ export default function App({ Component, pageProps }) {
                   exit="exit"
                   initial="initial"
                   key={router.asPath}
-	                  onAnimationComplete={(definition) => {
-	                    if (definition === "animate") {
-	                      setIsPageTransitionSettled(true);
-	                      window.dispatchEvent(new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }));
-	                    }
-	                  }}
+                  onAnimationComplete={(definition) => {
+                    if (definition === "animate") {
+                      setIsPageTransitionSettled(true);
+                      window.dispatchEvent(
+                        new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
+                      );
+                    }
+                  }}
                   transition={pageTransition}
                   variants={pageTransitionVariants}
                 >
