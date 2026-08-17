@@ -129,6 +129,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
 
   const handleContactClick = (event) => {
     event.preventDefault();
+    setIsMenuOpen(false);
     window.dispatchEvent(new CustomEvent(aboutBottomScrollRequestEventName));
 
     if (router.pathname === "/about") return;
