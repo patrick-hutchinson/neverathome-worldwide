@@ -270,6 +270,10 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
     );
   };
 
+  const handleChoiceHover = (choiceId) => {
+    setSelectedColorMap((currentColorMap) => getNextColorMap(currentColorMap, choiceId, textColorPalette));
+  };
+
   const handleTextareaInput = (event) => {
     resizeTextarea(event.currentTarget);
   };
@@ -367,6 +371,8 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
               <label
                 className={styles.choice}
                 key={destination._id}
+                onFocus={() => handleChoiceHover(destination._id)}
+                onMouseEnter={() => handleChoiceHover(destination._id)}
                 style={{ "--form-choice-selected-color": selectedColorMap[destination._id] }}
               >
                 <input
@@ -398,6 +404,8 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
                 <label
                   className={[styles.choice, isDisabled ? styles.choiceDisabled : ""].filter(Boolean).join(" ")}
                   key={destination._id}
+                  onFocus={() => handleChoiceHover(destination._id)}
+                  onMouseEnter={() => handleChoiceHover(destination._id)}
                   style={{ "--form-choice-selected-color": selectedColorMap[destination._id] }}
                 >
                   <input
@@ -430,6 +438,8 @@ const ApplicationForm = ({ destinations = [], page = {} }) => {
               <label
                 className={styles.choice}
                 key={month.value}
+                onFocus={() => handleChoiceHover(month.value)}
+                onMouseEnter={() => handleChoiceHover(month.value)}
                 style={{ "--form-choice-selected-color": selectedColorMap[month.value] }}
               >
                 <input

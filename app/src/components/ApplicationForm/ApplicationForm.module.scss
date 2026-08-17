@@ -189,6 +189,11 @@
   color: var(--form-choice-selected-color, var(--accent));
 }
 
+.choice:not(.choiceDisabled):hover,
+.choice:not(.choiceDisabled):focus-within {
+  color: var(--form-choice-selected-color, var(--accent));
+}
+
 .destinationGrid .fieldset:nth-child(2) .choice:has(input:checked) {
   color: var(--form-choice-selected-color, var(--accent));
 }
