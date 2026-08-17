@@ -9,6 +9,7 @@ const LenisContext = createContext(null);
 const SCROLL_VELOCITY_VARIABLE = "--lenis-scroll-velocity";
 const SCROLL_VELOCITY_NORMALIZER = 35;
 const SCROLL_VELOCITY_IDLE_DELAY = 120;
+const PROGRAMMATIC_SCROLL_LOCK_EVENT = "neverathome:programmatic-scroll-lock";
 
 export const useLenisContext = () => useContext(LenisContext);
 
@@ -16,6 +17,7 @@ function LenisContextProvider({ children }) {
   const lenis = useLenis();
   const router = useRouter();
   const resetTimers = useRef([]);
+  const isProgrammaticScrollLockedRef = useRef(false);
 
   const clearResetTimers = useCallback(() => {
     resetTimers.current.forEach(({ id, type }) => {
@@ -53,9 +55,38 @@ function LenisContextProvider({ children }) {
 
     queueFrame(() => {
       scrollToTop();
-      lenis?.start?.();
+      if (!isProgrammaticScrollLockedRef.current) {
+        lenis?.start?.();
+      }
     });
   }, [clearResetTimers, lenis, scrollToTop]);
+
+  useEffect(() => {
+    const handleProgrammaticScrollLock = (event) => {
+      const isLocked = Boolean(event.detail?.isLocked);
+      isProgrammaticScrollLockedRef.current = isLocked;
+
+      if (isLocked) {
+        const targetScrollTop = Number(event.detail?.targetScrollTop);
+
+        if (Number.isFinite(targetScrollTop)) {
+          lenis?.scrollTo?.(targetScrollTop, {
+            force: true,
+            lock: true,
+          });
+        } else {
+          lenis?.stop?.();
+        }
+        return;
+      }
+
+      lenis?.start?.();
+    };
+
+    window.addEventListener(PROGRAMMATIC_SCROLL_LOCK_EVENT, handleProgrammaticScrollLock);
+
+    return () => window.removeEventListener(PROGRAMMATIC_SCROLL_LOCK_EVENT, handleProgrammaticScrollLock);
+  }, [lenis]);
 
   useEffect(() => {
     if ("scrollRestoration" in window.history) {

@@ -80,6 +80,7 @@ const contentContainerId = "page-content";
 const showHeaderEventName = "neverathome:show-header";
 const pageTransitionCompleteEventName = "neverathome:page-transition-complete";
 const aboutBottomScrollRequestEventName = "neverathome:about-bottom-scroll-request";
+const programmaticScrollLockEventName = "neverathome:programmatic-scroll-lock";
 const desktopGlobeSize = 300;
 const desktopGlobeBasePosition = { x: 200, y: 200 };
 const desktopGlobeViewportPadding = 24;
@@ -423,6 +424,11 @@ export default function App({ Component, pageProps }) {
 
   const lockUserScrollUntil = (targetScrollTop, maxDuration = 1800) => {
     stopProgrammaticScrollLock();
+    window.dispatchEvent(
+      new CustomEvent(programmaticScrollLockEventName, {
+        detail: { isLocked: true, targetScrollTop },
+      }),
+    );
 
     const preventUserScroll = (event) => {
       event.preventDefault();
@@ -441,6 +447,7 @@ export default function App({ Component, pageProps }) {
     const startedAt = performance.now();
 
     const cleanup = () => {
+      window.dispatchEvent(new CustomEvent(programmaticScrollLockEventName, { detail: { isLocked: false } }));
       window.removeEventListener("wheel", preventUserScroll, { capture: true });
       window.removeEventListener("touchmove", preventUserScroll, { capture: true });
       window.removeEventListener("keydown", preventUserScrollKey, { capture: true });
@@ -496,7 +503,9 @@ export default function App({ Component, pageProps }) {
       stopProgrammaticScrollLock();
     }
 
-    window.scrollTo({ top: targetScrollTop, behavior });
+    if (!lock) {
+      window.scrollTo({ top: targetScrollTop, behavior });
+    }
 
     return targetScrollTop;
   };

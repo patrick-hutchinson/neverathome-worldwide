@@ -198,7 +198,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
             href={infoLink.href}
             onClick={preventSameRouteNavigation(infoLink.href)}
           >
-            {infoLink.label}
+            Open Call
           </Link>
           <CountdownText className={styles.countdown} deadline={infoLink.deadline} />
         </span>
@@ -222,7 +222,12 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
       {isMobile ? <MobileNav /> : <DesktopNav />}
       <AnimatePresence>
         {isMobile && isMenuOpen ? (
-          <Menu currentPhaseLabel={currentPhaseLabel} navLinks={navLinks} email={site.email} onContactClick={handleContactClick} />
+          <Menu
+            currentPhaseLabel={currentPhaseLabel}
+            navLinks={navLinks}
+            email={site.email}
+            onContactClick={handleContactClick}
+          />
         ) : null}
       </AnimatePresence>
     </header>
