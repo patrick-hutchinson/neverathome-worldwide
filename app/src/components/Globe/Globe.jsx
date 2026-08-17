@@ -578,6 +578,12 @@ export default function Globe({
         requestRender();
       };
 
+      const handlePointerLeave = () => {
+        if (activePointers.size > 0) return;
+
+        resetGestureScale();
+      };
+
       const handleWheel = (event) => {
         if (!isDesktopGestureScaleEnabled()) return;
 
@@ -611,7 +617,7 @@ export default function Globe({
       globeElement.addEventListener("pointermove", handlePointerMove);
       globeElement.addEventListener("pointerup", handlePointerUp);
       globeElement.addEventListener("pointercancel", handlePointerUp);
-      globeElement.addEventListener("pointerleave", resetGestureScale);
+      globeElement.addEventListener("pointerleave", handlePointerLeave);
       globeElement.addEventListener("wheel", handleWheel, { passive: false });
       globeElement.addEventListener("gesturestart", handleGestureStart);
       globeElement.addEventListener("gesturechange", handleGestureChange);
@@ -622,7 +628,7 @@ export default function Globe({
         globeElement.removeEventListener("pointermove", handlePointerMove);
         globeElement.removeEventListener("pointerup", handlePointerUp);
         globeElement.removeEventListener("pointercancel", handlePointerUp);
-        globeElement.removeEventListener("pointerleave", resetGestureScale);
+        globeElement.removeEventListener("pointerleave", handlePointerLeave);
         globeElement.removeEventListener("wheel", handleWheel);
         globeElement.removeEventListener("gesturestart", handleGestureStart);
         globeElement.removeEventListener("gesturechange", handleGestureChange);
