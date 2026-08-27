@@ -62,15 +62,25 @@ const getInternalHref = (internalLink) => {
 const PortableTextLink = ({ children, value }) => {
   if (!value) return children;
 
+  const stopParentClick = (event) => {
+    event.stopPropagation();
+  };
+
   if (value.type === "email") {
     const href = getMailtoHref(value.email);
 
-    return href ? <a href={href}>{children}</a> : children;
+    return href ? (
+      <a href={href} onClick={stopParentClick}>
+        {children}
+      </a>
+    ) : (
+      children
+    );
   }
 
   if (value.type === "external") {
     return value.url ? (
-      <a href={value.url} rel="noreferrer" target="_blank">
+      <a href={value.url} onClick={stopParentClick} rel="noreferrer" target="_blank">
         {children}
       </a>
     ) : (
@@ -81,7 +91,13 @@ const PortableTextLink = ({ children, value }) => {
   if (value.type === "internal") {
     const href = getInternalHref(value.internalLink);
 
-    return href ? <Link href={href}>{children}</Link> : children;
+    return href ? (
+      <Link href={href} onClick={stopParentClick}>
+        {children}
+      </Link>
+    ) : (
+      children
+    );
   }
 
   return children;

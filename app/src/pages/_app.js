@@ -473,8 +473,7 @@ export default function App({ Component, pageProps }) {
     const checkScrollLanding = () => {
       const currentScrollY = window.scrollY;
       const isAtTarget = Math.abs(currentScrollY - targetScrollTop) <= 2;
-      const hasSettled =
-        hasMoved && performance.now() - startedAt > 150 && Math.abs(currentScrollY - lastScrollY) < 0.25;
+      const hasSettled = hasMoved && performance.now() - startedAt > 150 && Math.abs(currentScrollY - lastScrollY) < 0.25;
 
       hasMoved = hasMoved || Math.abs(currentScrollY - startScrollY) > 2;
       stableFrames = hasSettled ? stableFrames + 1 : 0;

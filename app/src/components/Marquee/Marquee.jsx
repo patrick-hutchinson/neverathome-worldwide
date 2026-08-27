@@ -162,7 +162,7 @@ const Marquee = ({
 
   return (
     <div
-      className={`${styles.carousel_outer} ${className}`}
+      className={`${styles.carousel_outer} ${className} ${typo === "h1" ? styles.h1 : ""}`}
       ref={outerRef}
       style={{
         "--marquee-distance": `${itemWidth}px`,

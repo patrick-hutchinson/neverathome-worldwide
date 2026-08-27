@@ -60,6 +60,10 @@
   white-space: nowrap;
 }
 
+.carousel_outer.h1 .slide {
+  padding-left: calc(var(--fontSize-1) / 12);
+}
+
 @keyframes marquee-scroll {
   from {
     transform: translate3d(0, 0, 0);
