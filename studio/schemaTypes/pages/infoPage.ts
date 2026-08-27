@@ -24,6 +24,33 @@ const faqEntry = {
   },
 }
 
+const faqSection = {
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Titel',
+      type: 'string',
+    }),
+    defineField({
+      name: 'entries',
+      title: 'Fragen und Antworten',
+      type: 'array',
+      of: [faqEntry],
+    }),
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      entries: 'entries',
+    },
+    prepare: ({title, entries}: {title?: string; entries?: unknown[]}) => ({
+      title: title || 'FAQ Abschnitt',
+      subtitle: entries?.length ? `${entries.length} Einträge` : undefined,
+    }),
+  },
+}
+
 export const infoPage = defineType({
   name: 'infoPage',
   title: 'Info Seite',
@@ -41,7 +68,7 @@ export const infoPage = defineType({
       name: 'faq',
       title: 'FAQ',
       type: 'array',
-      of: [faqEntry],
+      of: [faqSection],
     }),
   ],
   preview: {

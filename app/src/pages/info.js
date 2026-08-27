@@ -7,6 +7,18 @@ import Accordion from "@/components/Accordion/Accordion";
 
 const InfoPage = ({ destinations = [], infoPage, page }) => {
   if (!infoPage || infoPage.length === 0) return null;
+
+  const faq = infoPage.faq || [];
+  const faqSections = faq.some((section) => Array.isArray(section.entries))
+    ? faq
+    : [
+        {
+          _key: "faq",
+          title: "FAQ",
+          entries: faq,
+        },
+      ];
+
   return (
     <div className={`page ${styles.page}`}>
       <main className="main">
@@ -15,7 +27,14 @@ const InfoPage = ({ destinations = [], infoPage, page }) => {
         </LargeSection>
 
         <LargeSection>
-          <Accordion array={infoPage.faq} />
+          <div className={styles.faqSections}>
+            {faqSections.map((section, index) => (
+              <section className={styles.faqSection} key={section._key || section.title || index}>
+                <h4>{section.title}</h4>
+                <Accordion array={section.entries} />
+              </section>
+            ))}
+          </div>
         </LargeSection>
       </main>
     </div>

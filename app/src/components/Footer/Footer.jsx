@@ -7,17 +7,6 @@ import RenderSVG from "@/components/RenderSVG/RenderSVG";
 import styles from "./Footer.module.css";
 import { DeviceContext } from "@/context/DeviceContext";
 
-const getDownloadUrl = (file) => {
-  const url = file?.asset?.url;
-  if (!url) return null;
-
-  const filename = file.asset.originalFilename;
-  if (!filename) return url;
-
-  const separator = url.includes("?") ? "&" : "?";
-  return `${url}${separator}dl=${encodeURIComponent(filename)}`;
-};
-
 const FooterButton = ({ ariaLabel, children, className = "", download = null, href = null, onClick }) => {
   const buttonClassName = [styles.footerButton, className].filter(Boolean).join(" ");
 
@@ -86,7 +75,6 @@ const LogoShuffle = ({ logos = [] }) => {
 const Footer = ({ onApplyClick, onImprintClick, page = {}, site = {} }) => {
   const { isMobile } = useContext(DeviceContext);
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
-  const informationPDFUrl = getDownloadUrl(page.informationPDF);
 
   return (
     <footer className={styles.footer}>
@@ -95,13 +83,6 @@ const Footer = ({ onApplyClick, onImprintClick, page = {}, site = {} }) => {
       <div className={styles.buttonContainer} typo="h5">
         <FooterButton className={styles.applicationButton} ariaLabel="Apply now" onClick={onApplyClick}>
           <RenderSVG className={styles.buttonLabel} text={isMobile ? "APPLY" : "APPLY NOW"} />
-        </FooterButton>
-        <FooterButton
-          ariaLabel="Any questions"
-          download={page.informationPDF?.asset?.originalFilename || true}
-          href={informationPDFUrl}
-        >
-          <RenderSVG className={styles.buttonLabel} text={isMobile ? "INFO.PDF" : "INFO.PDF"} />
         </FooterButton>
         <FooterButton ariaLabel="Any questions" href={site.email ? `mailto:${site.email}` : null}>
           <RenderSVG className={styles.buttonLabel} text={isMobile ? "ASK" : "ANY QUESTIONS?"} />
