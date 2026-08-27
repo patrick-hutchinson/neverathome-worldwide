@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import styles from "./Accordion.module.css";
 import Text from "../Text/Text";
 import RenderSVG from "../RenderSVG/RenderSVG";
+import { DeviceContext } from "@/context/DeviceContext";
 
 const bodyTransition = {
   duration: 0.45,
@@ -11,6 +12,7 @@ const bodyTransition = {
 };
 
 const AccordionEntry = ({ entry }) => {
+  const { isMobile } = useContext(DeviceContext);
   const [isOpen, setIsOpen] = useState(false);
   const toggleEntry = () => setIsOpen((currentState) => !currentState);
 
@@ -54,7 +56,7 @@ const AccordionEntry = ({ entry }) => {
                 initial={{ opacity: 0 }}
                 transition={{ duration: 0.25, delay: bodyTransition.duration }}
               >
-                <Text text={entry.answer} typo="h5" />
+                <Text text={entry.answer} typo={isMobile ? "h4" : "h5"} />
               </motion.div>
             </motion.div>
           ) : null}

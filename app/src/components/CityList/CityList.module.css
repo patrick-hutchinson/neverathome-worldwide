@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
+  align-items: flex-start;
   padding: 0;
   list-style: none;
   width: 100%;
@@ -9,6 +10,10 @@
 }
 
 .cityEntry {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+
   -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */

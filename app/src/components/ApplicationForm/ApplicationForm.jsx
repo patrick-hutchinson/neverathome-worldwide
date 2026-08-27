@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import ApplicationSubmission, { declarations } from "@/components/ApplicationSubmission/ApplicationSubmission";
+import { DeviceContext } from "@/context/DeviceContext";
 import styles from "./ApplicationForm.module.scss";
 
 const personalFields = [
@@ -142,7 +143,8 @@ const DestinationScrollList = ({ children }) => {
   );
 };
 
-const ApplicationForm = ({ destinations = [], onDirtyChange, page = {} }) => {
+const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, page = {}, site = {} }) => {
+  const { isMobile } = useContext(DeviceContext);
   const textColorPalette = getTextColorPalette(page.textColors);
   const formRef = useRef(null);
   const fileInputRefs = useRef({});
@@ -350,7 +352,9 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, page = {} }) => {
               <input
                 autoComplete={field.name}
                 name={field.name}
-                placeholder={field.label}
+                placeholder={
+                  isMobile && field.optional && !field.hideOptionalNote ? `${field.label} (Optional)` : field.label
+                }
                 required={!field.optional}
                 type={field.type || "text"}
               />
@@ -404,8 +408,8 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, page = {} }) => {
 
         <fieldset className={styles.fieldset} typo="h4 compensate">
           <legend className={styles.legendRow} typo="h4">
-            <span>Alternative Destination </span>
-            <span typo="h6" style={{ color: "var(--form-muted-color)" }}>
+            <span>Alternative Destination{isMobile ? " (Optional)" : ""}</span>
+            <span className={styles.mobileHiddenNote} typo="h6" style={{ color: "var(--form-muted-color)" }}>
               Optional
             </span>
           </legend>
@@ -582,7 +586,9 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, page = {} }) => {
 
       <ApplicationSubmission
         hasRequiredError={requiredErrors.declarations}
+        onImprintClick={onImprintClick}
         page={page}
+        site={site}
         textColorPalette={textColorPalette}
       />
     </form>

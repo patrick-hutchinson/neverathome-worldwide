@@ -58,6 +58,10 @@
   color: #ff0000;
 }
 
+.mobileHiddenNote {
+  color: var(--form-muted-color);
+}
+
 .closeButton {
   all: unset;
   color: var(--form-muted-color);
@@ -97,7 +101,7 @@
 }
 
 .inputField input {
-  height: var(--spacing-4);
+  height: var(--spacing-5);
 }
 
 .inputField input::placeholder {
@@ -218,16 +222,16 @@
   text-decoration: none;
 }
 
-.choiceDisabled span::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 55%;
-  height: 3px;
-  background: currentColor;
-  pointer-events: none;
-}
+// .choiceDisabled span::after {
+//   content: "";
+//   position: absolute;
+//   left: 0;
+//   right: 0;
+//   top: 55%;
+//   height: 3px;
+//   background: currentColor;
+//   pointer-events: none;
+// }
 
 .textareaField {
   display: block;
@@ -347,9 +351,21 @@
     line-height: var(--lineHeight-4);
     letter-spacing: var(--letterSpacing-4);
   }
+
+  .inputField input {
+    height: var(--spacing-4);
+  }
 }
 
 @media screen and (max-width: 768px) {
+  .fieldNote:not(.requiredNote) {
+    display: none;
+  }
+
+  .mobileHiddenNote {
+    display: none;
+  }
+
   .note {
     display: block;
   }

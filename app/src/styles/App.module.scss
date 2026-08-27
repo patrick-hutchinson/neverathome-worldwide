@@ -79,7 +79,7 @@
 
 .applicationFormLayer {
   --content-grid-gap: calc(var(--spacing-6) / 2);
-  --application-form-header-height: calc(var(--margin) + var(--fontSize-4) + var(--spacing-6));
+  --application-form-header-height: calc(var(--margin) + 3px + (2 * var(--fontSize-3)) + var(--margin));
   --background: #000;
   --foreground: #fff;
 
@@ -98,21 +98,16 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: var(--margin);
+  padding-top: calc(var(--margin) + 3px);
   background: #fff;
   color: #000;
-}
-
-.applicationFormHeaderLeft {
-  display: flex;
-  align-items: baseline;
-  gap: var(--spacing-5);
 }
 
 .applicationFormHeaderPhase {
   all: unset;
   display: flex;
-  align-items: baseline;
-  gap: 5px;
+  flex-direction: column;
+  align-items: flex-start;
   cursor: pointer;
   border: 0;
 }
@@ -182,6 +177,17 @@
 
   .applicationFormLayer {
     --content-grid-gap: calc(var(--spacing-6) / 2);
+    --application-form-header-height: calc((2 * var(--margin)) + var(--lineHeight-4));
+  }
+
+  .applicationFormHeader {
+    padding-top: var(--margin);
+  }
+
+  .applicationFormHeaderPhase {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
   }
 
   .smallMarquee {

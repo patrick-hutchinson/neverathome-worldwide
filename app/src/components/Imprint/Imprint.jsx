@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import Text from "@/components/Text/Text";
 
 import styles from "./Imprint.module.scss";
+import { useContext } from "react";
+import { DeviceContext } from "@/context/DeviceContext";
 
 const getDownloadUrl = (file) => {
   const url = file?.asset?.url;
@@ -18,6 +20,8 @@ const getDownloadUrl = (file) => {
 const Imprint = ({ imprint = {}, isStandalone = false, onClose }) => {
   const router = useRouter();
   const privacyPolicyDownloadUrl = getDownloadUrl(imprint.privacyPolicyFile);
+
+  const { isMobile } = useContext(DeviceContext);
 
   const handleClose = () => {
     if (onClose) {
@@ -35,7 +39,7 @@ const Imprint = ({ imprint = {}, isStandalone = false, onClose }) => {
 
   return (
     <main className={[styles.imprint, isStandalone ? styles.standalone : ""].filter(Boolean).join(" ")}>
-      <header className={styles.header} typo="h4">
+      <header className={styles.header} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
         <div>Legal Notice, Privacy Policy</div>
         <button className={styles.closeButton} onClick={handleClose} type="button">
           Close

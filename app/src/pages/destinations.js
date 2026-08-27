@@ -5,10 +5,13 @@ import styles from "@/styles/Destinations.module.scss";
 import Media from "@/components/Media/Media";
 import { LargeSection } from "@/components/Sections/Sections";
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
+import { useContext } from "react";
+import { DeviceContext } from "@/context/DeviceContext";
 
 const abbreviationUndershootPattern = /[JOUSC]/i;
 
 const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
+  const { isMobile } = useContext(DeviceContext);
   const institutionMedium = selectedDestination?.institutionMedium?.medium;
   const abbreviation = selectedDestination?.abbreviation || "";
   const hasAbbreviationUndershoot = abbreviationUndershootPattern.test(abbreviation);
@@ -21,7 +24,7 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
             {selectedDestination ? (
               <>
                 <div className={styles.institutionContainer} typo="h4">
-                  <div className={styles.institutionName} typo="h4 compensate">
+                  <div className={styles.institutionName} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
                     {selectedDestination.institution}
                   </div>
                   <div
@@ -29,7 +32,9 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                       .filter(Boolean)
                       .join(" ")}
                   >
-                    {institutionMedium ? <Media medium={institutionMedium} className={styles.institutionMedium} /> : null}
+                    {institutionMedium ? (
+                      <Media medium={institutionMedium} className={styles.institutionMedium} objectFit="contain" />
+                    ) : null}
 
                     <div typo="h1" className={styles.cityAbbreviation}>
                       <RenderSVG

@@ -26,7 +26,7 @@ const Menu = ({
       <nav className={styles.nav} typo="h2 compensate">
         <div className={styles.topSection}>
           {currentPhaseLabel ? <Link href="/">{currentPhaseLabel}</Link> : null}
-          <CountdownText className={styles.countdown} deadline={infoLink?.deadline} hideSeconds />
+          {/* <CountdownText className={styles.countdown} deadline={infoLink?.deadline} hideSeconds /> */}
         </div>
 
         <div className={styles.bottomSection}>

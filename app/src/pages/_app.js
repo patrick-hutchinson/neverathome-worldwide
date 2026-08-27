@@ -3,14 +3,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ReactLenis } from "lenis/react";
 
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import CityList from "@/components/CityList/CityList";
 import ContentContainer from "@/components/ContentContainer/ContentContainer";
 import Footer from "@/components/Footer/Footer";
 import Globe from "@/components/Globe/Globe";
 import ApplicationForm from "@/components/ApplicationForm/ApplicationForm";
-import { DeviceProvider } from "@/context/DeviceContext";
+import { DeviceContext, DeviceProvider } from "@/context/DeviceContext";
 import LenisProvider, { useLenisContext } from "@/context/LenisContext";
 import Marquee from "@/components/Marquee/Marquee";
 import { ViewportProvider } from "@/context/ViewportContext";
@@ -251,10 +251,13 @@ function ApplicationFormOverlay({
   onClose,
   onDirtyChange,
   onHomeClick,
+  onImprintClick,
   onOpenComplete,
   page = {},
   pageDeadlines = {},
+  site = {},
 }) {
+  const { isMobile } = useContext(DeviceContext);
   const lenis = useLenisContext();
   const infoDeadline = pageDeadlines.infoPage;
 
@@ -288,21 +291,16 @@ function ApplicationFormOverlay({
             open: { y: 0 },
           }}
         >
-          <div className={styles.applicationFormHeader} typo="h4 compensate">
-            <div className={styles.applicationFormHeaderLeft}>
-              {currentPhaseLabel ? (
-                <button className={styles.applicationFormHeaderPhase} onClick={onHomeClick} type="button">
-                  <span>{currentPhaseLabel}</span>
-                  <CountdownSlot
-                    className={styles.applicationFormHeaderCountdown}
-                    deadline={infoDeadline}
-                    ghostClassName={styles.applicationFormHeaderCountdownGhost}
-                    slotClassName={styles.applicationFormHeaderCountdownSlot}
-                  />
-                </button>
-              ) : null}
-              <span>Application Form</span>
-            </div>
+          <div className={styles.applicationFormHeader} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
+            <button className={styles.applicationFormHeaderPhase} onClick={onHomeClick} type="button">
+              <span>Submission Form</span>
+              <CountdownSlot
+                className={styles.applicationFormHeaderCountdown}
+                deadline={infoDeadline}
+                ghostClassName={styles.applicationFormHeaderCountdownGhost}
+                slotClassName={styles.applicationFormHeaderCountdownSlot}
+              />
+            </button>
             <button className={styles.applicationFormHeaderClose} onClick={onClose} type="button">
               Close
             </button>
@@ -312,7 +310,13 @@ function ApplicationFormOverlay({
             options={{ allowNestedScroll: true, lerp: 0.12, syncTouch: true }}
             root={false}
           >
-            <ApplicationForm destinations={destinations} onDirtyChange={onDirtyChange} page={page} />
+            <ApplicationForm
+              destinations={destinations}
+              onDirtyChange={onDirtyChange}
+              onImprintClick={onImprintClick}
+              page={page}
+              site={site}
+            />
             <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
           </ReactLenis>
         </motion.div>
@@ -1615,9 +1619,14 @@ export default function App({ Component, pageProps }) {
                 onClose={closeApplicationForm}
                 onDirtyChange={setIsApplicationFormDirty}
                 onHomeClick={handleApplicationFormHomeClick}
+                onImprintClick={() => {
+                  closeApplicationForm();
+                  openImprint();
+                }}
                 onOpenComplete={() => setIsApplicationFormEntered(true)}
                 page={page}
                 pageDeadlines={pageDeadlines}
+                site={site}
               />
             </LenisProvider>
           </DeviceProvider>

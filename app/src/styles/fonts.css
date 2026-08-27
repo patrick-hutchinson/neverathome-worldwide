@@ -6,26 +6,26 @@
 
   --fontSize-2: 3.4rem;
   --lineHeight-2: 1;
-  --letterSpacing-2: -0.04em;
+  --letterSpacing-2: -1px;
   ----paragraphSpacing-2: 0rem;
 
   --fontSize-3: 1.9rem;
   --lineHeight-3: 1;
-  --letterSpacing-3: -0.02em;
+  --letterSpacing-3: -0.025em;
   ----paragraphSpacing-3: 0rem;
 
   --fontSize-4: 1.4rem;
-  --lineHeight-4: 1;
-  --letterSpacing-4: -0.02em;
+  --lineHeight-4: 1.6rem;
+  --letterSpacing-4: -0.04px;
   --paragraphSpacing-4: 0rem;
 
   --fontSize-5: 1.2rem;
-  --lineHeight-5: 1.2rem;
+  --lineHeight-5: 1.3rem;
   --letterSpacing-5: 0rem;
   --paragraphSpacing-5: 1rem;
 
-  --fontSize-6: 1.2rem;
-  --lineHeight-6: 1.2rem;
+  --fontSize-6: 1rem;
+  --lineHeight-6: 1rem;
   --letterSpacing-6: 0rem;
   --paragraphSpacing-6: 0rem;
 }
@@ -167,7 +167,7 @@ h6 p:not(:last-of-type),
     --letterSpacing-1: clamp(-2rem, calc(-1.2774vw - 0.1605rem), -1.1429rem);
     --paragraphSpacing-1: 0rem;
 
-    --fontSize-2: clamp(5.5rem, calc(0.7299vw + 5.2386rem), 6.5rem);
+    --fontSize-2: clamp(5rem, calc(1.0948vw + 4.1571rem), 6.5rem);
     --lineHeight-2: 1;
     --letterSpacing-2: -0.04em;
     ----paragraphSpacing-2: 0rem;

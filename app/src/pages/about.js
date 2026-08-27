@@ -5,8 +5,11 @@ import styles from "@/styles/About.module.scss";
 
 import { LargeSection, MediumSection } from "@/components/Sections/Sections";
 import Media from "@/components/Media/Media";
+import { useContext } from "react";
+import { DeviceContext } from "@/context/DeviceContext";
 
 const AboutPage = ({ aboutPage }) => {
+  const { isMobile } = useContext(DeviceContext);
   return (
     <div className={`page ${styles.page}`}>
       <main className="main">
@@ -15,7 +18,11 @@ const AboutPage = ({ aboutPage }) => {
         </MediumSection>
         <LargeSection>
           <div className={styles.aboutContainer}>
-            <Text className={styles.aboutNeverAtHome} text={aboutPage.aboutNeverAtHome} typo="h5 compensate" />
+            <Text
+              className={styles.aboutNeverAtHome}
+              text={aboutPage.aboutNeverAtHome}
+              typo={isMobile ? "h4 compensate" : "h5 compensate"}
+            />
             <Text
               className={styles.aboutAustriaKulturInternational}
               text={aboutPage.aboutAustriaKulturInternational}

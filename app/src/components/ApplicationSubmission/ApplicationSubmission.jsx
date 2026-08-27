@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
 import Text from "@/components/Text/Text";
@@ -20,6 +21,40 @@ const LogoLink = ({ logo }) => (
   </a>
 );
 
+const LogoShuffle = ({ logos = [] }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (logos.length <= 1) return undefined;
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((index) => (index + 1) % logos.length);
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [logos.length]);
+
+  const activeLogo = logos[activeIndex];
+  if (!activeLogo) return null;
+
+  return (
+    <div className={styles.logoShuffle}>
+      <AnimatePresence initial={false} mode="wait">
+        <motion.div
+          animate={{ opacity: 1 }}
+          className={styles.logoShuffleItem}
+          exit={{ opacity: 0 }}
+          initial={{ opacity: 0 }}
+          key={activeLogo.asset.url}
+          transition={{ duration: 0.35, ease: "easeInOut" }}
+        >
+          <LogoLink logo={activeLogo} />
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+};
+
 function getRandomTextColor(textColorPalette = []) {
   if (textColorPalette.length === 0) return null;
 
@@ -38,7 +73,13 @@ function getNextColorMap(currentColorMap, value, textColorPalette) {
   };
 }
 
-const ApplicationSubmission = ({ hasRequiredError = false, page = {}, textColorPalette = [] }) => {
+const ApplicationSubmission = ({
+  hasRequiredError = false,
+  onImprintClick,
+  page = {},
+  site = {},
+  textColorPalette = [],
+}) => {
   const [acceptedDeclarations, setAcceptedDeclarations] = useState([]);
   const [selectedColorMap, setSelectedColorMap] = useState({});
   const logos = (page.mediaPartner || []).filter((logo) => logo?.asset?.url);
@@ -92,8 +133,26 @@ const ApplicationSubmission = ({ hasRequiredError = false, page = {}, textColorP
           <RenderSVG className={styles.submitLabel} text="SUBMIT NOW" />
         </button>
 
+        <LogoShuffle logos={logos} />
+
+        {site.instagram ? (
+          <a className={styles.instagramLink} href={site.instagram} target="_blank" rel="noreferrer" typo="h6">
+            Instagram
+          </a>
+        ) : null}
+
+        <nav className={styles.legalLinks} typo="h6">
+          <button onClick={onImprintClick} type="button">
+            Imprint
+          </button>
+          {",\u00a0"}
+          <button onClick={onImprintClick} type="button">
+            Privacy Policy
+          </button>
+        </nav>
+
         {logos.length > 0 ? (
-          <div className={styles.logos}>
+          <div className={styles.desktopLogos}>
             {logos.map((logo) => (
               <LogoLink key={logo.asset.url} logo={logo} />
             ))}

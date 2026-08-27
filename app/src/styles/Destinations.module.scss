@@ -10,15 +10,12 @@
   }
 
   .destinationGrid {
-    // Here
-    min-height: calc(var(--content-height) - 117px);
-
     position: relative;
     display: grid;
     grid-template-columns: repeat(24, minmax(0, 1fr));
     grid-template-rows: auto auto auto 1fr;
     column-gap: var(--content-grid-gap);
-    row-gap: var(--spacing-5);
+    // row-gap: var(--spacing-5);
 
     .institutionContainer {
       display: contents;
@@ -26,6 +23,7 @@
       .institutionName {
         grid-column: 1 / 25;
         grid-row: 1;
+        margin-bottom: var(--spacing-6);
       }
 
       .institutionInfo {
@@ -33,9 +31,18 @@
 
         .institutionMedium {
           grid-row: 2;
-          grid-column: 1 / 25;
+          grid-column: 1 / 17;
           align-self: start;
           height: auto;
+          margin-bottom: var(--spacing-3);
+
+          max-height: 50vh;
+
+          img {
+            object-fit: contain !important;
+            max-height: 50vh;
+            object-position: left center;
+          }
         }
 
         .cityAbbreviation {
@@ -76,8 +83,9 @@
       column-gap: var(--content-grid-gap);
 
       .destinationDescription {
-        grid-column: 1 / 25;
+        grid-column: 5 / 25;
         grid-row: 3;
+        margin-bottom: var(--spacing-5);
       }
 
       .trailText {
@@ -134,6 +142,14 @@
             grid-column: 1 / 6;
             align-self: start;
             height: auto;
+            max-height: 350px;
+            margin-bottom: 0;
+
+            img {
+              object-fit: contain !important;
+              max-height: 350px;
+              object-position: left center;
+            }
           }
 
           .institutionText {
@@ -190,7 +206,7 @@
         }
 
         .trailText {
-          grid-column: 13 / 18;
+          grid-column: 13 / 19;
           grid-row: 2;
           align-self: end;
         }

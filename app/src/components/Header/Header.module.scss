@@ -3,6 +3,7 @@
   inset: 0 0 auto;
   z-index: 1000;
   padding: var(--margin);
+  padding-top: calc(var(--margin) + 3px);
   pointer-events: none;
   transform: translateY(0);
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -85,14 +86,13 @@
     }
 
     .menuButton {
+      --burger-line-gap: 7px;
+
       position: relative;
       z-index: 2;
       width: 22px;
-      height: 22px;
-      display: inline-flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: 6px;
+      height: calc(var(--burger-line-gap) + 1px);
+      display: block;
       padding: 0;
       border: 0;
       background: transparent;
@@ -101,10 +101,19 @@
       cursor: pointer;
 
       span {
+        position: absolute;
+        left: 0;
+        top: 0;
         width: 100%;
         height: 1px;
         display: block;
         background: currentColor;
+        transform-origin: left center;
+        will-change: transform;
+      }
+
+      span:last-child {
+        top: var(--burger-line-gap);
       }
     }
 
@@ -129,6 +138,8 @@
 
 @media screen and (min-width: 769px) {
   .header {
+    padding-top: var(--margin);
+
     .nav {
       .navItem {
         flex-direction: row;

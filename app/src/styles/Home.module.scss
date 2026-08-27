@@ -28,7 +28,7 @@
   }
 
   h4 {
-    margin: var(--spacing-6) 0 var(--spacing-6-5) 0;
+    margin: var(--spacing-5) 0 var(--spacing-6-5) 0;
   }
 
   &:first-child h4 {
@@ -76,7 +76,14 @@
     }
 
     .quoteAttribution {
+      grid-row: 1;
       grid-column: 21 / 25;
+    }
+  }
+
+  .schedule {
+    h4 {
+      margin: var(--spacing-6) 0 var(--spacing-6-5) 0;
     }
   }
 }

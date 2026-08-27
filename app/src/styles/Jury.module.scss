@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
   column-gap: var(--content-grid-gap);
-  row-gap: var(--spacing-5);
+  row-gap: var(--spacing-3);
 
   .juryMemberContainer {
     grid-column: 1 / 25;
@@ -11,7 +11,7 @@
     .divider {
       color: #000;
       border-style: solid;
-      margin-bottom: var(--spacing-7);
+      margin-bottom: var(--spacing-6);
       border: 0;
       border-top: 1px solid black;
     }

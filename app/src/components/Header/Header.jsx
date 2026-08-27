@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { CountdownSlot, CountdownText } from "@/components/Countdown/Countdown";
 import { getCurrentPhaseLabel } from "@/lib/phase";
@@ -229,8 +229,14 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
           aria-expanded={isMenuOpen}
           onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
         >
-          <span />
-          <span />
+          <motion.span
+            animate={{ rotate: isMenuOpen ? 18.3 : 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          />
+          <motion.span
+            animate={{ rotate: isMenuOpen ? -18.3 : 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          />
         </button>
       </nav>
     );
@@ -239,7 +245,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
   return (
     <header className={[styles.header, isHeaderHidden ? styles.headerHidden : ""].filter(Boolean).join(" ")}>
       <Progressbar />
-      {isMobile ? <MobileNav /> : <DesktopNav />}
+      {isMobile ? MobileNav() : DesktopNav()}
       <AnimatePresence>
         {isMobile && isMenuOpen ? (
           <Menu
