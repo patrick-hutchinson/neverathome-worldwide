@@ -89,6 +89,7 @@
       --burger-line-gap: 7px;
 
       position: relative;
+
       z-index: 2;
       width: 22px;
       height: calc(var(--burger-line-gap) + 1px);
@@ -98,6 +99,7 @@
       background: transparent;
       color: #000;
       pointer-events: auto;
+      transform: translateY(4px);
       cursor: pointer;
 
       span {
