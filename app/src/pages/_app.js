@@ -84,6 +84,7 @@ const desktopGlobeBasePosition = { x: 200, y: 200 };
 const desktopGlobeViewportPadding = 24;
 const desktopGlobeMinimumNavigationDistance = 300;
 const desktopGlobePositionAttempts = 24;
+const mobileGlobeViewportRatio = 0.375;
 const mobileGlobeViewportPadding = 16;
 const mobileGlobeMinimumNavigationDistance = 180;
 const h1MarqueeDefaultSpeed = 1;
@@ -145,7 +146,7 @@ function getRandomDesktopGlobePosition(currentPosition = { x: 0, y: 0 }) {
 function createRandomMobileGlobePosition() {
   if (typeof window === "undefined") return { x: 0, y: 0 };
 
-  const mobileGlobeSize = window.innerWidth * 0.5;
+  const mobileGlobeSize = window.innerWidth * mobileGlobeViewportRatio;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
   const minLeft = 0;
@@ -164,7 +165,7 @@ function createRandomMobileGlobePosition() {
 function clampMobileGlobePosition(position = { x: 0, y: 0 }) {
   if (typeof window === "undefined") return position;
 
-  const mobileGlobeSize = window.innerWidth * 0.5;
+  const mobileGlobeSize = window.innerWidth * mobileGlobeViewportRatio;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
   const minLeft = 0;
@@ -390,7 +391,7 @@ export default function App({ Component, pageProps }) {
   const pendingNavigationTimerRef = useRef(null);
   const h1MarqueeSettleTimerRef = useRef(null);
   const shouldScrollAboutToBottomRef = useRef(false);
-  const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * 0.5 : undefined;
+  const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * mobileGlobeViewportRatio : undefined;
   const isApplicationFormObscuring = isApplicationFormOpen && isApplicationFormEntered;
   const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
 
