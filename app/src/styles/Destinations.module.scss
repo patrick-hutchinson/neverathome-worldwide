@@ -15,7 +15,7 @@
     grid-template-columns: repeat(24, minmax(0, 1fr));
     grid-template-rows: auto auto auto 1fr;
     column-gap: var(--content-grid-gap);
-    min-height: calc(90vh - var(--spacing-6));
+    min-height: calc(90vh);
 
     .institutionContainer {
       display: contents;
