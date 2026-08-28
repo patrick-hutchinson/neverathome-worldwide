@@ -8,6 +8,7 @@ const Menu = ({
   currentPhaseLabel = null,
   navLinks = [],
   email = null,
+  onApplyClick = null,
   onContactClick = null,
   onSpacingDebugToggle = null,
 }) => {
@@ -41,7 +42,13 @@ const Menu = ({
           </a>
 
           <br />
-          {email ? <a href="#">Apply</a> : <span>Contact</span>}
+          {email ? (
+            <button className={styles.menuAction} onClick={onApplyClick} type="button">
+              Apply
+            </button>
+          ) : (
+            <span>Contact</span>
+          )}
           <button className={styles.debugButton} type="button" onClick={onSpacingDebugToggle}>
             Spacing Debug
           </button>

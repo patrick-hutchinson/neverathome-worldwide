@@ -34,7 +34,7 @@ function getProgress(now) {
   return clamp(((now - progressStartDate) / total) * 100, 0, 100);
 }
 
-const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
+const Header = ({ currentPhase = null, onApplyClick = null, pageDeadlines = {}, site = {} }) => {
   const { isMobile } = useContext(DeviceContext);
   const router = useRouter();
   const [progressNow, setProgressNow] = useState(null);
@@ -160,6 +160,11 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
     setIsMenuOpen(false);
   };
 
+  const handleApplyClick = () => {
+    setIsMenuOpen(false);
+    onApplyClick?.();
+  };
+
   const DesktopNav = () => {
     const infoLink = navLinks.find((link) => link.href === "/info");
 
@@ -252,6 +257,7 @@ const Header = ({ currentPhase = null, pageDeadlines = {}, site = {} }) => {
             currentPhaseLabel={currentPhaseLabel}
             navLinks={navLinks}
             email={site.email}
+            onApplyClick={handleApplyClick}
             onContactClick={handleContactClick}
             onSpacingDebugToggle={handleSpacingDebugToggle}
           />

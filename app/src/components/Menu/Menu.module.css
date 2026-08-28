@@ -37,10 +37,12 @@
 
 .nav a,
 .nav span,
+.menuAction,
 .debugButton {
   color: inherit;
 }
 
+.menuAction,
 .debugButton {
   all: unset;
   cursor: pointer;

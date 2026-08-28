@@ -1492,7 +1492,12 @@ export default function App({ Component, pageProps }) {
         <ViewportProvider>
           <DeviceProvider>
             <LenisProvider>
-              <Header currentPhase={currentPhase} pageDeadlines={pageDeadlines} site={site} />
+              <Header
+                currentPhase={currentPhase}
+                onApplyClick={openApplicationForm}
+                pageDeadlines={pageDeadlines}
+                site={site}
+              />
               <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
                 <motion.div
                   animate={globePosition}
