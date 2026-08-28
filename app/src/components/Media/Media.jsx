@@ -3,12 +3,20 @@
 import ImageCompose from "./components/Image/ImageCompose";
 import VideoCompose from "./components/Video/VideoCompose";
 
-const Media = ({ className, medium, eager = false, paused, showPlaceholder = true }) => {
+const Media = ({ className, medium, eager = false, objectFit, objectPosition, paused, showPlaceholder = true }) => {
   if (!medium || (!medium.url && !medium.playbackId)) return undefined;
 
   switch (medium.type) {
     case "image":
-      return <ImageCompose medium={medium} className={className} eager={eager} />;
+      return (
+        <ImageCompose
+          medium={medium}
+          className={className}
+          eager={eager}
+          objectFit={objectFit}
+          objectPosition={objectPosition}
+        />
+      );
     case "video":
       return (
         <VideoCompose

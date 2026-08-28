@@ -1,6 +1,6 @@
 import NextImage from "next/image";
 
-const Image = ({ medium, setIsLoaded, eager = false }) => {
+const Image = ({ medium, setIsLoaded, eager = false, objectFit = "cover", objectPosition = "center" }) => {
   const imageSource = medium.url;
 
   const resolutionWidth = medium.width;
@@ -12,8 +12,8 @@ const Image = ({ medium, setIsLoaded, eager = false }) => {
     height: "100%",
     left: 0,
     top: 0,
-    objectFit: "cover",
-    objectPosition: "center",
+    objectFit,
+    objectPosition,
   };
 
   return (

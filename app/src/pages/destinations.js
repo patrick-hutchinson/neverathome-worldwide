@@ -33,7 +33,12 @@ const DestinationsPage = ({ destinationsPage, selectedDestination }) => {
                       .join(" ")}
                   >
                     {institutionMedium ? (
-                      <Media medium={institutionMedium} className={styles.institutionMedium} objectFit="contain" />
+                      <Media
+                        medium={institutionMedium}
+                        className={styles.institutionMedium}
+                        objectFit="contain"
+                        objectPosition="left center"
+                      />
                     ) : null}
 
                     <div typo="h1" className={styles.cityAbbreviation}>

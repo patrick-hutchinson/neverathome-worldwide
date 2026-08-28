@@ -39,7 +39,11 @@ const AboutPage = ({ aboutPage }) => {
               The Team
             </h3>
 
-            <Text text={aboutPage.artBoard.text} typo="h6 compensate" className={styles.text} />
+            <Text
+              text="Hier kommt noch ein kleiner Text hin, ich weiss noch nicht ganz was."
+              typo="h6 compensate"
+              className={styles.text}
+            />
 
             <div className={styles.teamPhotos}>
               {aboutPage.team.map((teamMember, index) => {

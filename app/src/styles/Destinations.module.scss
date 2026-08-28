@@ -31,16 +31,16 @@
 
         .institutionMedium {
           grid-row: 2;
-          grid-column: 1 / 17;
+          grid-column: 1 / 13;
           align-self: start;
           height: auto;
-          margin-bottom: var(--spacing-3);
+          margin-bottom: var(--spacing-5);
 
-          max-height: 50vh;
+          max-height: 30vh;
 
           img {
             object-fit: contain !important;
-            max-height: 50vh;
+            max-height: 30vh;
             object-position: left center;
           }
         }
