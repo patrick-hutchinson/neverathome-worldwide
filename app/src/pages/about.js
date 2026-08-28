@@ -18,15 +18,11 @@ const AboutPage = ({ aboutPage }) => {
         </MediumSection>
         <LargeSection>
           <div className={styles.aboutContainer}>
-            <Text
-              className={styles.aboutNeverAtHome}
-              text={aboutPage.aboutNeverAtHome}
-              typo={isMobile ? "h4 compensate" : "h5 compensate"}
-            />
+            <Text className={styles.aboutNeverAtHome} text={aboutPage.aboutNeverAtHome} typo={"h5 compensate"} />
             <Text
               className={styles.aboutAustriaKulturInternational}
               text={aboutPage.aboutAustriaKulturInternational}
-              typo="h5 compensate"
+              typo={"h5 compensate"}
             />
           </div>
         </LargeSection>
