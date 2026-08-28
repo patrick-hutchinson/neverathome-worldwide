@@ -5,7 +5,7 @@
 .aboutContainer {
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
-  row-gap: var(--spacing-6);
+  row-gap: var(--spacing-5);
   column-gap: var(--content-grid-gap);
 
   .aboutNeverAtHome {
