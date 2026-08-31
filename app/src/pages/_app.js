@@ -48,6 +48,10 @@ const cityListTransitionVariants = {
 // Updated Packages
 
 const isProduction = process.env.VERCEL_ENV === "production";
+export const isSanityPreviewEnvironment = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
+
+console.log(isProduction, "isProduction");
+console.log(isSanityPreviewEnvironment, "isSanityPreviewEnvironment");
 // const isProduction = true;
 
 const routeMarqueeLabels = {
