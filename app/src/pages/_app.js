@@ -47,8 +47,8 @@ const cityListTransitionVariants = {
 
 // Updated Packages
 
-// const isProduction = process.env.VERCEL_ENV === "production";
-const isProduction = true;
+const isProduction = process.env.VERCEL_ENV === "production";
+// const isProduction = true;
 
 const routeMarqueeLabels = {
   "/": "OpenCall",
@@ -70,9 +70,7 @@ const routePagePropKeys = {
 
 const contentAutoScrollRoutes = new Set(["/jury", "/info", "/about"]);
 
-function getRouteMarqueeText(pathname, pageProps = {}, isProductionRoute = false) {
-  if (isProductionRoute) return "Coming Soon";
-
+function getRouteMarqueeText(pathname, pageProps = {}) {
   const pagePropKey = routePagePropKeys[pathname];
   const marqueeText = pagePropKey ? pageProps[pagePropKey]?.marqueeText : null;
 
@@ -352,7 +350,7 @@ export default function App({ Component, pageProps }) {
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
   const textColorPalette = getTextColorPalette(page.textColors);
   const textColorPaletteKey = textColorPalette.join("|");
-  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps, isProduction);
+  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps);
   const isDestinationsPage = router.pathname === "/destinations";
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
