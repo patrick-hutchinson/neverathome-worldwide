@@ -47,6 +47,9 @@ const cityListTransitionVariants = {
 
 // Updated Packages
 
+const isProductionLocked =
+  process.env.NEXT_PUBLIC_SITE_LOCK === "production" || process.env.VERCEL_ENV === "production";
+
 const routeMarqueeLabels = {
   "/": "OpenCall",
   "/destinations": "Destinations",
@@ -352,6 +355,7 @@ export default function App({ Component, pageProps }) {
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
+  const shouldRenderLockedProduction = isProductionLocked;
 
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
@@ -396,6 +400,8 @@ export default function App({ Component, pageProps }) {
   const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
 
   const openApplicationForm = () => {
+    if (shouldRenderLockedProduction) return;
+
     setIsApplicationFormDirty(false);
     setIsApplicationFormEntered(false);
     setIsApplicationFormOpen(true);
@@ -1012,6 +1018,15 @@ export default function App({ Component, pageProps }) {
       const nextHref = getInternalNavigationHref(event);
       if (!nextHref) return;
 
+      if (isProductionLocked) {
+        event.preventDefault();
+        const nextPathname = new URL(nextHref, window.location.href).pathname;
+        if (nextPathname !== "/" && router.pathname !== "/") {
+          router.replace("/", undefined, { scroll: false }).catch(() => {});
+        }
+        return;
+      }
+
       event.preventDefault();
 
       clearPendingNavigationTimer();
@@ -1108,6 +1123,12 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeError", handleRouteChangeError);
     };
   }, [router.events]);
+
+  useEffect(() => {
+    if (!shouldRenderLockedProduction || !router.isReady || router.pathname === "/") return;
+
+    router.replace("/", undefined, { scroll: false }).catch(() => {});
+  }, [router, router.isReady, router.pathname, shouldRenderLockedProduction]);
 
   useEffect(() => {
     if (isAppReady || !router.isReady) return undefined;
@@ -1273,6 +1294,8 @@ export default function App({ Component, pageProps }) {
   };
 
   const handleCityClick = (city) => {
+    if (shouldRenderLockedProduction) return;
+
     setHighlightedCity(null);
     setDestinationCity(city);
 
@@ -1304,6 +1327,8 @@ export default function App({ Component, pageProps }) {
   };
 
   const handleCityMarkerClick = (city) => {
+    if (shouldRenderLockedProduction) return;
+
     setDestinationCity(city);
     setHighlightedCity(city);
     setCityListScrollRequest((requestCount) => requestCount + 1);
@@ -1494,6 +1519,7 @@ export default function App({ Component, pageProps }) {
             <LenisProvider>
               <Header
                 currentPhase={currentPhase}
+                isProductionLocked={shouldRenderLockedProduction}
                 onApplyClick={openApplicationForm}
                 pageDeadlines={pageDeadlines}
                 site={site}
@@ -1549,90 +1575,99 @@ export default function App({ Component, pageProps }) {
                       variants={cityListTransitionVariants}
                     >
                       <CityList
-                        accentInactive={isDestinationsPage}
+                        accentInactive={!shouldRenderLockedProduction && isDestinationsPage}
                         cities={destinations}
                         highlightedCity={highlightedCity}
-                        isClickable
-                        onCityClick={handleCityClick}
-                        onCitySelect={setDestinationCity}
+                        isClickable={!shouldRenderLockedProduction}
+                        onCityClick={shouldRenderLockedProduction ? undefined : handleCityClick}
+                        onCitySelect={shouldRenderLockedProduction ? undefined : setDestinationCity}
                         selectedCity={isDestinationsPage ? selectedDestination : null}
                       />
                     </motion.div>
                   ) : null}
                 </AnimatePresence>
               </div>
-              {isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
-              <AnimatePresence initial={false} mode="wait">
-                <motion.div
-                  animate="animate"
-                  className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
-                    .filter(Boolean)
-                    .join(" ")}
-                  exit="exit"
-                  initial="initial"
-                  key={router.asPath}
-                  onAnimationComplete={(definition) => {
-                    if (definition === "animate") {
-                      setIsPageTransitionSettled(true);
-                      window.dispatchEvent(
-                        new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
-                      );
-                    }
-                  }}
-                  transition={pageTransition}
-                  variants={pageTransitionVariants}
-                >
-                  {is404Page ? (
-                    <Component {...pageProps} />
-                  ) : (
-                    <ContentContainer
-                      className={isContentContainerExiting ? styles.contentContainerExiting : ""}
-                      id={contentContainerId}
+              {shouldRenderLockedProduction || isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
+              {shouldRenderLockedProduction ? null : (
+                <>
+                  <AnimatePresence initial={false} mode="wait">
+                    <motion.div
+                      animate="animate"
+                      className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
+                        .filter(Boolean)
+                        .join(" ")}
+                      exit="exit"
+                      initial="initial"
+                      key={router.asPath}
+                      onAnimationComplete={(definition) => {
+                        if (definition === "animate") {
+                          setIsPageTransitionSettled(true);
+                          window.dispatchEvent(
+                            new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
+                          );
+                        }
+                      }}
+                      transition={pageTransition}
+                      variants={pageTransitionVariants}
                     >
-                      <div className={isImprintObscuring ? styles.pageObscured : ""}>
-                        <div className="pageTransitionRoot">
-                          <Component {...pageProps} selectedDestination={selectedDestination} />
-                        </div>
-                        <div ref={footerRef}>
-                          <Footer onApplyClick={openApplicationForm} onImprintClick={openImprint} page={page} site={site} />
-                        </div>
-                      </div>
-                      <AnimatePresence initial={false}>
-                        {isImprintOpen ? (
-                          <motion.div
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            initial={{ opacity: 0 }}
-                            onAnimationComplete={() => {
-                              imprintScrollTimerRef.current = window.setTimeout(scrollToRenderedImprint, 0);
-                            }}
-                            ref={imprintRef}
-                            transition={{ duration: 0.35, ease: "easeInOut" }}
-                          >
-                            <Imprint imprint={imprint} onClose={closeImprint} />
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
-                    </ContentContainer>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-              <ApplicationFormOverlay
-                currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
-                destinations={destinations}
-                isOpen={isApplicationFormOpen}
-                onClose={closeApplicationForm}
-                onDirtyChange={setIsApplicationFormDirty}
-                onHomeClick={handleApplicationFormHomeClick}
-                onImprintClick={() => {
-                  closeApplicationForm();
-                  openImprint();
-                }}
-                onOpenComplete={() => setIsApplicationFormEntered(true)}
-                page={page}
-                pageDeadlines={pageDeadlines}
-                site={site}
-              />
+                      {is404Page ? (
+                        <Component {...pageProps} />
+                      ) : (
+                        <ContentContainer
+                          className={isContentContainerExiting ? styles.contentContainerExiting : ""}
+                          id={contentContainerId}
+                        >
+                          <div className={isImprintObscuring ? styles.pageObscured : ""}>
+                            <div className="pageTransitionRoot">
+                              <Component {...pageProps} selectedDestination={selectedDestination} />
+                            </div>
+                            <div ref={footerRef}>
+                              <Footer
+                                onApplyClick={openApplicationForm}
+                                onImprintClick={openImprint}
+                                page={page}
+                                site={site}
+                              />
+                            </div>
+                          </div>
+                          <AnimatePresence initial={false}>
+                            {isImprintOpen ? (
+                              <motion.div
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                initial={{ opacity: 0 }}
+                                onAnimationComplete={() => {
+                                  imprintScrollTimerRef.current = window.setTimeout(scrollToRenderedImprint, 0);
+                                }}
+                                ref={imprintRef}
+                                transition={{ duration: 0.35, ease: "easeInOut" }}
+                              >
+                                <Imprint imprint={imprint} onClose={closeImprint} />
+                              </motion.div>
+                            ) : null}
+                          </AnimatePresence>
+                        </ContentContainer>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                  <ApplicationFormOverlay
+                    currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
+                    destinations={destinations}
+                    isOpen={isApplicationFormOpen}
+                    onClose={closeApplicationForm}
+                    onDirtyChange={setIsApplicationFormDirty}
+                    onHomeClick={handleApplicationFormHomeClick}
+                    onImprintClick={() => {
+                      closeApplicationForm();
+                      openImprint();
+                    }}
+                    onOpenComplete={() => setIsApplicationFormEntered(true)}
+                    page={page}
+                    pageDeadlines={pageDeadlines}
+                    site={site}
+                  />
+                </>
+              )}
             </LenisProvider>
           </DeviceProvider>
         </ViewportProvider>

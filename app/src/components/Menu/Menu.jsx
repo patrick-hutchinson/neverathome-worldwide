@@ -6,8 +6,9 @@ import styles from "./Menu.module.css";
 
 const Menu = ({
   currentPhaseLabel = null,
-  navLinks = [],
   email = null,
+  isProductionLocked = false,
+  navLinks = [],
   onApplyClick = null,
   onContactClick = null,
   onSpacingDebugToggle = null,
@@ -15,6 +16,7 @@ const Menu = ({
   const infoLink = navLinks.find((link) => link.href === "/info");
   const juryLink = navLinks.find((link) => link.href === "/jury");
   const destinationsLink = navLinks.find((link) => link.href === "/destinations");
+  const disabledProps = isProductionLocked ? { "aria-disabled": true, onClick: (event) => event.preventDefault() } : {};
 
   return (
     <motion.div
@@ -26,30 +28,35 @@ const Menu = ({
     >
       <nav className={styles.nav} typo="h2 compensate">
         <div className={styles.topSection}>
-          {currentPhaseLabel ? <Link href="/">{currentPhaseLabel}</Link> : null}
+          {currentPhaseLabel ? <Link href="/" {...disabledProps}>{currentPhaseLabel}</Link> : null}
           {/* <CountdownText className={styles.countdown} deadline={infoLink?.deadline} hideSeconds /> */}
         </div>
 
         <div className={styles.bottomSection}>
-          {infoLink ? <Link href={infoLink.href}>{infoLink.label}</Link> : null}
-          {juryLink ? <Link href={juryLink.href}>{juryLink.label}</Link> : null}
-          {destinationsLink ? <Link href={destinationsLink.href}>{destinationsLink.label}</Link> : null}
+          {infoLink ? <Link className={isProductionLocked ? styles.disabledLink : ""} href={infoLink.href} {...disabledProps}>{infoLink.label}</Link> : null}
+          {juryLink ? <Link className={isProductionLocked ? styles.disabledLink : ""} href={juryLink.href} {...disabledProps}>{juryLink.label}</Link> : null}
+          {destinationsLink ? <Link className={isProductionLocked ? styles.disabledLink : ""} href={destinationsLink.href} {...disabledProps}>{destinationsLink.label}</Link> : null}
           <br />
 
-          <Link href="/about">About</Link>
-          <a data-manual-navigation href="/about" onClick={onContactClick}>
+          <Link className={isProductionLocked ? styles.disabledLink : ""} href="/about" {...disabledProps}>About</Link>
+          <a className={isProductionLocked ? styles.disabledLink : ""} data-manual-navigation href="/about" onClick={isProductionLocked ? disabledProps.onClick : onContactClick}>
             Contact
           </a>
 
           <br />
           {email ? (
-            <button className={styles.menuAction} onClick={onApplyClick} type="button">
+            <button
+              className={[styles.menuAction, isProductionLocked ? styles.disabledLink : ""].filter(Boolean).join(" ")}
+              disabled={isProductionLocked}
+              onClick={onApplyClick}
+              type="button"
+            >
               Apply
             </button>
           ) : (
             <span>Contact</span>
           )}
-          <button className={styles.debugButton} type="button" onClick={onSpacingDebugToggle}>
+          <button className={isProductionLocked ? styles.disabledLink : styles.debugButton} type="button" disabled={isProductionLocked} onClick={onSpacingDebugToggle}>
             Spacing Debug
           </button>
         </div>
