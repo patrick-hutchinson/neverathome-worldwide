@@ -49,6 +49,7 @@ export default function Globe({
   height = DEFAULT_HEIGHT,
   globeImageUrl = "/images/globe/earth-blue-marble.jpg",
   bumpImageUrl = "/images/globe/earth-topology.png",
+  markerScale = 1,
   preserveDrawingBuffer = false,
 }) {
   const globeRef = useRef(null);
@@ -768,7 +769,7 @@ export default function Globe({
       ref={globeRef}
       className={[styles.globe, enableHoverScale ? styles.globeHoverScale : ""].filter(Boolean).join(" ")}
       data-globe-interaction-root
-      style={{ width, height }}
+      style={{ "--globe-marker-scale": markerScale, width, height }}
     />
   );
 }

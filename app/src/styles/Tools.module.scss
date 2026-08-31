@@ -18,6 +18,39 @@
   height: 100vh !important;
 }
 
+.controls {
+  position: fixed;
+  left: var(--margin);
+  bottom: var(--margin);
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-5);
+  color: #000;
+}
+
+.scaleControl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-7);
+}
+
+.scaleControl input {
+  width: min(22rem, 32vw);
+  accent-color: #000;
+  cursor: pointer;
+}
+
+.controlButton {
+  all: unset;
+  color: #000;
+  cursor: pointer;
+}
+
+.controlButton:hover {
+  color: var(--accent);
+}
+
 .renderButton {
   all: unset;
   position: fixed;
