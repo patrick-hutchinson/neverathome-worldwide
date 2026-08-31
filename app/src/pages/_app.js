@@ -20,6 +20,7 @@ import SpacingDebugOverlay from "@/components/SpacingDebugOverlay/SpacingDebugOv
 import Imprint from "@/components/Imprint/Imprint";
 
 import { getCurrentPhaseLabel } from "@/lib/phase";
+import { getGlobeTextureUrl } from "@/lib/globeTexture";
 import { fallbackSiteData } from "@/lib/sanity";
 
 import "@/styles/globals.css";
@@ -237,22 +238,6 @@ function getRootCssPixelValue(customPropertyName) {
   return Number.isFinite(parsedValue) ? parsedValue : 0;
 }
 
-function getGlobeTextureUrl(textureUrl) {
-  if (!textureUrl) return undefined;
-
-  try {
-    const url = new URL(textureUrl);
-
-    if (url.hostname === "cdn.sanity.io") {
-      return `/api/globe-texture?url=${encodeURIComponent(textureUrl)}`;
-    }
-  } catch {
-    return undefined;
-  }
-
-  return textureUrl;
-}
-
 function ApplicationFormOverlay({
   currentPhaseLabel = null,
   destinations = [],
@@ -360,6 +345,7 @@ export default function App({ Component, pageProps }) {
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
+  const isToolsPage = router.pathname === "/tools";
   const shouldRenderLockedProduction = isProduction;
 
   const [destinationCity, setDestinationCity] = useState(null);
@@ -1502,6 +1488,20 @@ export default function App({ Component, pageProps }) {
       clearTimeout(timeoutId);
     };
   }, [cityListScrollRequest, highlightedCity]);
+
+  if (isToolsPage) {
+    return (
+      <>
+        <Head>
+          <title>{site.title}</title>
+          {site.description ? <meta name="description" content={site.description} /> : null}
+          <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+          <link rel="icon" href={site.faviconUrl} />
+        </Head>
+        <Component {...pageProps} />
+      </>
+    );
+  }
 
   return (
     <>

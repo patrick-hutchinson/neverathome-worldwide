@@ -1,0 +1,33 @@
+.page {
+  min-height: 100vh;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+}
+
+.globeLayer {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.globeLayer > * {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.renderButton {
+  all: unset;
+  position: fixed;
+  right: var(--margin);
+  bottom: var(--margin);
+  z-index: 2;
+  color: #fff;
+  cursor: pointer;
+}
+
+.renderButton:hover {
+  color: var(--accent);
+}

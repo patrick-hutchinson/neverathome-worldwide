@@ -41,6 +41,7 @@ const getPointerDistance = (pointerA, pointerB) => Math.hypot(pointerA.x - point
 
 export default function Globe({
   cities = [],
+  canvasRef,
   destinationCity,
   onCityMarkerClick,
   enableHoverScale = false,
@@ -48,6 +49,7 @@ export default function Globe({
   height = DEFAULT_HEIGHT,
   globeImageUrl = "/images/globe/earth-blue-marble.jpg",
   bumpImageUrl = "/images/globe/earth-topology.png",
+  preserveDrawingBuffer = false,
 }) {
   const globeRef = useRef(null);
   const sceneRef = useRef(null);
@@ -220,10 +222,14 @@ export default function Globe({
       camera.position.z = 300;
       lastFrameTime = performance.now();
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DEVICE_PIXEL_RATIO));
       renderer.setSize(width, height);
       renderer.shadowMap.enabled = false;
+
+      if (canvasRef) {
+        canvasRef.current = renderer.domElement;
+      }
 
       labelRenderer = new CSS2DRenderer();
       labelRenderer.setSize(width, height);
@@ -751,8 +757,11 @@ export default function Globe({
       renderer?.dispose();
       labelRenderer?.domElement?.remove();
       globeRef.current?.replaceChildren();
+      if (canvasRef) {
+        canvasRef.current = null;
+      }
     };
-  }, [bumpImageUrl, globeImageUrl, height, width]);
+  }, [bumpImageUrl, canvasRef, globeImageUrl, height, preserveDrawingBuffer, width]);
 
   return (
     <div
