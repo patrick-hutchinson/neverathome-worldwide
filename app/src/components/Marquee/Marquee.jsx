@@ -24,6 +24,7 @@ const Marquee = ({
   className = "",
   direction = "forward",
   speedMultiplier = 1,
+  scrollSpeedMultiplier = 1,
   speedTransitionMs = MARQUEE_DEFAULT_SPEED_TRANSITION_MS,
   targetSpeed = MARQUEE_TARGET_SPEED,
   typo,
@@ -44,7 +45,7 @@ const Marquee = ({
   const duration = getMarqueeDuration(itemWidth, targetSpeed);
   const animationDirection = direction === "backward" ? "reverse" : "normal";
   const { isMobile } = useContext(DeviceContext);
-  const marqueeScrollSpeedMultiplier = isMobile ? 20 : 40;
+  const marqueeScrollSpeedMultiplier = (isMobile ? 20 : 40) * scrollSpeedMultiplier;
 
   useEffect(() => {
     speedMultiplierRef.current = speedMultiplier;

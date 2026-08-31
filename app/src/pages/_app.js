@@ -1554,7 +1554,9 @@ export default function App({ Component, pageProps }) {
                       typo="h1"
                     />
                   ) : null}
-                  {page.marqueeText ? <Marquee text={page.marqueeText} className={styles.smallMarquee} /> : null}
+                  {page.marqueeText ? (
+                    <Marquee text={page.marqueeText} className={styles.smallMarquee} scrollSpeedMultiplier={0.5} />
+                  ) : null}
                 </div>
               </div>
               <div
