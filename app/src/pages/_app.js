@@ -1585,7 +1585,7 @@ export default function App({ Component, pageProps }) {
                         highlightedCity={highlightedCity}
                         isClickable={!shouldRenderLockedProduction}
                         onCityClick={shouldRenderLockedProduction ? undefined : handleCityClick}
-                        onCitySelect={shouldRenderLockedProduction ? undefined : setDestinationCity}
+                        onCitySelect={setDestinationCity}
                         selectedCity={isDestinationsPage ? selectedDestination : null}
                       />
                     </motion.div>
