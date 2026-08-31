@@ -1,6 +1,7 @@
 .globe {
   --globe-gesture-scale: 1;
   --globe-marker-inverse-scale: 1;
+  --globe-marker-scale: 1;
 
   position: relative;
   overflow: visible;
@@ -79,7 +80,7 @@
   overflow: visible;
   user-select: none;
   -webkit-user-drag: none;
-  font-size: calc(var(--fontSize-5) * 1.2);
+  font-size: calc(var(--fontSize-5) * 1.2 * var(--globe-marker-scale));
   line-height: var(--lineHeight-5);
   letter-spacing: var(--letterSpacing-5);
   white-space: nowrap;

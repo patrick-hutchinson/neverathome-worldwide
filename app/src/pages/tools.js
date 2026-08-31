@@ -35,7 +35,8 @@ export async function exportCanvas({
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  const normalizedSourceWidth = Number(sourceWidth) > 0 ? sourceWidth : sourceLayer.clientWidth || sourceCanvas.clientWidth || sourceCanvas.width;
+  const normalizedSourceWidth =
+    Number(sourceWidth) > 0 ? sourceWidth : sourceLayer.clientWidth || sourceCanvas.clientWidth || sourceCanvas.width;
   const normalizedSourceHeight =
     Number(sourceHeight) > 0 ? sourceHeight : sourceLayer.clientHeight || sourceCanvas.clientHeight || sourceCanvas.height;
 
@@ -181,6 +182,8 @@ export async function exportCanvas({
 const ToolsPage = ({ destinations = [], page = {} }) => {
   const canvasRef = useRef(null);
   const layerRef = useRef(null);
+  const [markerScale, setMarkerScale] = useState(1.6);
+  const [showMarkers, setShowMarkers] = useState(true);
   const [viewportSize, setViewportSize] = useState({ width: 1, height: 1 });
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
 
@@ -212,12 +215,29 @@ const ToolsPage = ({ destinations = [], page = {} }) => {
       <div className={styles.globeLayer} ref={layerRef}>
         <Globe
           canvasRef={canvasRef}
-          cities={destinations}
+          cities={showMarkers ? destinations : []}
           globeImageUrl={globeTextureUrl}
           height={viewportSize.height}
+          markerScale={markerScale}
           preserveDrawingBuffer
           width={viewportSize.width}
         />
+      </div>
+      <div className={styles.controls} typo="h5 compensate">
+        <label className={styles.scaleControl}>
+          <span>Marker Scale {markerScale.toFixed(1)}</span>
+          <input
+            max="3"
+            min="1"
+            onChange={(event) => setMarkerScale(Number(event.target.value))}
+            step="0.1"
+            type="range"
+            value={markerScale}
+          />
+        </label>
+        <button className={styles.controlButton} onClick={() => setShowMarkers((isVisible) => !isVisible)} type="button">
+          {showMarkers ? "Hide Markers" : "Show Markers"}
+        </button>
       </div>
       <button className={styles.renderButton} onClick={handleRender} type="button" typo="h4 compensate">
         Render
