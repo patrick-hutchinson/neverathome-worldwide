@@ -47,8 +47,8 @@ const cityListTransitionVariants = {
 
 // Updated Packages
 
-const isProductionLocked =
-  process.env.NEXT_PUBLIC_SITE_LOCK === "production" || process.env.VERCEL_ENV === "production";
+// const isProduction = process.env.VERCEL_ENV === "production";
+const isProduction = true;
 
 const routeMarqueeLabels = {
   "/": "OpenCall",
@@ -70,7 +70,9 @@ const routePagePropKeys = {
 
 const contentAutoScrollRoutes = new Set(["/jury", "/info", "/about"]);
 
-function getRouteMarqueeText(pathname, pageProps = {}) {
+function getRouteMarqueeText(pathname, pageProps = {}, isProductionRoute = false) {
+  if (isProductionRoute) return "Coming Soon";
+
   const pagePropKey = routePagePropKeys[pathname];
   const marqueeText = pagePropKey ? pageProps[pagePropKey]?.marqueeText : null;
 
@@ -350,12 +352,12 @@ export default function App({ Component, pageProps }) {
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
   const textColorPalette = getTextColorPalette(page.textColors);
   const textColorPaletteKey = textColorPalette.join("|");
-  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps);
+  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps, isProduction);
   const isDestinationsPage = router.pathname === "/destinations";
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
-  const shouldRenderLockedProduction = isProductionLocked;
+  const shouldRenderLockedProduction = isProduction;
 
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
@@ -1018,7 +1020,7 @@ export default function App({ Component, pageProps }) {
       const nextHref = getInternalNavigationHref(event);
       if (!nextHref) return;
 
-      if (isProductionLocked) {
+      if (isProduction) {
         event.preventDefault();
         const nextPathname = new URL(nextHref, window.location.href).pathname;
         if (nextPathname !== "/" && router.pathname !== "/") {
@@ -1519,7 +1521,7 @@ export default function App({ Component, pageProps }) {
             <LenisProvider>
               <Header
                 currentPhase={currentPhase}
-                isProductionLocked={shouldRenderLockedProduction}
+                isProduction={shouldRenderLockedProduction}
                 onApplyClick={openApplicationForm}
                 pageDeadlines={pageDeadlines}
                 site={site}

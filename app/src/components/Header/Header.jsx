@@ -34,7 +34,14 @@ function getProgress(now) {
   return clamp(((now - progressStartDate) / total) * 100, 0, 100);
 }
 
-const Header = ({ currentPhase = null, isProductionLocked = false, onApplyClick = null, pageDeadlines = {}, site = {} }) => {
+const Header = ({
+  currentPhase = null,
+  isProduction = false,
+  isProductionLocked = isProduction,
+  onApplyClick = null,
+  pageDeadlines = {},
+  site = {},
+}) => {
   const { isMobile } = useContext(DeviceContext);
   const router = useRouter();
   const [progressNow, setProgressNow] = useState(null);
@@ -192,7 +199,10 @@ const Header = ({ currentPhase = null, isProductionLocked = false, onApplyClick 
       <nav className={styles.nav} typo="h4 compensate">
         <div className={styles.phases}>
           {currentPhaseLabel ? (
-            <span className={[styles.navItem, styles.phaseItem].filter(Boolean).join(" ")} data-random-hover-color>
+            <span
+              className={[styles.navItem, styles.phaseItem].filter(Boolean).join(" ")}
+              {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
+            >
               <Link
                 className={[getLinkClassName("/"), styles.phaseLink].filter(Boolean).join(" ")}
                 href="/"
@@ -210,8 +220,14 @@ const Header = ({ currentPhase = null, isProductionLocked = false, onApplyClick 
           ) : null}
           {navLinks.map((link) => (
             <span
-              className={[styles.navItem, link.href === "/info" ? styles.navItemInfoPage : ""].filter(Boolean).join(" ")}
-              data-random-hover-color={isProductionLocked ? undefined : true}
+              className={[
+                styles.navItem,
+                link.href === "/info" ? styles.navItemInfoPage : "",
+                isProductionLocked ? styles.navItemDisabled : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
               key={link.href}
             >
               {isProductionLocked ? (
@@ -253,7 +269,10 @@ const Header = ({ currentPhase = null, isProductionLocked = false, onApplyClick 
 
     return (
       <nav className={styles.nav} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
-        <span className={styles.navItem} data-random-hover-color={isProductionLocked ? undefined : true}>
+        <span
+          className={styles.navItem}
+          {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
+        >
           <Link
             className={[getLinkClassName("/"), isProductionLocked ? styles.phaseLink : ""].filter(Boolean).join(" ")}
             href={"/"}

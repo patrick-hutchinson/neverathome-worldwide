@@ -57,6 +57,18 @@
       }
     }
 
+    .navItemDisabled,
+    .navItemDisabled:hover {
+      color: var(--accent);
+      cursor: not-allowed;
+
+      .link,
+      .countdown {
+        color: var(--accent);
+        cursor: not-allowed;
+      }
+    }
+
     .link {
       display: inline-flex;
       align-items: baseline;
