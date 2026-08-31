@@ -81,6 +81,11 @@
       pointer-events: auto;
     }
 
+    .linkSeparatorDisabled {
+      color: var(--accent);
+      cursor: not-allowed;
+    }
+
     .countdown {
       font-variant-numeric: tabular-nums;
       color: var(--accent);

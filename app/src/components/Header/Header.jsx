@@ -249,7 +249,7 @@ const Header = ({
               About
             </Link>
           )}
-          {",\u00a0"}
+          <span className={isProductionLocked ? styles.linkSeparatorDisabled : ""}>{",\u00a0"}</span>
           {isProductionLocked ? (
             <DisabledNavItem>Contact</DisabledNavItem>
           ) : (
