@@ -25,7 +25,6 @@ export const siteQuery = `*[_type=="site"][0]{
 
 export const pageDeadlinesQuery = `{
   "infoPage": *[_type=="infoPage"][0].deadline,
-  "juryPage": *[_type=="juryPage"][0].deadline,
   "destinationsPage": *[_type=="destinationsPage"][0].deadline
 }`;
 

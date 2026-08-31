@@ -62,7 +62,6 @@ export const infoPage = defineType({
       title: 'Text für das durchlaufende Band',
       type: 'string',
     }),
-    defineField({name: 'deadline', type: 'datetime'}),
     defineField({name: 'info', type: 'portableText'}),
     defineField({
       name: 'faq',

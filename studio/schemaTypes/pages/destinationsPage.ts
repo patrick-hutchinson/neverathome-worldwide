@@ -11,7 +11,6 @@ export const destinationsPage = defineType({
       title: 'Text für das durchlaufende Band',
       type: 'string',
     }),
-    defineField({name: 'deadline', type: 'datetime'}),
     defineField({name: 'text', type: 'portableText'}),
   ],
   preview: {

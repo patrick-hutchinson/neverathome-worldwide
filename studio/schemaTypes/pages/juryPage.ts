@@ -11,7 +11,6 @@ export const juryPage = defineType({
       title: 'Text für das durchlaufende Band',
       type: 'string',
     }),
-    defineField({name: 'deadline', type: 'datetime'}),
   ],
   preview: {
     prepare: () => ({title: 'Jury Seite'}),
