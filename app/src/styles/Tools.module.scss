@@ -1,8 +1,8 @@
 .page {
   min-height: 100vh;
   overflow: hidden;
-  background: #000;
-  color: #fff;
+  background: #fff;
+  color: #000;
 }
 
 .globeLayer {
@@ -24,7 +24,7 @@
   right: var(--margin);
   bottom: var(--margin);
   z-index: 2;
-  color: #fff;
+  color: #000;
   cursor: pointer;
 }
 
