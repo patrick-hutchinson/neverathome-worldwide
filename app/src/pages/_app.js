@@ -364,6 +364,7 @@ export default function App({ Component, pageProps }) {
   const footerRef = useRef(null);
   const imprintRef = useRef(null);
   const imprintCloseTimerRef = useRef(null);
+  const imprintCloseRequestRef = useRef(0);
   const imprintScrollTimerRef = useRef(null);
   const imprintScrollFrameRef = useRef({ first: null, second: null });
   const imprintTouchStartYRef = useRef(null);
@@ -375,7 +376,6 @@ export default function App({ Component, pageProps }) {
   const [isApplicationFormDirty, setIsApplicationFormDirty] = useState(false);
   const [isImprintOpen, setIsImprintOpen] = useState(false);
   const isImprintOpenRef = useRef(false);
-  const [isImprintObscuring, setIsImprintObscuring] = useState(false);
   const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
   const [isPageTransitionSettled, setIsPageTransitionSettled] = useState(true);
   const [shouldScrollAboutToBottom, setShouldScrollAboutToBottom] = useState(false);
@@ -385,7 +385,7 @@ export default function App({ Component, pageProps }) {
   const shouldScrollAboutToBottomRef = useRef(false);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * mobileGlobeViewportRatio : undefined;
   const isApplicationFormObscuring = isApplicationFormOpen && isApplicationFormEntered;
-  const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
+  const isPageObscuring = isApplicationFormObscuring;
 
   const openApplicationForm = () => {
     if (shouldRenderLockedProduction) return;
@@ -527,6 +527,30 @@ export default function App({ Component, pageProps }) {
     return scrollWindowTo({ top: scrollTop });
   };
 
+  const waitForScrollTarget = (targetScrollTop, maxDuration = 1800) => {
+    if (targetScrollTop === null || targetScrollTop === undefined) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      let animationFrame = null;
+      const timeout = window.setTimeout(() => {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        resolve();
+      }, maxDuration);
+
+      const checkScrollPosition = () => {
+        if (Math.abs(window.scrollY - targetScrollTop) <= 2) {
+          window.clearTimeout(timeout);
+          resolve();
+          return;
+        }
+
+        animationFrame = requestAnimationFrame(checkScrollPosition);
+      };
+
+      animationFrame = requestAnimationFrame(checkScrollPosition);
+    });
+  };
+
   const isCityListVisibleInViewport = () => {
     const cityListLayer = cityListLayerRef.current;
     if (!cityListLayer || isDestinationCityListHiddenRef.current) return false;
@@ -585,7 +609,7 @@ export default function App({ Component, pageProps }) {
     }
     imprintScrollFrameRef.current = { first: null, second: null };
 
-    setIsImprintObscuring(true);
+    imprintCloseRequestRef.current += 1;
     isImprintOpenRef.current = true;
     setIsImprintOpen(true);
   };
@@ -606,13 +630,17 @@ export default function App({ Component, pageProps }) {
     }
     imprintScrollFrameRef.current = { first: null, second: null };
 
-    setIsImprintObscuring(false);
-    scrollToElementBottom(footerRef.current, getRootCssPixelValue("--margin"));
-    imprintCloseTimerRef.current = window.setTimeout(() => {
+    const closeRequest = imprintCloseRequestRef.current + 1;
+    imprintCloseRequestRef.current = closeRequest;
+    const targetScrollTop = scrollToElementBottom(footerRef.current, 0);
+
+    waitForScrollTarget(targetScrollTop).then(() => {
+      if (imprintCloseRequestRef.current !== closeRequest) return;
+
       isImprintOpenRef.current = false;
       setIsImprintOpen(false);
       imprintCloseTimerRef.current = null;
-    }, 450);
+    });
   };
 
   const scrollToRenderedImprint = () => {
@@ -757,12 +785,6 @@ export default function App({ Component, pageProps }) {
 
     setIsApplicationFormEntered(false);
   }, [isApplicationFormOpen]);
-
-  useEffect(() => {
-    if (isImprintOpen) return;
-
-    setIsImprintObscuring(false);
-  }, [isImprintOpen]);
 
   useEffect(() => {
     if (!isImprintOpen) return undefined;
@@ -1591,7 +1613,7 @@ export default function App({ Component, pageProps }) {
                   ) : null}
                 </AnimatePresence>
               </div>
-              {shouldRenderLockedProduction || isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
+              {shouldRenderLockedProduction || isApplicationFormOpen ? null : <SpacingDebugOverlay />}
               {shouldRenderLockedProduction ? null : (
                 <>
                   <AnimatePresence initial={false} mode="wait">
@@ -1621,7 +1643,7 @@ export default function App({ Component, pageProps }) {
                           className={isContentContainerExiting ? styles.contentContainerExiting : ""}
                           id={contentContainerId}
                         >
-                          <div className={isImprintObscuring ? styles.pageObscured : ""}>
+                          <div>
                             <div className="pageTransitionRoot">
                               <Component {...pageProps} selectedDestination={selectedDestination} />
                             </div>
@@ -1638,6 +1660,7 @@ export default function App({ Component, pageProps }) {
                             {isImprintOpen ? (
                               <motion.div
                                 animate={{ opacity: 1 }}
+                                className={styles.imprintMount}
                                 exit={{ opacity: 0 }}
                                 initial={{ opacity: 0 }}
                                 onAnimationComplete={() => {

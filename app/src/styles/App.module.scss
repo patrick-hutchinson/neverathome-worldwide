@@ -21,6 +21,11 @@
   transition: opacity 0.35s ease-in-out;
 }
 
+.imprintMount {
+  padding-top: var(--spacing-6);
+  background: var(--background);
+}
+
 .sharedLayer {
   position: fixed;
   inset: 0;
