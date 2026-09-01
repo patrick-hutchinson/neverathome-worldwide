@@ -158,11 +158,10 @@ function createRandomMobileGlobePosition() {
   const mobileGlobeSize = window.innerWidth * mobileGlobeViewportRatio;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
-  const minLeft = 0;
-  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize, minLeft);
+  const leftHalfCenter = window.innerWidth / 4;
+  const left = leftHalfCenter - mobileGlobeSize / 2;
   const minTop = mobileGlobeViewportPadding;
   const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
-  const left = getRandomNumber(minLeft, maxLeft);
   const top = getRandomNumber(minTop, maxTop);
 
   return {
@@ -177,13 +176,11 @@ function clampMobileGlobePosition(position = { x: 0, y: 0 }) {
   const mobileGlobeSize = window.innerWidth * mobileGlobeViewportRatio;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
-  const minLeft = 0;
-  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize, minLeft);
+  const leftHalfCenter = window.innerWidth / 4;
+  const left = leftHalfCenter - mobileGlobeSize / 2;
   const minTop = mobileGlobeViewportPadding;
   const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
-  const currentLeft = centeredLeft + position.x;
   const currentTop = centeredTop + position.y;
-  const left = Math.min(Math.max(currentLeft, minLeft), maxLeft);
   const top = Math.min(Math.max(currentTop, minTop), maxTop);
 
   return {
