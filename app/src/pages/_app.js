@@ -632,7 +632,7 @@ export default function App({ Component, pageProps }) {
 
     const closeRequest = imprintCloseRequestRef.current + 1;
     imprintCloseRequestRef.current = closeRequest;
-    const targetScrollTop = scrollToElementBottom(footerRef.current, 0);
+    const targetScrollTop = scrollToElementBottom(footerRef.current, getRootCssPixelValue("--spacing-6"));
 
     waitForScrollTarget(targetScrollTop).then(() => {
       if (imprintCloseRequestRef.current !== closeRequest) return;
