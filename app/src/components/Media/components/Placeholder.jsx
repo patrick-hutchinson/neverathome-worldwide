@@ -1,27 +1,38 @@
-import NextImage from "next/image";
+import { useMemo } from "react";
+
+import { useTextColorPalette } from "@/context/TextColorContext";
+
+function getSeededIndex(seed = "", length = 0) {
+  if (length <= 0) return -1;
+
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  }
+
+  return hash % length;
+}
 
 const Placeholder = ({ medium, isLoaded }) => {
-  let src;
+  const textColorPalette = useTextColorPalette();
+  const seed = `${medium?.type || ""}:${medium?.url || medium?.playbackId || medium?._id || ""}`;
+  const backgroundColor = useMemo(() => {
+    const colorIndex = getSeededIndex(seed, textColorPalette.length);
 
-  medium.type === "image"
-    ? (src = `${medium.url}?w=20&fit=crop&auto=format`)
-    : (src = `https://image.mux.com/${medium.playbackId}/thumbnail.jpg?width=50`);
+    return colorIndex >= 0 ? textColorPalette[colorIndex] : "var(--accent)";
+  }, [seed, textColorPalette]);
 
   return (
-    <NextImage
-      src={src}
-      fill
-      loading="eager"
-      alt="placeholder image"
+    <div
+      aria-hidden="true"
       style={{
         position: "absolute",
-
         width: "100%",
         height: "100%",
         top: 0,
         left: 0,
-        filter: "blur(20px) brightness(1.3)",
-        transform: "scale(1.5)",
+        backgroundColor,
         opacity: isLoaded ? 0 : 1,
         transition: "opacity 0.5s ease 0.5s",
         zIndex: 3,

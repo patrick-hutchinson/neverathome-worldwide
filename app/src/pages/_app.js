@@ -13,6 +13,7 @@ import ApplicationForm from "@/components/ApplicationForm/ApplicationForm";
 import { DeviceContext, DeviceProvider } from "@/context/DeviceContext";
 import LenisProvider, { useLenisContext } from "@/context/LenisContext";
 import Marquee from "@/components/Marquee/Marquee";
+import { TextColorContext } from "@/context/TextColorContext";
 import { ViewportProvider } from "@/context/ViewportContext";
 import Header from "@/components/Header/Header";
 import { CountdownSlot } from "@/components/Countdown/Countdown";
@@ -1541,14 +1542,15 @@ export default function App({ Component, pageProps }) {
         <ViewportProvider>
           <DeviceProvider>
             <LenisProvider>
-              <Header
-                currentPhase={currentPhase}
-                isProduction={shouldRenderLockedProduction}
-                onApplyClick={openApplicationForm}
-                pageDeadlines={pageDeadlines}
-                site={site}
-              />
-              <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
+              <TextColorContext.Provider value={textColorPalette}>
+                <Header
+                  currentPhase={currentPhase}
+                  isProduction={shouldRenderLockedProduction}
+                  onApplyClick={openApplicationForm}
+                  pageDeadlines={pageDeadlines}
+                  site={site}
+                />
+                <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
                 <motion.div
                   animate={globePosition}
                   className={styles.globeMover}
@@ -1579,63 +1581,63 @@ export default function App({ Component, pageProps }) {
                     <Marquee text={page.marqueeText} className={styles.smallMarquee} scrollSpeedMultiplier={0.5} />
                   ) : null}
                 </div>
-              </div>
-              <div
-                className={[
-                  styles.cityListLayer,
-                  isPageObscuring ? styles.pageObscured : "",
-                  isDestinationCityListHidden ? styles.cityListLayerHidden : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                ref={cityListLayerRef}
-              >
-                <AnimatePresence initial={false}>
-                  {shouldRenderCityList ? (
-                    <motion.div
-                      animate="animate"
-                      exit="exit"
-                      initial="initial"
-                      key="city-list"
-                      transition={cityListTransition}
-                      variants={cityListTransitionVariants}
-                    >
-                      <CityList
-                        accentInactive={!shouldRenderLockedProduction && isDestinationsPage}
-                        cities={destinations}
-                        highlightedCity={highlightedCity}
-                        isClickable={!shouldRenderLockedProduction}
-                        onCityClick={shouldRenderLockedProduction ? undefined : handleCityClick}
-                        onCitySelect={setDestinationCity}
-                        selectedCity={isDestinationsPage ? selectedDestination : null}
-                      />
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </div>
-              {shouldRenderLockedProduction || isApplicationFormOpen ? null : <SpacingDebugOverlay />}
-              {shouldRenderLockedProduction ? null : (
-                <>
-                  <AnimatePresence initial={false} mode="wait">
-                    <motion.div
-                      animate="animate"
-                      className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
-                        .filter(Boolean)
-                        .join(" ")}
-                      exit="exit"
-                      initial="initial"
-                      key={router.asPath}
-                      onAnimationComplete={(definition) => {
-                        if (definition === "animate") {
-                          setIsPageTransitionSettled(true);
-                          window.dispatchEvent(
-                            new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
-                          );
-                        }
-                      }}
-                      transition={pageTransition}
-                      variants={pageTransitionVariants}
-                    >
+                </div>
+                <div
+                  className={[
+                    styles.cityListLayer,
+                    isPageObscuring ? styles.pageObscured : "",
+                    isDestinationCityListHidden ? styles.cityListLayerHidden : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  ref={cityListLayerRef}
+                >
+                  <AnimatePresence initial={false}>
+                    {shouldRenderCityList ? (
+                      <motion.div
+                        animate="animate"
+                        exit="exit"
+                        initial="initial"
+                        key="city-list"
+                        transition={cityListTransition}
+                        variants={cityListTransitionVariants}
+                      >
+                        <CityList
+                          accentInactive={!shouldRenderLockedProduction && isDestinationsPage}
+                          cities={destinations}
+                          highlightedCity={highlightedCity}
+                          isClickable={!shouldRenderLockedProduction}
+                          onCityClick={shouldRenderLockedProduction ? undefined : handleCityClick}
+                          onCitySelect={setDestinationCity}
+                          selectedCity={isDestinationsPage ? selectedDestination : null}
+                        />
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+                {shouldRenderLockedProduction || isApplicationFormOpen ? null : <SpacingDebugOverlay />}
+                {shouldRenderLockedProduction ? null : (
+                  <>
+                    <AnimatePresence initial={false} mode="wait">
+                      <motion.div
+                        animate="animate"
+                        className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
+                          .filter(Boolean)
+                          .join(" ")}
+                        exit="exit"
+                        initial="initial"
+                        key={router.asPath}
+                        onAnimationComplete={(definition) => {
+                          if (definition === "animate") {
+                            setIsPageTransitionSettled(true);
+                            window.dispatchEvent(
+                              new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
+                            );
+                          }
+                        }}
+                        transition={pageTransition}
+                        variants={pageTransitionVariants}
+                      >
                       {is404Page ? (
                         <Component {...pageProps} />
                       ) : (
@@ -1675,26 +1677,27 @@ export default function App({ Component, pageProps }) {
                           </AnimatePresence>
                         </ContentContainer>
                       )}
-                    </motion.div>
-                  </AnimatePresence>
-                  <ApplicationFormOverlay
-                    currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
-                    destinations={destinations}
-                    isOpen={isApplicationFormOpen}
-                    onClose={closeApplicationForm}
-                    onDirtyChange={setIsApplicationFormDirty}
-                    onHomeClick={handleApplicationFormHomeClick}
-                    onImprintClick={() => {
-                      closeApplicationForm();
-                      openImprint();
-                    }}
-                    onOpenComplete={() => setIsApplicationFormEntered(true)}
-                    page={page}
-                    pageDeadlines={pageDeadlines}
-                    site={site}
-                  />
-                </>
-              )}
+                      </motion.div>
+                    </AnimatePresence>
+                    <ApplicationFormOverlay
+                      currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
+                      destinations={destinations}
+                      isOpen={isApplicationFormOpen}
+                      onClose={closeApplicationForm}
+                      onDirtyChange={setIsApplicationFormDirty}
+                      onHomeClick={handleApplicationFormHomeClick}
+                      onImprintClick={() => {
+                        closeApplicationForm();
+                        openImprint();
+                      }}
+                      onOpenComplete={() => setIsApplicationFormEntered(true)}
+                      page={page}
+                      pageDeadlines={pageDeadlines}
+                      site={site}
+                    />
+                  </>
+                )}
+              </TextColorContext.Provider>
             </LenisProvider>
           </DeviceProvider>
         </ViewportProvider>
