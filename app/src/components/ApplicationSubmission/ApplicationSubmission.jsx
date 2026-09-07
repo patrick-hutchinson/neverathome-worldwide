@@ -3,17 +3,11 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
 import Text from "@/components/Text/Text";
+import { applicationDeclarations } from "@/lib/applicationFormConfig";
 
 import styles from "./ApplicationSubmission.module.scss";
 
-export const declarations = [
-  "I confirm that my primary place of residence is in Austria.",
-  "I confirm that the submitted materials are my own work or that I hold all necessary rights to the submitted content.",
-  "I accept the Terms and Conditions of the Open Call.",
-  "I agree that my submitted biography, project materials and images may be used by NeverAtHome and the BMEIA for communication and promotional purposes related to the project if my application is selected.",
-  "If selected, I agree to participate in the project from 2026-2028, including the final group exhibition in Vienna in 2028, and to cooperate with Never At Home and the BMEIA throughout the project.",
-  "I consent to the processing of my personal data in accordance with the Privacy Policy.",
-];
+export const declarations = applicationDeclarations;
 
 const LogoLink = ({ logo }) => (
   <a href={logo.asset.url} target="_blank" rel="noreferrer">

@@ -340,11 +340,12 @@ export default function App({ Component, pageProps }) {
   const textColorPaletteKey = textColorPalette.join("|");
   const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps, isProduction);
   const isDestinationsPage = router.pathname === "/destinations";
+  const isAdminPage = router.pathname.startsWith("/admin");
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
   const isToolsPage = router.pathname === "/tools";
-  const shouldRenderLockedProduction = isProduction;
+  const shouldRenderLockedProduction = isProduction && !isAdminPage;
 
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);

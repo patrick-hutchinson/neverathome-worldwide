@@ -1,7 +1,9 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { upload } from "@vercel/blob/client";
 
 import ApplicationSubmission, { declarations } from "@/components/ApplicationSubmission/ApplicationSubmission";
 import { DeviceContext } from "@/context/DeviceContext";
+import { applicationTextareaFields, applicationUploadFields } from "@/lib/applicationFormConfig";
 import styles from "./ApplicationForm.module.scss";
 
 const personalFields = [
@@ -32,41 +34,8 @@ const months = [
   { value: "december", label: "December" },
 ];
 
-const uploadFields = [
-  {
-    name: "portfolio",
-    label: "Portfolio",
-    maxBytes: 10 * 1024 * 1024,
-    note: "incl. CV (PDF, max 10 pages, max. 10 MB)",
-  },
-  {
-    name: "projectProposalUpload",
-    label: "Project Proposal Summary",
-    maxBytes: 10 * 1024 * 1024,
-    note: "incl. Budget (PDF, max 5 pages, max. 10 MB)",
-  },
-  {
-    name: "artistPortrait",
-    label: "Artist Portrait",
-    maxBytes: 2 * 1024 * 1024,
-    note: "(high-resolution JPG, max. 2 MB)",
-    help: "The image will only be used and published if your application is selected.",
-  },
-];
-const textareaFields = [
-  {
-    name: "projectProposal",
-    label: "Project Proposal Summary",
-    maxLength: 500,
-    placeholder: "(max 500 characters incl. spacing)",
-  },
-  {
-    name: "biography",
-    label: "Biography",
-    maxLength: 500,
-    placeholder: "(max 500 characters incl. spacing)",
-  },
-];
+const uploadFields = applicationUploadFields;
+const textareaFields = applicationTextareaFields;
 const hexColorPattern = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 function getTextColorPalette(textColors = []) {
@@ -98,6 +67,10 @@ function getNextColorMap(currentColorMap, value, textColorPalette) {
 function resizeTextarea(textarea) {
   textarea.style.height = "auto";
   textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
+function sanitizeFileName(fileName = "file") {
+  return fileName.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "") || "file";
 }
 
 const DestinationScrollList = ({ children }) => {
@@ -155,6 +128,7 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
   const [uploads, setUploads] = useState({});
   const [hasSubmitAttempted, setHasSubmitAttempted] = useState(false);
   const [requiredErrors, setRequiredErrors] = useState({});
+  const [submissionStatus, setSubmissionStatus] = useState(null);
 
   const getRequiredErrors = (form) => {
     const formData = new FormData(form);
@@ -215,6 +189,7 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
 
   const handleFormChange = () => {
     onDirtyChange?.(true);
+    setSubmissionStatus(null);
     updateRequiredErrors();
   };
 
@@ -252,14 +227,104 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
     updateRequiredErrors();
   }, [alternativeDestinations, hasSubmitAttempted, preferredDestinations, selectedMonths, uploads]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const nextErrors = getRequiredErrors(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const nextErrors = getRequiredErrors(form);
     setHasSubmitAttempted(true);
     setRequiredErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) return;
+
+    const submissionId = crypto.randomUUID();
+    setSubmissionStatus({ type: "loading", message: "Submitting" });
+
+    try {
+      const uploadedFiles = {};
+
+      for (const field of uploadFields) {
+        const file = formData.get(field.name);
+
+        if (!(file instanceof File) || file.size === 0) {
+          throw new Error(`${field.label} is required.`);
+        }
+
+        setUploads((currentUploads) => ({
+          ...currentUploads,
+          [field.name]: {
+            fileName: file.name,
+            progress: 0,
+            status: "loading",
+          },
+        }));
+
+        const blob = await upload(`applications/${submissionId}/${field.name}-${sanitizeFileName(file.name)}`, file, {
+          access: "private",
+          clientPayload: JSON.stringify({ fieldName: field.name, submissionId }),
+          handleUploadUrl: "/api/application-upload",
+        });
+
+        uploadedFiles[field.name] = {
+          contentType: file.type,
+          downloadUrl: blob.downloadUrl || null,
+          fileName: file.name,
+          pathname: blob.pathname,
+          size: file.size,
+          url: blob.url,
+        };
+
+        setUploads((currentUploads) => ({
+          ...currentUploads,
+          [field.name]: {
+            fileName: file.name,
+            progress: 100,
+            status: "complete",
+          },
+        }));
+      }
+
+      const submissionResponse = await fetch("/api/application-submissions", {
+        body: JSON.stringify({
+          alternativeDestinations,
+          biography: formData.get("biography"),
+          city: formData.get("city"),
+          country: formData.get("country"),
+          declarations: formData.getAll("declarations"),
+          email: formData.get("email"),
+          files: uploadedFiles,
+          firstName: formData.get("firstName"),
+          instagram: formData.get("instagram"),
+          lastName: formData.get("lastName"),
+          months: selectedMonths,
+          phoneNumber: formData.get("phoneNumber"),
+          postalCode: formData.get("postalCode"),
+          preferredDestinations,
+          projectProposal: formData.get("projectProposal"),
+          streetAddress: formData.get("streetAddress"),
+          submissionId,
+          website: formData.get("website"),
+        }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
+      const submissionResult = await submissionResponse.json().catch(() => ({}));
+
+      if (!submissionResponse.ok) {
+        if (submissionResult.errors) {
+          setRequiredErrors(submissionResult.errors);
+        }
+
+        throw new Error(submissionResult.error || "Submission failed.");
+      }
+
+      setSubmissionStatus({ type: "success", message: "Submission received" });
+      onDirtyChange?.(false);
+    } catch (error) {
+      setSubmissionStatus({ type: "error", message: error.message || "Submission failed" });
+    }
   };
 
   const handlePreferredDestinationChange = (destinationId) => {
@@ -583,6 +648,21 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
           })}
         </div>
       </fieldset>
+
+      {submissionStatus ? (
+        <div
+          className={[
+            styles.submissionStatus,
+            submissionStatus.type === "error" ? styles.submissionStatusError : "",
+            submissionStatus.type === "success" ? styles.submissionStatusSuccess : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          typo="h6"
+        >
+          {submissionStatus.message}
+        </div>
+      ) : null}
 
       <ApplicationSubmission
         hasRequiredError={requiredErrors.declarations}

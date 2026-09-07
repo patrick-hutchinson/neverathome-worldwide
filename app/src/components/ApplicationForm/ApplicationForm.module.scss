@@ -327,6 +327,19 @@
   pointer-events: none;
 }
 
+.submissionStatus {
+  padding: var(--spacing-8) 0;
+  color: var(--form-muted-color);
+}
+
+.submissionStatusError {
+  color: #ff0000;
+}
+
+.submissionStatusSuccess {
+  color: #00ff66;
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;
