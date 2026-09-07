@@ -317,6 +317,30 @@ function ApplicationFormOverlay({
   );
 }
 
+function ImprintOverlay({ imprint = {}, isOpen, onClose }) {
+  return (
+    <AnimatePresence>
+      {isOpen ? (
+        <motion.div
+          animate="open"
+          className={styles.imprintLayer}
+          exit="closed"
+          initial="closed"
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          variants={{
+            closed: { y: "100%" },
+            open: { y: 0 },
+          }}
+        >
+          <ReactLenis className={styles.imprintScroller} options={{ lerp: 0.12, syncTouch: true }} root={false}>
+            <Imprint imprint={imprint} onClose={onClose} />
+          </ReactLenis>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [sharedData, setSharedData] = useState({
@@ -364,12 +388,6 @@ export default function App({ Component, pageProps }) {
   const hasInitializedMobileGlobePositionRef = useRef(false);
   const programmaticScrollLockRef = useRef(null);
   const footerRef = useRef(null);
-  const imprintRef = useRef(null);
-  const imprintCloseTimerRef = useRef(null);
-  const imprintCloseRequestRef = useRef(0);
-  const imprintScrollTimerRef = useRef(null);
-  const imprintScrollFrameRef = useRef({ first: null, second: null });
-  const imprintTouchStartYRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
@@ -595,65 +613,13 @@ export default function App({ Component, pageProps }) {
   };
 
   const openImprint = () => {
-    if (imprintCloseTimerRef.current) {
-      window.clearTimeout(imprintCloseTimerRef.current);
-      imprintCloseTimerRef.current = null;
-    }
-    if (imprintScrollTimerRef.current) {
-      window.clearTimeout(imprintScrollTimerRef.current);
-      imprintScrollTimerRef.current = null;
-    }
-    if (imprintScrollFrameRef.current.first) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.first);
-    }
-    if (imprintScrollFrameRef.current.second) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.second);
-    }
-    imprintScrollFrameRef.current = { first: null, second: null };
-
-    imprintCloseRequestRef.current += 1;
     isImprintOpenRef.current = true;
     setIsImprintOpen(true);
   };
 
   const closeImprint = () => {
-    if (imprintCloseTimerRef.current) {
-      window.clearTimeout(imprintCloseTimerRef.current);
-    }
-    if (imprintScrollTimerRef.current) {
-      window.clearTimeout(imprintScrollTimerRef.current);
-      imprintScrollTimerRef.current = null;
-    }
-    if (imprintScrollFrameRef.current.first) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.first);
-    }
-    if (imprintScrollFrameRef.current.second) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.second);
-    }
-    imprintScrollFrameRef.current = { first: null, second: null };
-
-    const closeRequest = imprintCloseRequestRef.current + 1;
-    imprintCloseRequestRef.current = closeRequest;
-    const targetScrollTop = scrollToElementBottom(footerRef.current, getRootCssPixelValue("--spacing-6"));
-
-    waitForScrollTarget(targetScrollTop).then(() => {
-      if (imprintCloseRequestRef.current !== closeRequest) return;
-
-      isImprintOpenRef.current = false;
-      setIsImprintOpen(false);
-      imprintCloseTimerRef.current = null;
-    });
-  };
-
-  const scrollToRenderedImprint = () => {
-    if (!isImprintOpenRef.current || !imprintRef.current) return;
-
-    imprintScrollFrameRef.current.first = requestAnimationFrame(() => {
-      imprintScrollFrameRef.current.second = requestAnimationFrame(() => {
-        scrollToElement(imprintRef.current, 0);
-        imprintScrollFrameRef.current = { first: null, second: null };
-      });
-    });
+    isImprintOpenRef.current = false;
+    setIsImprintOpen(false);
   };
 
   useEffect(() => {
@@ -663,15 +629,6 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     return () => {
       stopProgrammaticScrollLock();
-      if (imprintScrollTimerRef.current) {
-        window.clearTimeout(imprintScrollTimerRef.current);
-      }
-      if (imprintScrollFrameRef.current.first) {
-        cancelAnimationFrame(imprintScrollFrameRef.current.first);
-      }
-      if (imprintScrollFrameRef.current.second) {
-        cancelAnimationFrame(imprintScrollFrameRef.current.second);
-      }
     };
   }, []);
 
@@ -787,43 +744,6 @@ export default function App({ Component, pageProps }) {
 
     setIsApplicationFormEntered(false);
   }, [isApplicationFormOpen]);
-
-  useEffect(() => {
-    if (!isImprintOpen) return undefined;
-
-    const handleWheel = (event) => {
-      if (event.deltaY >= 0) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      closeImprint();
-    };
-
-    const handleTouchStart = (event) => {
-      imprintTouchStartYRef.current = event.touches?.[0]?.clientY ?? null;
-    };
-
-    const handleTouchMove = (event) => {
-      const startY = imprintTouchStartYRef.current;
-      const currentY = event.touches?.[0]?.clientY;
-      if (startY === null || currentY === undefined || currentY - startY < 8) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      closeImprint();
-    };
-
-    window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { capture: true, passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { capture: true, passive: false });
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel, { capture: true });
-      window.removeEventListener("touchstart", handleTouchStart, { capture: true });
-      window.removeEventListener("touchmove", handleTouchMove, { capture: true });
-      imprintTouchStartYRef.current = null;
-    };
-  }, [isImprintOpen]);
 
   useEffect(() => {
     if (textColorPalette.length === 0) {
@@ -1665,23 +1585,6 @@ export default function App({ Component, pageProps }) {
                               />
                             </div>
                           </div>
-                          <AnimatePresence initial={false}>
-                            {isImprintOpen ? (
-                              <motion.div
-                                animate={{ opacity: 1 }}
-                                className={styles.imprintMount}
-                                exit={{ opacity: 0 }}
-                                initial={{ opacity: 0 }}
-                                onAnimationComplete={() => {
-                                  imprintScrollTimerRef.current = window.setTimeout(scrollToRenderedImprint, 0);
-                                }}
-                                ref={imprintRef}
-                                transition={{ duration: 0.35, ease: "easeInOut" }}
-                              >
-                                <Imprint imprint={imprint} onClose={closeImprint} />
-                              </motion.div>
-                            ) : null}
-                          </AnimatePresence>
                         </ContentContainer>
                       )}
                       </motion.div>
@@ -1702,6 +1605,7 @@ export default function App({ Component, pageProps }) {
                       pageDeadlines={pageDeadlines}
                       site={site}
                     />
+                    <ImprintOverlay imprint={imprint} isOpen={isImprintOpen} onClose={closeImprint} />
                   </>
                 )}
                   </>

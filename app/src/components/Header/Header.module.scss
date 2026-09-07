@@ -155,6 +155,15 @@
       color: var(--accent);
       cursor: not-allowed;
     }
+
+    .mobileOpenCallLink,
+    .mobileOpenCallLink.linkActive {
+      color: #000;
+    }
+
+    .navItem:hover .mobileOpenCallLink {
+      color: #000;
+    }
   }
 }
 

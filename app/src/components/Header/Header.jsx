@@ -274,7 +274,13 @@ const Header = ({
           {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
         >
           <Link
-            className={[getLinkClassName("/"), isProductionLocked ? styles.phaseLink : ""].filter(Boolean).join(" ")}
+            className={[
+              getLinkClassName("/"),
+              styles.mobileOpenCallLink,
+              isProductionLocked ? styles.phaseLink : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             href={"/"}
             onClick={isProductionLocked ? handleHomeLinkClick : preventSameRouteNavigation(infoLink.href)}
           >
