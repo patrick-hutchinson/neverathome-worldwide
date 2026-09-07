@@ -1544,13 +1544,19 @@ export default function App({ Component, pageProps }) {
           <DeviceProvider>
             <LenisProvider>
               <TextColorContext.Provider value={textColorPalette}>
-                <Header
-                  currentPhase={currentPhase}
-                  isProduction={shouldRenderLockedProduction}
-                  onApplyClick={openApplicationForm}
-                  pageDeadlines={pageDeadlines}
-                  site={site}
-                />
+                {isAdminPage ? (
+                  <ContentContainer className={styles.adminContentContainer}>
+                    <Component {...pageProps} />
+                  </ContentContainer>
+                ) : (
+                  <>
+                    <Header
+                      currentPhase={currentPhase}
+                      isProduction={shouldRenderLockedProduction}
+                      onApplyClick={openApplicationForm}
+                      pageDeadlines={pageDeadlines}
+                      site={site}
+                    />
                 <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
                 <motion.div
                   animate={globePosition}
@@ -1696,6 +1702,8 @@ export default function App({ Component, pageProps }) {
                       pageDeadlines={pageDeadlines}
                       site={site}
                     />
+                  </>
+                )}
                   </>
                 )}
               </TextColorContext.Provider>
