@@ -4,6 +4,7 @@ import { get } from "@vercel/blob";
 import { isAdminRequest } from "@/lib/submissions/adminAuth";
 import { ensureSubmissionSchema, getSubmissionDatabase } from "@/lib/submissions/database";
 import { getSubmissionDisplayName, getSubmissionFolderName } from "@/lib/submissions/format";
+import { getDestinations } from "@/lib/sanity";
 
 export const config = {
   api: {
@@ -28,14 +29,26 @@ async function streamToBuffer(stream) {
   return Buffer.concat(chunks);
 }
 
-function createSubmissionText(submission) {
+function formatViennaDate(value) {
+  if (!value) return "";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/Vienna",
+  }).format(new Date(value));
+}
+
+function getDestinationNames(destinationIds = [], destinationNameMap = new Map()) {
+  return destinationIds.map((destinationId) => destinationNameMap.get(destinationId) || destinationId).join(", ");
+}
+
+function createSubmissionText(submission, destinationNameMap) {
   const files = submission.files || {};
 
   return [
     `Submission ID: ${submission.id}`,
-    `Submitted: ${submission.created_at}`,
-    `Downloaded: ${submission.downloaded_at || ""}`,
-    `Download Count: ${submission.download_count || 0}`,
+    `Submitted: ${formatViennaDate(submission.created_at)}`,
     `Name: ${getSubmissionDisplayName(submission)}`,
     `Email: ${submission.email}`,
     `Phone: ${submission.phone_number}`,
@@ -43,8 +56,8 @@ function createSubmissionText(submission) {
     `Website: ${submission.website || ""}`,
     `Instagram: ${submission.instagram || ""}`,
     "",
-    `Preferred Destination: ${(submission.preferred_destination_ids || []).join(", ")}`,
-    `Alternative Destination: ${(submission.alternative_destination_ids || []).join(", ")}`,
+    `Preferred Destination: ${getDestinationNames(submission.preferred_destination_ids, destinationNameMap)}`,
+    `Alternative Destination: ${getDestinationNames(submission.alternative_destination_ids, destinationNameMap)}`,
     `Preferred Month: ${(submission.preferred_months || []).join(", ")}`,
     "",
     "Project Proposal",
@@ -52,9 +65,6 @@ function createSubmissionText(submission) {
     "",
     "Biography",
     submission.biography,
-    "",
-    "Declarations",
-    ...(submission.declarations || []).map((declaration) => `- ${declaration}`),
     "",
     "Files",
     ...Object.entries(files).map(([fieldName, file]) => `- ${fieldName}: ${file.fileName || file.pathname || ""}`),
@@ -111,6 +121,8 @@ export default async function handler(request, response) {
 
     const zip = new JSZip();
     const exportedIds = [];
+    const destinations = await getDestinations();
+    const destinationNameMap = new Map(destinations.map((destination) => [destination._id, destination.name]));
 
     for (const [index, submission] of submissions.entries()) {
       exportedIds.push(submission.id);
@@ -118,8 +130,7 @@ export default async function handler(request, response) {
       const folder = zip.folder(getSubmissionFolderName(submission, offset + index));
       const files = submission.files || {};
 
-      folder.file("submission.json", JSON.stringify(submission, null, 2));
-      folder.file("submission.txt", createSubmissionText(submission));
+      folder.file("submission.txt", createSubmissionText(submission, destinationNameMap));
 
       for (const [fieldName, file] of Object.entries(files)) {
         if (!file?.pathname) continue;
