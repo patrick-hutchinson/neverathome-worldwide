@@ -179,6 +179,29 @@
   color: #000;
 }
 
+@media screen and (max-width: 768px) {
+  .header {
+    transform: none;
+
+    .nav {
+      .navItem,
+      .menuButton {
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
+      }
+
+      .mobileNavItemHidden,
+      .menuButtonHidden {
+        transform: translateY(calc(-100% - var(--margin) - 8px));
+      }
+    }
+  }
+
+  .headerHidden {
+    transform: none;
+  }
+}
+
 @media screen and (min-width: 769px) {
   .header {
     padding-top: var(--margin);

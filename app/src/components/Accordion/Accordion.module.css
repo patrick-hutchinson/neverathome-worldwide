@@ -40,10 +40,11 @@
   /* transform: translateY(-3.5px); */
   transform-origin: center;
   transition: transform 0.25s ease;
+  transform: translateY(calc(var(--fontSize-3) / 4));
 }
 
 .openCloseButtonOpen {
-  transform: rotate(45deg);
+  transform: translateY(calc(var(--fontSize-3) / 4)) rotate(45deg);
 }
 
 .openCloseButton .openCloseIcon {

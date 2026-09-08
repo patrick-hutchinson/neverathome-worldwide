@@ -21,12 +21,40 @@ export const page = defineType({
     defineField({name: 'marqueeText', title: "Text für's kleine Banderl", type: 'string'}),
     defineField({name: 'claim', title: 'Claim (im Footer)', type: 'portableText'}),
     defineField({name: 'informationPDF', title: 'Info PDF', type: 'file'}),
-    defineField({name: 'formLink', title: 'Link zur Anmeldungs-Form', type: 'string'}),
+    // defineField({name: 'formLink', title: 'Link zur Anmeldungs-Form', type: 'string'}),
     defineField({
       name: 'mediaPartner',
       title: 'Media Partner (Footer Logos)',
       type: 'array',
-      of: [{type: 'file'}],
+      of: [
+        defineArrayMember({
+          name: 'mediaPartnerLogo',
+          title: 'Media Partner Logo',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'logo',
+              title: 'Logo',
+              type: 'file',
+            }),
+            defineField({
+              name: 'link',
+              title: 'Link',
+              type: 'link',
+            }),
+          ],
+          preview: {
+            select: {
+              media: 'logo',
+              title: 'logo.asset.originalFilename',
+            },
+            prepare: ({media, title}) => ({
+              media,
+              title: title || 'Media Partner Logo',
+            }),
+          },
+        }),
+      ],
     }),
     defineField({name: 'globeTexture', title: 'Weltkugel Textur (jpg!)', type: 'image'}),
     defineField({

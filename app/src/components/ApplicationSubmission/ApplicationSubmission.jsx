@@ -4,16 +4,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
 import Text from "@/components/Text/Text";
 import { applicationDeclarations } from "@/lib/applicationFormConfig";
+import { getLinkHref } from "@/lib/links";
 
 import styles from "./ApplicationSubmission.module.scss";
 
 export const declarations = applicationDeclarations;
 
-const LogoLink = ({ logo }) => (
-  <a href={logo.asset.url} target="_blank" rel="noreferrer">
-    <img src={logo.asset.url} alt={logo.asset.originalFilename || "Media partner logo"} />
-  </a>
-);
+const LogoLink = ({ logo }) => {
+  const href = getLinkHref(logo.link) || logo.asset.url;
+
+  return (
+    <a href={href} target="_blank" rel="noreferrer">
+      <img src={logo.asset.url} alt={logo.asset.originalFilename || "Media partner logo"} />
+    </a>
+  );
+};
 
 const LogoShuffle = ({ logos = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);

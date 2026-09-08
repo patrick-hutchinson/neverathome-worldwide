@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import Text from "@/components/Text/Text";
 import RenderSVG from "@/components/RenderSVG/RenderSVG";
+import { getLinkHref } from "@/lib/links";
 
 import styles from "./Footer.module.css";
 import { DeviceContext } from "@/context/DeviceContext";
@@ -32,11 +33,15 @@ const FooterButton = ({ ariaLabel, children, className = "", download = null, hr
   );
 };
 
-const LogoLink = ({ className = "", logo }) => (
-  <a className={className} href={logo.asset.url} target="_blank" rel="noreferrer">
-    <img src={logo.asset.url} alt={logo.asset.originalFilename || "Media partner logo"} />
-  </a>
-);
+const LogoLink = ({ className = "", logo }) => {
+  const href = getLinkHref(logo.link) || logo.asset.url;
+
+  return (
+    <a className={className} href={href} target="_blank" rel="noreferrer">
+      <img src={logo.asset.url} alt={logo.asset.originalFilename || "Media partner logo"} />
+    </a>
+  );
+};
 
 const LogoShuffle = ({ logos = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
