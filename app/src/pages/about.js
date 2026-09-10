@@ -49,7 +49,9 @@ const AboutPage = ({ aboutPage }) => {
               {aboutPage.team.map((teamMember, index) => {
                 return (
                   <div className={styles.teamMember} key={teamMember.name || index}>
-                    <Media className={styles.teamMemberPortrait} medium={teamMember.portrait.medium} />
+                    <div className={styles.teamMemberPortrait}>
+                      {teamMember.portrait?.medium ? <Media medium={teamMember.portrait.medium} /> : null}
+                    </div>
                     <div className={styles.teamMemberCaption} typo="h6">
                       <span>{teamMember.name}</span>
                       {teamMember.role ? (
