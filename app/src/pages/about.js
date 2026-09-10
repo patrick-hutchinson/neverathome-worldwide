@@ -48,12 +48,16 @@ const AboutPage = ({ aboutPage }) => {
             <div className={styles.teamPhotos}>
               {aboutPage.team.map((teamMember, index) => {
                 return (
-                  <div className={styles.teamMember}>
+                  <div className={styles.teamMember} key={teamMember.name || index}>
                     <Media className={styles.teamMemberPortrait} medium={teamMember.portrait.medium} />
-                    <div typo="h6">
-                      {teamMember.name}
-                      {",\u00a0"}
-                      {teamMember.role}
+                    <div className={styles.teamMemberCaption} typo="h6">
+                      <span>{teamMember.name}</span>
+                      {teamMember.role ? (
+                        <>
+                          {",\u00a0"}
+                          <Text className={styles.teamMemberRole} text={teamMember.role} />
+                        </>
+                      ) : null}
                     </div>
                   </div>
                 );

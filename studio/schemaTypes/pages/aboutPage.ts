@@ -4,7 +4,7 @@ const teamMember = {
   type: 'object',
   fields: [
     defineField({name: 'name', type: 'string'}),
-    defineField({name: 'role', type: 'string'}),
+    defineField({name: 'role', type: 'portableText'}),
     defineField({name: 'portrait', type: 'mediaAsset'}),
   ],
   preview: {

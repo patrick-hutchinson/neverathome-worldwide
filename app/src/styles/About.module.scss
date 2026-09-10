@@ -90,6 +90,11 @@
       }
     }
 
+    .teamMemberRole,
+    .teamMemberRole p {
+      display: inline;
+    }
+
     .teamMember:last-child {
       margin-bottom: 0;
     }
