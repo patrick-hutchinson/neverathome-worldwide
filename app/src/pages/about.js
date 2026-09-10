@@ -54,9 +54,9 @@ const AboutPage = ({ aboutPage }) => {
                     </div>
                     <div className={styles.teamMemberCaption} typo="h6">
                       <span>{teamMember.name}</span>
+                      <br />
                       {teamMember.role ? (
                         <>
-                          {",\u00a0"}
                           <Text className={styles.teamMemberRole} text={teamMember.role} />
                         </>
                       ) : null}
