@@ -1,23 +1,59 @@
 import {defineField, defineType} from 'sanity'
 
+const scheduleDateField = (name: 'date' | 'endDate', title: string, description: string) =>
+  defineField({
+    name,
+    title,
+    description,
+    type: 'object',
+    fieldset: 'dates',
+    fields: [
+      defineField({
+        name: 'precision',
+        title: 'Genauigkeit',
+        type: 'string',
+        initialValue: 'day',
+        options: {
+          layout: 'radio',
+          list: [
+            {title: 'Tag bekannt', value: 'day'},
+            {title: 'Nur Monat bekannt', value: 'month'},
+            {title: 'Nur Jahr bekannt', value: 'year'},
+          ],
+        },
+      }),
+      defineField({
+        name: 'value',
+        title: 'Datum',
+        type: 'date',
+      }),
+    ],
+    preview: {
+      select: {
+        precision: 'precision',
+        value: 'value',
+      },
+      prepare: ({precision, value}: {precision?: string; value?: string}) => ({
+        title: value || 'Datum',
+        subtitle: precision,
+      }),
+    },
+  })
+
 const scheduleEntry = {
   type: 'object',
   fieldsets: [{name: 'dates', title: 'Datum', options: {columns: 2}}],
   fields: [
-    defineField({
-      name: 'date',
-      title: 'Von',
-      description: 'Startdatum ist verpflichtend.',
-      type: 'date',
-      fieldset: 'dates',
-    }),
-    defineField({
-      name: 'endDate',
-      title: 'Bis',
-      description: 'Enddatum ist optional.',
-      type: 'date',
-      fieldset: 'dates',
-    }),
+    scheduleDateField(
+      'date',
+      'Von',
+      'Startdatum ist verpflichtend. Wenn der Tag unbekannt ist, bitte den 1. Tag des Monats/Jahres eintragen und die Genauigkeit passend setzen.',
+    ),
+    scheduleDateField(
+      'endDate',
+      'Bis',
+      'Enddatum ist optional. Wenn der Tag unbekannt ist, bitte den 1. Tag des Monats/Jahres eintragen und die Genauigkeit passend setzen.',
+    ),
     defineField({name: 'title', title: 'Titel', type: 'string'}),
     defineField({name: 'link', type: 'link'}),
     defineField({name: 'keyword', title: 'Keyword', type: 'string'}),
@@ -35,14 +71,19 @@ const scheduleEntry = {
       keyword,
       title,
     }: {
-      date?: string
-      endDate?: string
+      date?: string | {value?: string; precision?: string}
+      endDate?: string | {value?: string; precision?: string}
       keyword?: string
       title?: string
-    }) => ({
-      title: title || keyword || 'Fahrplan Eintrag',
-      subtitle: [[date, endDate].filter(Boolean).join(' - '), keyword].filter(Boolean).join(' · '),
-    }),
+    }) => {
+      const startDate = typeof date === 'string' ? date : date?.value
+      const finishDate = typeof endDate === 'string' ? endDate : endDate?.value
+
+      return {
+        title: title || keyword || 'Fahrplan Eintrag',
+        subtitle: [[startDate, finishDate].filter(Boolean).join(' - '), keyword].filter(Boolean).join(' · '),
+      }
+    },
   },
 }
 
