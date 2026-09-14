@@ -160,7 +160,17 @@ button:hover {
 a {
   color: inherit;
   text-decoration: none;
-  transition: color 0.3s ease-in-out;
+  transition:
+    color 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+p a {
+  opacity: 0.3 !important;
+}
+
+p a:hover {
+  opacity: 1 !important;
 }
 
 a:focus,
