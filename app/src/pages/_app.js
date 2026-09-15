@@ -307,30 +307,6 @@ function ApplicationFormOverlay({
   );
 }
 
-function ImprintOverlay({ imprint = {}, isOpen, onClose }) {
-  return (
-    <AnimatePresence>
-      {isOpen ? (
-        <motion.div
-          animate="open"
-          className={styles.imprintLayer}
-          exit="closed"
-          initial="closed"
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          variants={{
-            closed: { y: "100%" },
-            open: { y: 0 },
-          }}
-        >
-          <ReactLenis className={styles.imprintScroller} options={{ lerp: 0.12, syncTouch: true }} root={false}>
-            <Imprint imprint={imprint} onClose={onClose} />
-          </ReactLenis>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
-}
-
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const [sharedData, setSharedData] = useState({
@@ -377,6 +353,7 @@ export default function App({ Component, pageProps }) {
   const hasInitializedMobileGlobePositionRef = useRef(false);
   const programmaticScrollLockRef = useRef(null);
   const footerRef = useRef(null);
+  const imprintRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
@@ -605,8 +582,12 @@ export default function App({ Component, pageProps }) {
   };
 
   const closeImprint = () => {
-    isImprintOpenRef.current = false;
-    setIsImprintOpen(false);
+    const footerScrollTarget = scrollToElementBottom(footerRef.current, getRootCssPixelValue("--spacing-6"));
+
+    waitForScrollTarget(footerScrollTarget).then(() => {
+      isImprintOpenRef.current = false;
+      setIsImprintOpen(false);
+    });
   };
 
   useEffect(() => {
@@ -625,6 +606,16 @@ export default function App({ Component, pageProps }) {
 
   useEffect(() => {
     isImprintOpenRef.current = isImprintOpen;
+  }, [isImprintOpen]);
+
+  useEffect(() => {
+    if (!isImprintOpen) return undefined;
+
+    const frame = requestAnimationFrame(() => {
+      scrollToElement(imprintRef.current, 0);
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, [isImprintOpen]);
 
   useEffect(() => {
@@ -1550,6 +1541,20 @@ export default function App({ Component, pageProps }) {
                                 site={site}
                               />
                             </div>
+                            <AnimatePresence initial={false}>
+                              {isImprintOpen ? (
+                                <motion.div
+                                  animate={{ opacity: 1 }}
+                                  className={styles.imprintAppendix}
+                                  exit={{ opacity: 0 }}
+                                  initial={{ opacity: 0 }}
+                                  ref={imprintRef}
+                                  transition={{ duration: 0.35, ease: "easeInOut" }}
+                                >
+                                  <Imprint imprint={imprint} onClose={closeImprint} />
+                                </motion.div>
+                              ) : null}
+                            </AnimatePresence>
                           </div>
                         </ContentContainer>
                       )}
@@ -1571,7 +1576,6 @@ export default function App({ Component, pageProps }) {
                       pageDeadlines={pageDeadlines}
                       site={site}
                     />
-                    <ImprintOverlay imprint={imprint} isOpen={isImprintOpen} onClose={closeImprint} />
                 </>
                   </>
                 )}
