@@ -9,7 +9,7 @@ import { formatCountdown } from "@/lib/countdown";
 import { getCurrentPhaseLabel } from "@/lib/phase";
 
 import Text from "@/components/Text/Text";
-import FormatDate from "@/components/FormatDate/FormatDate";
+import FormatDate, { getDateValue } from "@/components/FormatDate/FormatDate";
 
 export default function Home({ homePage = {} }) {
   const [now, setNow] = useState(null);
@@ -49,7 +49,7 @@ export default function Home({ homePage = {} }) {
                     </div>
 
                     <div className={styles.scheduleCountdown} typo="h3 compensate">
-                      {now ? formatCountdown(entry.endDate || entry.date, now) : null}
+                      {now ? formatCountdown(getDateValue(entry.endDate) || getDateValue(entry.date), now) : null}
                     </div>
                   </li>
                 ))}

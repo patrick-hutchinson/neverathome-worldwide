@@ -13,6 +13,7 @@ import ApplicationForm from "@/components/ApplicationForm/ApplicationForm";
 import { DeviceContext, DeviceProvider } from "@/context/DeviceContext";
 import LenisProvider, { useLenisContext } from "@/context/LenisContext";
 import Marquee from "@/components/Marquee/Marquee";
+import { TextColorContext } from "@/context/TextColorContext";
 import { ViewportProvider } from "@/context/ViewportContext";
 import Header from "@/components/Header/Header";
 import { CountdownSlot } from "@/components/Countdown/Countdown";
@@ -46,14 +47,6 @@ const cityListTransitionVariants = {
   exit: { opacity: 0, transition: cityListTransition },
 };
 
-// Updated Packages
-
-export const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-
-console.log(isProduction, "isProduction");
-
-// const isProduction = true;
-
 const routeMarqueeLabels = {
   "/": "OpenCall",
   "/destinations": "Destinations",
@@ -74,9 +67,7 @@ const routePagePropKeys = {
 
 const contentAutoScrollRoutes = new Set(["/jury", "/info", "/about"]);
 
-function getRouteMarqueeText(pathname, pageProps = {}, isProductionRoute = false) {
-  if (isProductionRoute) return "ComingSoon";
-
+function getRouteMarqueeText(pathname, pageProps = {}) {
   const pagePropKey = routePagePropKeys[pathname];
   const marqueeText = pagePropKey ? pageProps[pagePropKey]?.marqueeText : null;
 
@@ -158,11 +149,10 @@ function createRandomMobileGlobePosition() {
   const mobileGlobeSize = window.innerWidth * mobileGlobeViewportRatio;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
-  const minLeft = 0;
-  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize, minLeft);
+  const leftHalfCenter = window.innerWidth / 4;
+  const left = leftHalfCenter - mobileGlobeSize / 2;
   const minTop = mobileGlobeViewportPadding;
   const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
-  const left = getRandomNumber(minLeft, maxLeft);
   const top = getRandomNumber(minTop, maxTop);
 
   return {
@@ -177,13 +167,11 @@ function clampMobileGlobePosition(position = { x: 0, y: 0 }) {
   const mobileGlobeSize = window.innerWidth * mobileGlobeViewportRatio;
   const centeredLeft = (window.innerWidth - mobileGlobeSize) / 2;
   const centeredTop = (window.innerHeight - mobileGlobeSize) / 2;
-  const minLeft = 0;
-  const maxLeft = Math.max(window.innerWidth / 2 - mobileGlobeSize, minLeft);
+  const leftHalfCenter = window.innerWidth / 4;
+  const left = leftHalfCenter - mobileGlobeSize / 2;
   const minTop = mobileGlobeViewportPadding;
   const maxTop = Math.max(window.innerHeight - mobileGlobeSize - mobileGlobeViewportPadding, minTop);
-  const currentLeft = centeredLeft + position.x;
   const currentTop = centeredTop + position.y;
-  const left = Math.min(Math.max(currentLeft, minLeft), maxLeft);
   const top = Math.min(Math.max(currentTop, minTop), maxTop);
 
   return {
@@ -340,13 +328,13 @@ export default function App({ Component, pageProps }) {
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
   const textColorPalette = getTextColorPalette(page.textColors);
   const textColorPaletteKey = textColorPalette.join("|");
-  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps, isProduction);
+  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps);
   const isDestinationsPage = router.pathname === "/destinations";
+  const isAdminPage = router.pathname.startsWith("/admin");
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
   const isToolsPage = router.pathname === "/tools";
-  const shouldRenderLockedProduction = isProduction;
 
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
@@ -366,10 +354,6 @@ export default function App({ Component, pageProps }) {
   const programmaticScrollLockRef = useRef(null);
   const footerRef = useRef(null);
   const imprintRef = useRef(null);
-  const imprintCloseTimerRef = useRef(null);
-  const imprintScrollTimerRef = useRef(null);
-  const imprintScrollFrameRef = useRef({ first: null, second: null });
-  const imprintTouchStartYRef = useRef(null);
   const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
   const [viewportWidth, setViewportWidth] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
@@ -378,7 +362,6 @@ export default function App({ Component, pageProps }) {
   const [isApplicationFormDirty, setIsApplicationFormDirty] = useState(false);
   const [isImprintOpen, setIsImprintOpen] = useState(false);
   const isImprintOpenRef = useRef(false);
-  const [isImprintObscuring, setIsImprintObscuring] = useState(false);
   const [isContentContainerExiting, setIsContentContainerExiting] = useState(false);
   const [isPageTransitionSettled, setIsPageTransitionSettled] = useState(true);
   const [shouldScrollAboutToBottom, setShouldScrollAboutToBottom] = useState(false);
@@ -388,11 +371,9 @@ export default function App({ Component, pageProps }) {
   const shouldScrollAboutToBottomRef = useRef(false);
   const globeSize = viewportWidth > 0 && viewportWidth < 769 ? viewportWidth * mobileGlobeViewportRatio : undefined;
   const isApplicationFormObscuring = isApplicationFormOpen && isApplicationFormEntered;
-  const isPageObscuring = isApplicationFormObscuring || isImprintObscuring;
+  const isPageObscuring = isApplicationFormObscuring;
 
   const openApplicationForm = () => {
-    if (shouldRenderLockedProduction) return;
-
     setIsApplicationFormDirty(false);
     setIsApplicationFormEntered(false);
     setIsApplicationFormOpen(true);
@@ -530,6 +511,30 @@ export default function App({ Component, pageProps }) {
     return scrollWindowTo({ top: scrollTop });
   };
 
+  const waitForScrollTarget = (targetScrollTop, maxDuration = 1800) => {
+    if (targetScrollTop === null || targetScrollTop === undefined) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      let animationFrame = null;
+      const timeout = window.setTimeout(() => {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        resolve();
+      }, maxDuration);
+
+      const checkScrollPosition = () => {
+        if (Math.abs(window.scrollY - targetScrollTop) <= 2) {
+          window.clearTimeout(timeout);
+          resolve();
+          return;
+        }
+
+        animationFrame = requestAnimationFrame(checkScrollPosition);
+      };
+
+      animationFrame = requestAnimationFrame(checkScrollPosition);
+    });
+  };
+
   const isCityListVisibleInViewport = () => {
     const cityListLayer = cityListLayerRef.current;
     if (!cityListLayer || isDestinationCityListHiddenRef.current) return false;
@@ -572,60 +577,16 @@ export default function App({ Component, pageProps }) {
   };
 
   const openImprint = () => {
-    if (imprintCloseTimerRef.current) {
-      window.clearTimeout(imprintCloseTimerRef.current);
-      imprintCloseTimerRef.current = null;
-    }
-    if (imprintScrollTimerRef.current) {
-      window.clearTimeout(imprintScrollTimerRef.current);
-      imprintScrollTimerRef.current = null;
-    }
-    if (imprintScrollFrameRef.current.first) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.first);
-    }
-    if (imprintScrollFrameRef.current.second) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.second);
-    }
-    imprintScrollFrameRef.current = { first: null, second: null };
-
-    setIsImprintObscuring(true);
     isImprintOpenRef.current = true;
     setIsImprintOpen(true);
   };
 
   const closeImprint = () => {
-    if (imprintCloseTimerRef.current) {
-      window.clearTimeout(imprintCloseTimerRef.current);
-    }
-    if (imprintScrollTimerRef.current) {
-      window.clearTimeout(imprintScrollTimerRef.current);
-      imprintScrollTimerRef.current = null;
-    }
-    if (imprintScrollFrameRef.current.first) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.first);
-    }
-    if (imprintScrollFrameRef.current.second) {
-      cancelAnimationFrame(imprintScrollFrameRef.current.second);
-    }
-    imprintScrollFrameRef.current = { first: null, second: null };
+    const footerScrollTarget = scrollToElementBottom(footerRef.current, getRootCssPixelValue("--spacing-6"));
 
-    setIsImprintObscuring(false);
-    scrollToElementBottom(footerRef.current, getRootCssPixelValue("--margin"));
-    imprintCloseTimerRef.current = window.setTimeout(() => {
+    waitForScrollTarget(footerScrollTarget).then(() => {
       isImprintOpenRef.current = false;
       setIsImprintOpen(false);
-      imprintCloseTimerRef.current = null;
-    }, 450);
-  };
-
-  const scrollToRenderedImprint = () => {
-    if (!isImprintOpenRef.current || !imprintRef.current) return;
-
-    imprintScrollFrameRef.current.first = requestAnimationFrame(() => {
-      imprintScrollFrameRef.current.second = requestAnimationFrame(() => {
-        scrollToElement(imprintRef.current, 0);
-        imprintScrollFrameRef.current = { first: null, second: null };
-      });
     });
   };
 
@@ -636,15 +597,6 @@ export default function App({ Component, pageProps }) {
   useEffect(() => {
     return () => {
       stopProgrammaticScrollLock();
-      if (imprintScrollTimerRef.current) {
-        window.clearTimeout(imprintScrollTimerRef.current);
-      }
-      if (imprintScrollFrameRef.current.first) {
-        cancelAnimationFrame(imprintScrollFrameRef.current.first);
-      }
-      if (imprintScrollFrameRef.current.second) {
-        cancelAnimationFrame(imprintScrollFrameRef.current.second);
-      }
     };
   }, []);
 
@@ -654,6 +606,16 @@ export default function App({ Component, pageProps }) {
 
   useEffect(() => {
     isImprintOpenRef.current = isImprintOpen;
+  }, [isImprintOpen]);
+
+  useEffect(() => {
+    if (!isImprintOpen) return undefined;
+
+    const frame = requestAnimationFrame(() => {
+      scrollToElement(imprintRef.current, 0);
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, [isImprintOpen]);
 
   useEffect(() => {
@@ -760,49 +722,6 @@ export default function App({ Component, pageProps }) {
 
     setIsApplicationFormEntered(false);
   }, [isApplicationFormOpen]);
-
-  useEffect(() => {
-    if (isImprintOpen) return;
-
-    setIsImprintObscuring(false);
-  }, [isImprintOpen]);
-
-  useEffect(() => {
-    if (!isImprintOpen) return undefined;
-
-    const handleWheel = (event) => {
-      if (event.deltaY >= 0) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      closeImprint();
-    };
-
-    const handleTouchStart = (event) => {
-      imprintTouchStartYRef.current = event.touches?.[0]?.clientY ?? null;
-    };
-
-    const handleTouchMove = (event) => {
-      const startY = imprintTouchStartYRef.current;
-      const currentY = event.touches?.[0]?.clientY;
-      if (startY === null || currentY === undefined || currentY - startY < 8) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      closeImprint();
-    };
-
-    window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
-    window.addEventListener("touchstart", handleTouchStart, { capture: true, passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { capture: true, passive: false });
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel, { capture: true });
-      window.removeEventListener("touchstart", handleTouchStart, { capture: true });
-      window.removeEventListener("touchmove", handleTouchMove, { capture: true });
-      imprintTouchStartYRef.current = null;
-    };
-  }, [isImprintOpen]);
 
   useEffect(() => {
     if (textColorPalette.length === 0) {
@@ -1009,15 +928,6 @@ export default function App({ Component, pageProps }) {
       const nextHref = getInternalNavigationHref(event);
       if (!nextHref) return;
 
-      if (isProduction) {
-        event.preventDefault();
-        const nextPathname = new URL(nextHref, window.location.href).pathname;
-        if (nextPathname !== "/" && router.pathname !== "/") {
-          router.replace("/", undefined, { scroll: false }).catch(() => {});
-        }
-        return;
-      }
-
       event.preventDefault();
 
       clearPendingNavigationTimer();
@@ -1114,12 +1024,6 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeError", handleRouteChangeError);
     };
   }, [router.events]);
-
-  useEffect(() => {
-    if (!shouldRenderLockedProduction || !router.isReady || router.pathname === "/") return;
-
-    router.replace("/", undefined, { scroll: false }).catch(() => {});
-  }, [router, router.isReady, router.pathname, shouldRenderLockedProduction]);
 
   useEffect(() => {
     if (isAppReady || !router.isReady) return undefined;
@@ -1285,8 +1189,6 @@ export default function App({ Component, pageProps }) {
   };
 
   const handleCityClick = (city) => {
-    if (shouldRenderLockedProduction) return;
-
     setHighlightedCity(null);
     setDestinationCity(city);
 
@@ -1318,8 +1220,6 @@ export default function App({ Component, pageProps }) {
   };
 
   const handleCityMarkerClick = (city) => {
-    if (shouldRenderLockedProduction) return;
-
     setDestinationCity(city);
     setHighlightedCity(city);
     setCityListScrollRequest((requestCount) => requestCount + 1);
@@ -1522,14 +1422,20 @@ export default function App({ Component, pageProps }) {
         <ViewportProvider>
           <DeviceProvider>
             <LenisProvider>
-              <Header
-                currentPhase={currentPhase}
-                isProduction={shouldRenderLockedProduction}
-                onApplyClick={openApplicationForm}
-                pageDeadlines={pageDeadlines}
-                site={site}
-              />
-              <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
+              <TextColorContext.Provider value={textColorPalette}>
+                {isAdminPage ? (
+                  <ContentContainer className={styles.adminContentContainer}>
+                    <Component {...pageProps} />
+                  </ContentContainer>
+                ) : (
+                  <>
+                    <Header
+                      currentPhase={currentPhase}
+                      onApplyClick={openApplicationForm}
+                      pageDeadlines={pageDeadlines}
+                      site={site}
+                    />
+                <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
                 <motion.div
                   animate={globePosition}
                   className={styles.globeMover}
@@ -1560,63 +1466,62 @@ export default function App({ Component, pageProps }) {
                     <Marquee text={page.marqueeText} className={styles.smallMarquee} scrollSpeedMultiplier={0.5} />
                   ) : null}
                 </div>
-              </div>
-              <div
-                className={[
-                  styles.cityListLayer,
-                  isPageObscuring ? styles.pageObscured : "",
-                  isDestinationCityListHidden ? styles.cityListLayerHidden : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                ref={cityListLayerRef}
-              >
-                <AnimatePresence initial={false}>
-                  {shouldRenderCityList ? (
-                    <motion.div
-                      animate="animate"
-                      exit="exit"
-                      initial="initial"
-                      key="city-list"
-                      transition={cityListTransition}
-                      variants={cityListTransitionVariants}
-                    >
-                      <CityList
-                        accentInactive={!shouldRenderLockedProduction && isDestinationsPage}
-                        cities={destinations}
-                        highlightedCity={highlightedCity}
-                        isClickable={!shouldRenderLockedProduction}
-                        onCityClick={shouldRenderLockedProduction ? undefined : handleCityClick}
-                        onCitySelect={setDestinationCity}
-                        selectedCity={isDestinationsPage ? selectedDestination : null}
-                      />
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </div>
-              {shouldRenderLockedProduction || isApplicationFormOpen || isImprintObscuring ? null : <SpacingDebugOverlay />}
-              {shouldRenderLockedProduction ? null : (
+                </div>
+                <div
+                  className={[
+                    styles.cityListLayer,
+                    isPageObscuring ? styles.pageObscured : "",
+                    isDestinationCityListHidden ? styles.cityListLayerHidden : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  ref={cityListLayerRef}
+                >
+                  <AnimatePresence initial={false}>
+                    {shouldRenderCityList ? (
+                      <motion.div
+                        animate="animate"
+                        exit="exit"
+                        initial="initial"
+                        key="city-list"
+                        transition={cityListTransition}
+                        variants={cityListTransitionVariants}
+                      >
+                        <CityList
+                          accentInactive={isDestinationsPage}
+                          cities={destinations}
+                          highlightedCity={highlightedCity}
+                          isClickable
+                          onCityClick={handleCityClick}
+                          onCitySelect={setDestinationCity}
+                          selectedCity={isDestinationsPage ? selectedDestination : null}
+                        />
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+                {isApplicationFormOpen ? null : <SpacingDebugOverlay />}
                 <>
-                  <AnimatePresence initial={false} mode="wait">
-                    <motion.div
-                      animate="animate"
-                      className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
-                        .filter(Boolean)
-                        .join(" ")}
-                      exit="exit"
-                      initial="initial"
-                      key={router.asPath}
-                      onAnimationComplete={(definition) => {
-                        if (definition === "animate") {
-                          setIsPageTransitionSettled(true);
-                          window.dispatchEvent(
-                            new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
-                          );
-                        }
-                      }}
-                      transition={pageTransition}
-                      variants={pageTransitionVariants}
-                    >
+                    <AnimatePresence initial={false} mode="wait">
+                      <motion.div
+                        animate="animate"
+                        className={["pageTransition", isApplicationFormObscuring ? styles.pageObscured : ""]
+                          .filter(Boolean)
+                          .join(" ")}
+                        exit="exit"
+                        initial="initial"
+                        key={router.asPath}
+                        onAnimationComplete={(definition) => {
+                          if (definition === "animate") {
+                            setIsPageTransitionSettled(true);
+                            window.dispatchEvent(
+                              new CustomEvent(pageTransitionCompleteEventName, { detail: { path: router.asPath } }),
+                            );
+                          }
+                        }}
+                        transition={pageTransition}
+                        variants={pageTransitionVariants}
+                      >
                       {is404Page ? (
                         <Component {...pageProps} />
                       ) : (
@@ -1624,7 +1529,7 @@ export default function App({ Component, pageProps }) {
                           className={isContentContainerExiting ? styles.contentContainerExiting : ""}
                           id={contentContainerId}
                         >
-                          <div className={isImprintObscuring ? styles.pageObscured : ""}>
+                          <div>
                             <div className="pageTransitionRoot">
                               <Component {...pageProps} selectedDestination={selectedDestination} />
                             </div>
@@ -1636,45 +1541,45 @@ export default function App({ Component, pageProps }) {
                                 site={site}
                               />
                             </div>
+                            <AnimatePresence initial={false}>
+                              {isImprintOpen ? (
+                                <motion.div
+                                  animate={{ opacity: 1 }}
+                                  className={styles.imprintAppendix}
+                                  exit={{ opacity: 0 }}
+                                  initial={{ opacity: 0 }}
+                                  ref={imprintRef}
+                                  transition={{ duration: 0.35, ease: "easeInOut" }}
+                                >
+                                  <Imprint imprint={imprint} onClose={closeImprint} />
+                                </motion.div>
+                              ) : null}
+                            </AnimatePresence>
                           </div>
-                          <AnimatePresence initial={false}>
-                            {isImprintOpen ? (
-                              <motion.div
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                initial={{ opacity: 0 }}
-                                onAnimationComplete={() => {
-                                  imprintScrollTimerRef.current = window.setTimeout(scrollToRenderedImprint, 0);
-                                }}
-                                ref={imprintRef}
-                                transition={{ duration: 0.35, ease: "easeInOut" }}
-                              >
-                                <Imprint imprint={imprint} onClose={closeImprint} />
-                              </motion.div>
-                            ) : null}
-                          </AnimatePresence>
                         </ContentContainer>
                       )}
-                    </motion.div>
-                  </AnimatePresence>
-                  <ApplicationFormOverlay
-                    currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
-                    destinations={destinations}
-                    isOpen={isApplicationFormOpen}
-                    onClose={closeApplicationForm}
-                    onDirtyChange={setIsApplicationFormDirty}
-                    onHomeClick={handleApplicationFormHomeClick}
-                    onImprintClick={() => {
-                      closeApplicationForm();
-                      openImprint();
-                    }}
-                    onOpenComplete={() => setIsApplicationFormEntered(true)}
-                    page={page}
-                    pageDeadlines={pageDeadlines}
-                    site={site}
-                  />
+                      </motion.div>
+                    </AnimatePresence>
+                    <ApplicationFormOverlay
+                      currentPhaseLabel={getCurrentPhaseLabel(currentPhase)}
+                      destinations={destinations}
+                      isOpen={isApplicationFormOpen}
+                      onClose={closeApplicationForm}
+                      onDirtyChange={setIsApplicationFormDirty}
+                      onHomeClick={handleApplicationFormHomeClick}
+                      onImprintClick={() => {
+                        closeApplicationForm();
+                        openImprint();
+                      }}
+                      onOpenComplete={() => setIsApplicationFormEntered(true)}
+                      page={page}
+                      pageDeadlines={pageDeadlines}
+                      site={site}
+                    />
                 </>
-              )}
+                  </>
+                )}
+              </TextColorContext.Provider>
             </LenisProvider>
           </DeviceProvider>
         </ViewportProvider>

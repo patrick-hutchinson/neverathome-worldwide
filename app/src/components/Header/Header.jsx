@@ -36,8 +36,6 @@ function getProgress(now) {
 
 const Header = ({
   currentPhase = null,
-  isProduction = false,
-  isProductionLocked = isProduction,
   onApplyClick = null,
   pageDeadlines = {},
   site = {},
@@ -47,6 +45,7 @@ const Header = ({
   const [progressNow, setProgressNow] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const [isMobileBurgerHidden, setIsMobileBurgerHidden] = useState(false);
   const lastScrollYRef = useRef(0);
   const currentPhaseLabel = getCurrentPhaseLabel(currentPhase);
   const navLinks = useMemo(
@@ -66,6 +65,7 @@ const Header = ({
     const closeMenu = () => setIsMenuOpen(false);
     const showHeader = () => {
       setIsHeaderHidden(false);
+      setIsMobileBurgerHidden(false);
       lastScrollYRef.current = window.scrollY;
     };
 
@@ -93,20 +93,25 @@ const Header = ({
 
       if (currentScrollY <= topThreshold || isMenuOpen) {
         setIsHeaderHidden(false);
+        setIsMobileBurgerHidden(false);
         lastScrollYRef.current = currentScrollY;
         return;
       }
 
       if (Math.abs(scrollDelta) < scrollThreshold) return;
 
-      setIsHeaderHidden(scrollDelta > 0);
+      const isScrollingDown = scrollDelta > 0;
+      const contentContainerTop = document.getElementById("page-content")?.getBoundingClientRect().top ?? Infinity;
+
+      setIsHeaderHidden(isScrollingDown);
+      setIsMobileBurgerHidden(isMobile && isScrollingDown && contentContainerTop <= topThreshold + 10);
       lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isMobile]);
 
   const Progressbar = () => {
     const progress = getProgress(progressNow);
@@ -122,20 +127,12 @@ const Header = ({
     [styles.link, router.pathname === href ? styles.linkActive : ""].filter(Boolean).join(" ");
 
   const preventSameRouteNavigation = (href) => (event) => {
-    if (!isProductionLocked && router.pathname !== href) return;
+    if (router.pathname !== href) return;
 
     event.preventDefault();
   };
 
   const handleHomeLinkClick = (event) => {
-    if (isProductionLocked) {
-      if (router.pathname !== "/") {
-        event.preventDefault();
-        router.replace("/", undefined, { scroll: false }).catch(() => {});
-      }
-      return;
-    }
-
     if (router.pathname !== "/") return;
 
     event.preventDefault();
@@ -144,7 +141,6 @@ const Header = ({
 
   const handleContactClick = (event) => {
     event.preventDefault();
-    if (isProductionLocked) return;
 
     setIsMenuOpen(false);
     window.dispatchEvent(new CustomEvent(aboutBottomScrollRequestEventName));
@@ -155,8 +151,6 @@ const Header = ({
   };
 
   const handleSpacingDebugToggle = () => {
-    if (isProductionLocked) return;
-
     const url = new URL(window.location.href);
     const queryValue = url.searchParams.get("spacingDebug");
     const isEnabled = queryValue ? queryValue === "1" : window.localStorage.getItem("spacingDebug") === "1";
@@ -180,17 +174,9 @@ const Header = ({
   };
 
   const handleApplyClick = () => {
-    if (isProductionLocked) return;
-
     setIsMenuOpen(false);
     onApplyClick?.();
   };
-
-  const DisabledNavItem = ({ children, className = "" }) => (
-    <span className={[styles.link, styles.linkDisabled, className].filter(Boolean).join(" ")} aria-disabled="true">
-      {children}
-    </span>
-  );
 
   const DesktopNav = () => {
     const infoLink = navLinks.find((link) => link.href === "/info");
@@ -201,7 +187,7 @@ const Header = ({
           {currentPhaseLabel ? (
             <span
               className={[styles.navItem, styles.phaseItem].filter(Boolean).join(" ")}
-              {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
+              data-random-hover-color
             >
               <Link
                 className={[getLinkClassName("/"), styles.phaseLink].filter(Boolean).join(" ")}
@@ -223,40 +209,27 @@ const Header = ({
               className={[
                 styles.navItem,
                 link.href === "/info" ? styles.navItemInfoPage : "",
-                isProductionLocked ? styles.navItemDisabled : "",
               ]
                 .filter(Boolean)
                 .join(" ")}
-              {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
+              data-random-hover-color
               key={link.href}
             >
-              {isProductionLocked ? (
-                <DisabledNavItem>{link.label}</DisabledNavItem>
-              ) : (
-                <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
-                  {link.label}
-                </Link>
-              )}
+              <Link className={getLinkClassName(link.href)} href={link.href} onClick={preventSameRouteNavigation(link.href)}>
+                {link.label}
+              </Link>
               {link.href !== "/info" ? <CountdownText className={styles.countdown} deadline={link.deadline} /> : null}
             </span>
           ))}
         </div>
         <div>
-          {isProductionLocked ? (
-            <DisabledNavItem>About</DisabledNavItem>
-          ) : (
-            <Link className={getLinkClassName("/about")} href="/about" onClick={preventSameRouteNavigation("/about")}>
-              About
-            </Link>
-          )}
-          <span className={isProductionLocked ? styles.linkSeparatorDisabled : ""}>{",\u00a0"}</span>
-          {isProductionLocked ? (
-            <DisabledNavItem>Contact</DisabledNavItem>
-          ) : (
-            <a className={styles.link} data-manual-navigation href="/about" onClick={handleContactClick}>
-              Contact
-            </a>
-          )}
+          <Link className={getLinkClassName("/about")} href="/about" onClick={preventSameRouteNavigation("/about")}>
+            About
+          </Link>
+          <span>{",\u00a0"}</span>
+          <a className={styles.link} data-manual-navigation href="/about" onClick={handleContactClick}>
+            Contact
+          </a>
         </div>
       </nav>
     );
@@ -270,30 +243,34 @@ const Header = ({
     return (
       <nav className={styles.nav} typo={isMobile ? "h3 compensate" : "h4 compensate"}>
         <span
-          className={styles.navItem}
-          {...(!isProductionLocked ? { "data-random-hover-color": true } : {})}
+          className={[styles.navItem, isHeaderHidden ? styles.mobileNavItemHidden : ""].filter(Boolean).join(" ")}
+          data-random-hover-color
         >
           <Link
-            className={[getLinkClassName("/"), isProductionLocked ? styles.phaseLink : ""].filter(Boolean).join(" ")}
+            className={[
+              getLinkClassName("/"),
+              styles.mobileOpenCallLink,
+            ]
+              .filter(Boolean)
+              .join(" ")}
             href={"/"}
-            onClick={isProductionLocked ? handleHomeLinkClick : preventSameRouteNavigation(infoLink.href)}
+            onClick={preventSameRouteNavigation("/")}
           >
-            {isProductionLocked ? currentPhaseLabel : "Open Call"}
+            Open Call
           </Link>
-          {isProductionLocked ? null : <CountdownText className={styles.countdown} deadline={infoLink.deadline} />}
+          <CountdownText className={styles.countdown} deadline={infoLink.deadline} />
         </span>
         <button
           className={[
             styles.menuButton,
             isMenuOpen ? styles.menuButtonOpen : "",
-            isProductionLocked ? styles.menuButtonDisabled : "",
+            isMobileBurgerHidden && !isMenuOpen ? styles.menuButtonHidden : "",
           ]
             .filter(Boolean)
             .join(" ")}
           type="button"
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMenuOpen}
-          disabled={isProductionLocked}
           onClick={() => setIsMenuOpen((isOpen) => !isOpen)}
         >
           <motion.span
@@ -317,7 +294,6 @@ const Header = ({
         {isMobile && isMenuOpen ? (
           <Menu
             currentPhaseLabel={currentPhaseLabel}
-            isProductionLocked={isProductionLocked}
             navLinks={navLinks}
             email={site.email}
             onApplyClick={handleApplyClick}

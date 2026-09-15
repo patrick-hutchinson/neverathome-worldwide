@@ -52,38 +52,12 @@
         color: inherit;
       }
 
-      .linkDisabled {
-        color: var(--accent);
-      }
-    }
-
-    .navItemDisabled,
-    .navItemDisabled:hover {
-      color: var(--accent);
-      cursor: not-allowed;
-
-      .link,
-      .countdown {
-        color: var(--accent);
-        cursor: not-allowed;
-      }
     }
 
     .link {
       display: inline-flex;
       align-items: baseline;
       pointer-events: auto;
-    }
-
-    .linkDisabled {
-      color: var(--accent);
-      cursor: not-allowed;
-      pointer-events: auto;
-    }
-
-    .linkSeparatorDisabled {
-      color: var(--accent);
-      cursor: not-allowed;
     }
 
     .countdown {
@@ -151,9 +125,13 @@
       mix-blend-mode: difference;
     }
 
-    .menuButtonDisabled {
-      color: var(--accent);
-      cursor: not-allowed;
+    .mobileOpenCallLink,
+    .mobileOpenCallLink.linkActive {
+      color: #000;
+    }
+
+    .navItem:hover .mobileOpenCallLink {
+      color: #000;
     }
   }
 }
@@ -168,6 +146,29 @@
 
 .phaseLink.linkActive {
   color: #000;
+}
+
+@media screen and (max-width: 768px) {
+  .header {
+    transform: none;
+
+    .nav {
+      .navItem,
+      .menuButton {
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
+      }
+
+      .mobileNavItemHidden,
+      .menuButtonHidden {
+        transform: translateY(calc(-100% - var(--margin) - 8px));
+      }
+    }
+  }
+
+  .headerHidden {
+    transform: none;
+  }
 }
 
 @media screen and (min-width: 769px) {

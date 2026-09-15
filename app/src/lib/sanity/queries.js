@@ -49,10 +49,27 @@ export const pageQuery = `*[_type=="page"][0]{
     hexCode
   },
   mediaPartner[]{
-    asset->{
+    _key,
+    "asset": select(
+      defined(asset) => asset->{
+        url,
+        mimeType,
+        originalFilename
+      },
+      defined(logo.asset) => logo.asset->{
+        url,
+        mimeType,
+        originalFilename
+      }
+    ),
+    link{
+      type,
       url,
-      mimeType,
-      originalFilename
+      email,
+      internalLink->{
+        _id,
+        _type
+      }
     }
   },
 }`;

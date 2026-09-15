@@ -21,6 +21,18 @@
   transition: opacity 0.35s ease-in-out;
 }
 
+.adminContentContainer {
+  margin-top: 0;
+}
+
+.imprintAppendix {
+  --content-grid-gap: calc(var(--spacing-6) / 2);
+  --background: transparent;
+  --foreground: #000;
+
+  margin-top: var(--spacing-6);
+}
+
 .sharedLayer {
   position: fixed;
   inset: 0;

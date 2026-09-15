@@ -39,21 +39,21 @@ const AboutPage = ({ aboutPage }) => {
               The Team
             </h3>
 
-            <Text
-              text="Hier kommt noch ein kleiner Text hin, ich weiss noch nicht ganz was."
-              typo="h6 compensate"
-              className={styles.text}
-            />
-
             <div className={styles.teamPhotos}>
               {aboutPage.team.map((teamMember, index) => {
                 return (
-                  <div className={styles.teamMember}>
-                    <Media className={styles.teamMemberPortrait} medium={teamMember.portrait.medium} />
-                    <div typo="h6">
-                      {teamMember.name}
-                      {",\u00a0"}
-                      {teamMember.role}
+                  <div className={styles.teamMember} key={teamMember.name || index}>
+                    <div className={styles.teamMemberPortrait}>
+                      {teamMember.portrait?.medium ? <Media medium={teamMember.portrait.medium} /> : null}
+                    </div>
+                    <div className={styles.teamMemberCaption} typo="h6">
+                      <span>{teamMember.name}</span>
+                      <br />
+                      {teamMember.role ? (
+                        <>
+                          <Text className={styles.teamMemberRole} text={teamMember.role} />
+                        </>
+                      ) : null}
                     </div>
                   </div>
                 );

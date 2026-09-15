@@ -10,9 +10,10 @@
 }
 
 .headerButton {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--content-grid-gap);
+  align-items: start;
   padding: var(--spacing-7) 0;
 }
 
@@ -32,16 +33,18 @@
 .openCloseButton {
   width: 0.4em;
   height: 0.4em;
+  flex: 0 0 0.4em;
   display: flex;
   align-items: center;
   justify-content: center;
   /* transform: translateY(-3.5px); */
   transform-origin: center;
   transition: transform 0.25s ease;
+  transform: translateY(calc(var(--fontSize-3) / 4));
 }
 
 .openCloseButtonOpen {
-  transform: rotate(45deg);
+  transform: translateY(calc(var(--fontSize-3) / 4)) rotate(45deg);
 }
 
 .openCloseButton .openCloseIcon {
@@ -66,6 +69,7 @@
   .openCloseButton {
     width: 0.28em;
     height: 0.28em;
+    flex-basis: 0.28em;
     display: flex;
     align-items: center;
     justify-content: center;
