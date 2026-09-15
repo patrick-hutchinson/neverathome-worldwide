@@ -47,14 +47,6 @@ const cityListTransitionVariants = {
   exit: { opacity: 0, transition: cityListTransition },
 };
 
-// Updated Packages
-
-export const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-
-console.log(isProduction, "isProduction");
-
-// const isProduction = true;
-
 const routeMarqueeLabels = {
   "/": "OpenCall",
   "/destinations": "Destinations",
@@ -75,9 +67,7 @@ const routePagePropKeys = {
 
 const contentAutoScrollRoutes = new Set(["/jury", "/info", "/about"]);
 
-function getRouteMarqueeText(pathname, pageProps = {}, isProductionRoute = false) {
-  if (isProductionRoute) return "ComingSoon";
-
+function getRouteMarqueeText(pathname, pageProps = {}) {
   const pagePropKey = routePagePropKeys[pathname];
   const marqueeText = pagePropKey ? pageProps[pagePropKey]?.marqueeText : null;
 
@@ -362,14 +352,13 @@ export default function App({ Component, pageProps }) {
   const globeTextureUrl = getGlobeTextureUrl(page.globeTexture?.asset?.url);
   const textColorPalette = getTextColorPalette(page.textColors);
   const textColorPaletteKey = textColorPalette.join("|");
-  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps, isProduction);
+  const h1MarqueeText = getRouteMarqueeText(router.pathname, pageProps);
   const isDestinationsPage = router.pathname === "/destinations";
   const isAdminPage = router.pathname.startsWith("/admin");
   const isContentAutoScrollPage = contentAutoScrollRoutes.has(router.pathname);
   const shouldFadeCityListOnScroll = isDestinationsPage || isContentAutoScrollPage;
   const is404Page = router.pathname === "/404";
   const isToolsPage = router.pathname === "/tools";
-  const shouldRenderLockedProduction = isProduction && !isAdminPage;
 
   const [destinationCity, setDestinationCity] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
@@ -408,8 +397,6 @@ export default function App({ Component, pageProps }) {
   const isPageObscuring = isApplicationFormObscuring;
 
   const openApplicationForm = () => {
-    if (shouldRenderLockedProduction) return;
-
     setIsApplicationFormDirty(false);
     setIsApplicationFormEntered(false);
     setIsApplicationFormOpen(true);
@@ -950,15 +937,6 @@ export default function App({ Component, pageProps }) {
       const nextHref = getInternalNavigationHref(event);
       if (!nextHref) return;
 
-      if (isProduction) {
-        event.preventDefault();
-        const nextPathname = new URL(nextHref, window.location.href).pathname;
-        if (nextPathname !== "/" && router.pathname !== "/") {
-          router.replace("/", undefined, { scroll: false }).catch(() => {});
-        }
-        return;
-      }
-
       event.preventDefault();
 
       clearPendingNavigationTimer();
@@ -1055,12 +1033,6 @@ export default function App({ Component, pageProps }) {
       router.events.off("routeChangeError", handleRouteChangeError);
     };
   }, [router.events]);
-
-  useEffect(() => {
-    if (!shouldRenderLockedProduction || !router.isReady || router.pathname === "/") return;
-
-    router.replace("/", undefined, { scroll: false }).catch(() => {});
-  }, [router, router.isReady, router.pathname, shouldRenderLockedProduction]);
 
   useEffect(() => {
     if (isAppReady || !router.isReady) return undefined;
@@ -1226,8 +1198,6 @@ export default function App({ Component, pageProps }) {
   };
 
   const handleCityClick = (city) => {
-    if (shouldRenderLockedProduction) return;
-
     setHighlightedCity(null);
     setDestinationCity(city);
 
@@ -1259,8 +1229,6 @@ export default function App({ Component, pageProps }) {
   };
 
   const handleCityMarkerClick = (city) => {
-    if (shouldRenderLockedProduction) return;
-
     setDestinationCity(city);
     setHighlightedCity(city);
     setCityListScrollRequest((requestCount) => requestCount + 1);
@@ -1472,7 +1440,6 @@ export default function App({ Component, pageProps }) {
                   <>
                     <Header
                       currentPhase={currentPhase}
-                      isProduction={shouldRenderLockedProduction}
                       onApplyClick={openApplicationForm}
                       pageDeadlines={pageDeadlines}
                       site={site}
@@ -1530,11 +1497,11 @@ export default function App({ Component, pageProps }) {
                         variants={cityListTransitionVariants}
                       >
                         <CityList
-                          accentInactive={!shouldRenderLockedProduction && isDestinationsPage}
+                          accentInactive={isDestinationsPage}
                           cities={destinations}
                           highlightedCity={highlightedCity}
-                          isClickable={!shouldRenderLockedProduction}
-                          onCityClick={shouldRenderLockedProduction ? undefined : handleCityClick}
+                          isClickable
+                          onCityClick={handleCityClick}
                           onCitySelect={setDestinationCity}
                           selectedCity={isDestinationsPage ? selectedDestination : null}
                         />
@@ -1542,9 +1509,8 @@ export default function App({ Component, pageProps }) {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {shouldRenderLockedProduction || isApplicationFormOpen ? null : <SpacingDebugOverlay />}
-                {shouldRenderLockedProduction ? null : (
-                  <>
+                {isApplicationFormOpen ? null : <SpacingDebugOverlay />}
+                <>
                     <AnimatePresence initial={false} mode="wait">
                       <motion.div
                         animate="animate"
@@ -1606,8 +1572,7 @@ export default function App({ Component, pageProps }) {
                       site={site}
                     />
                     <ImprintOverlay imprint={imprint} isOpen={isImprintOpen} onClose={closeImprint} />
-                  </>
-                )}
+                </>
                   </>
                 )}
               </TextColorContext.Provider>

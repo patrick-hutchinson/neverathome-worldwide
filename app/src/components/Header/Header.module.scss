@@ -52,38 +52,12 @@
         color: inherit;
       }
 
-      .linkDisabled {
-        color: var(--accent);
-      }
-    }
-
-    .navItemDisabled,
-    .navItemDisabled:hover {
-      color: var(--accent);
-      cursor: not-allowed;
-
-      .link,
-      .countdown {
-        color: var(--accent);
-        cursor: not-allowed;
-      }
     }
 
     .link {
       display: inline-flex;
       align-items: baseline;
       pointer-events: auto;
-    }
-
-    .linkDisabled {
-      color: var(--accent);
-      cursor: not-allowed;
-      pointer-events: auto;
-    }
-
-    .linkSeparatorDisabled {
-      color: var(--accent);
-      cursor: not-allowed;
     }
 
     .countdown {
@@ -149,11 +123,6 @@
     .menuButtonOpen {
       color: #fff;
       mix-blend-mode: difference;
-    }
-
-    .menuButtonDisabled {
-      color: var(--accent);
-      cursor: not-allowed;
     }
 
     .mobileOpenCallLink,
