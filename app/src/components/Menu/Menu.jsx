@@ -10,6 +10,7 @@ const Menu = ({
   onApplyClick = null,
   onContactClick = null,
   onSpacingDebugToggle = null,
+  showSpacingDebug = true,
 }) => {
   const infoLink = navLinks.find((link) => link.href === "/info");
   const juryLink = navLinks.find((link) => link.href === "/jury");
@@ -52,9 +53,11 @@ const Menu = ({
           ) : (
             <span>Contact</span>
           )}
-          <button className={styles.debugButton} type="button" onClick={onSpacingDebugToggle}>
-            Spacing Debug
-          </button>
+          {showSpacingDebug ? (
+            <button className={styles.debugButton} type="button" onClick={onSpacingDebugToggle}>
+              Spacing Debug
+            </button>
+          ) : null}
         </div>
       </nav>
     </motion.div>

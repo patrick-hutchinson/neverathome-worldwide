@@ -47,6 +47,8 @@ const cityListTransitionVariants = {
   exit: { opacity: 0, transition: cityListTransition },
 };
 
+const isProductionEnvironment = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
 const routeMarqueeLabels = {
   "/": "OpenCall",
   "/destinations": "Destinations",
@@ -299,7 +301,9 @@ function ApplicationFormOverlay({
               page={page}
               site={site}
             />
-            <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
+            {isProductionEnvironment ? null : (
+              <SpacingDebugOverlay overlayId="spacing-debug-overlay-form" rootSelector="#application-form-layer" />
+            )}
           </ReactLenis>
         </motion.div>
       ) : null}
@@ -1433,6 +1437,7 @@ export default function App({ Component, pageProps }) {
                       currentPhase={currentPhase}
                       onApplyClick={openApplicationForm}
                       pageDeadlines={pageDeadlines}
+                      showSpacingDebug={!isProductionEnvironment}
                       site={site}
                     />
                 <div className={[styles.sharedLayer, isPageObscuring ? styles.pageObscured : ""].filter(Boolean).join(" ")}>
@@ -1500,7 +1505,7 @@ export default function App({ Component, pageProps }) {
                     ) : null}
                   </AnimatePresence>
                 </div>
-                {isApplicationFormOpen ? null : <SpacingDebugOverlay />}
+                {isProductionEnvironment || isApplicationFormOpen ? null : <SpacingDebugOverlay />}
                 <>
                     <AnimatePresence initial={false} mode="wait">
                       <motion.div

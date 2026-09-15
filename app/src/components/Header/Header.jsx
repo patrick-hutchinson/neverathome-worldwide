@@ -38,6 +38,7 @@ const Header = ({
   currentPhase = null,
   onApplyClick = null,
   pageDeadlines = {},
+  showSpacingDebug = true,
   site = {},
 }) => {
   const { isMobile } = useContext(DeviceContext);
@@ -298,6 +299,7 @@ const Header = ({
             email={site.email}
             onApplyClick={handleApplyClick}
             onContactClick={handleContactClick}
+            showSpacingDebug={showSpacingDebug}
             onSpacingDebugToggle={handleSpacingDebugToggle}
           />
         ) : null}
