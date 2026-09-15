@@ -4,7 +4,7 @@ import {pages} from './schemaTypes/pages'
 
 // Define singleton document IDs here
 const singletonTypes = ['site', 'page', ...pages.map((page) => page.name)]
-const definitions = ['category', 'videoAsset']
+const definitions = ['category', 'videoAsset', 'mux.videoAsset']
 
 // Add other types you want to hide from Desk here
 const hiddenTypes = [...singletonTypes, ...definitions]
