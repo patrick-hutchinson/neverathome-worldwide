@@ -177,6 +177,13 @@ const AdminSubmissionsPage = () => {
                       ? `Downloaded ${submission.download_count || 1}x`
                       : "New"}
                   </p>
+                  <button
+                    className={styles.submissionDownload}
+                    onClick={() => triggerDownload(`/api/admin/submissions/export?id=${encodeURIComponent(submission.id)}`)}
+                    type="button"
+                  >
+                    Download
+                  </button>
                 </div>
               </article>
             );

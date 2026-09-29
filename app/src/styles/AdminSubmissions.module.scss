@@ -29,7 +29,8 @@
 .loginForm button,
 .actions button,
 .actions a,
-.batches button {
+.batches button,
+.submissionDownload {
   all: unset;
   color: var(--foreground);
   cursor: pointer;
@@ -94,6 +95,10 @@
 
 .submissionMeta {
   text-align: right;
+}
+
+.submissionDownload {
+  display: inline-block;
 }
 
 .new {

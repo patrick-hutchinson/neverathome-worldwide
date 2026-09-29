@@ -3,7 +3,7 @@ import { get } from "@vercel/blob";
 
 import { isAdminRequest } from "@/lib/submissions/adminAuth";
 import { ensureSubmissionSchema, getSubmissionDatabase } from "@/lib/submissions/database";
-import { getSubmissionDisplayName, getSubmissionFolderName } from "@/lib/submissions/format";
+import { getSubmissionDisplayName, getSubmissionFolderName, slugifySubmissionPart } from "@/lib/submissions/format";
 import { getDestinations } from "@/lib/sanity";
 
 export const config = {
@@ -37,6 +37,28 @@ function formatViennaDate(value) {
     timeStyle: "short",
     timeZone: "Europe/Vienna",
   }).format(new Date(value));
+}
+
+function formatViennaDateStamp(value) {
+  if (!value) return "unknown-date";
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: "Europe/Vienna",
+    year: "numeric",
+  }).formatToParts(new Date(value));
+  const getPart = (type) => parts.find((part) => part.type === type)?.value;
+
+  return [getPart("year"), getPart("month"), getPart("day")].filter(Boolean).join("-");
+}
+
+function getSingleSubmissionArchiveName(submission = {}) {
+  const date = formatViennaDateStamp(submission.created_at);
+  const lastName = submission.last_name ? slugifySubmissionPart(submission.last_name) : "last-name";
+  const firstName = submission.first_name ? slugifySubmissionPart(submission.first_name) : "first-name";
+
+  return `${date}-${lastName}-${firstName}.zip`;
 }
 
 function getDestinationNames(destinationIds = [], destinationNameMap = new Map()) {
@@ -100,10 +122,18 @@ export default async function handler(request, response) {
     await ensureSubmissionSchema(sql);
 
     const mode = request.query.mode === "new" ? "new" : "batch";
+    const submissionId = typeof request.query.id === "string" ? request.query.id : null;
     const limit = normalizeLimit(request.query.limit);
     const offset = normalizeOffset(request.query.offset);
     const submissions =
-      mode === "new"
+      submissionId
+        ? await sql`
+            SELECT *
+            FROM application_submissions
+            WHERE id = ${submissionId}
+            LIMIT 1
+          `
+        : mode === "new"
         ? await sql`
             SELECT *
             FROM application_submissions
@@ -164,7 +194,9 @@ export default async function handler(request, response) {
     }
 
     const filename =
-      mode === "new"
+      submissionId && submissions.length > 0
+        ? getSingleSubmissionArchiveName(submissions[0])
+        : mode === "new"
         ? "never-at-home-new-submissions.zip"
         : `never-at-home-submissions-${String(offset + 1).padStart(3, "0")}-${String(offset + submissions.length).padStart(
             3,
