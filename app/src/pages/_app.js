@@ -291,6 +291,7 @@ function ApplicationFormOverlay({
           </div>
           <ReactLenis
             className={styles.applicationFormScroller}
+            id="application-form-scroller"
             options={{ allowNestedScroll: true, lerp: 0.12, syncTouch: true }}
             root={false}
           >

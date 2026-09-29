@@ -340,6 +340,18 @@
   color: #00ff66;
 }
 
+.successMessage {
+  display: flex;
+  min-height: calc(100dvh - var(--application-form-header-height, 0px));
+  width: 100%;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+.successMessage p {
+  max-width: 18em;
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;

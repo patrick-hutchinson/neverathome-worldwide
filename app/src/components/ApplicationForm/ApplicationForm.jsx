@@ -129,6 +129,8 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
   const [hasSubmitAttempted, setHasSubmitAttempted] = useState(false);
   const [requiredErrors, setRequiredErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [successColor, setSuccessColor] = useState(null);
+  const isSubmissionSuccessful = submissionStatus?.type === "success";
 
   const getRequiredErrors = (form) => {
     const formData = new FormData(form);
@@ -190,6 +192,7 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
   const handleFormChange = () => {
     onDirtyChange?.(true);
     setSubmissionStatus(null);
+    setSuccessColor(null);
     updateRequiredErrors();
   };
 
@@ -226,6 +229,12 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
   useEffect(() => {
     updateRequiredErrors();
   }, [alternativeDestinations, hasSubmitAttempted, preferredDestinations, selectedMonths, uploads]);
+
+  useEffect(() => {
+    if (!isSubmissionSuccessful) return;
+
+    document.getElementById("application-form-scroller")?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [isSubmissionSuccessful]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -320,6 +329,7 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
         throw new Error(submissionResult.error || "Submission failed.");
       }
 
+      setSuccessColor(getRandomTextColor(textColorPalette) || "var(--accent)");
       setSubmissionStatus({ type: "success", message: "Submission received" });
       onDirtyChange?.(false);
     } catch (error) {
@@ -391,6 +401,21 @@ const ApplicationForm = ({ destinations = [], onDirtyChange, onImprintClick, pag
       return nextUploads;
     });
   };
+
+  if (isSubmissionSuccessful) {
+    return (
+      <section className={styles.successMessage} style={{ color: successColor || "var(--accent)" }} typo="h3 compensate">
+        <p>Thank you for your application.</p>
+        <p>
+          Please note that you will NOT receive a confirmation mail. If there is anything missing about your application we
+          will get in touch.
+        </p>
+        <p>
+          You will receive an update about your application once the jury process is finished by the end of January 2027.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <form
