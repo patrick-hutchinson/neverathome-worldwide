@@ -12,11 +12,14 @@ export function slugifySubmissionPart(value = "") {
   );
 }
 
-export function getSubmissionFolderName(submission = {}, index = 0) {
-  const prefix = String(index + 1).padStart(3, "0");
-  const name = slugifySubmissionPart(getSubmissionDisplayName(submission));
+export function getSubmissionFolderName(submission = {}) {
+  const date = submission.created_at ? new Intl.DateTimeFormat("en-CA", {
+    year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Vienna",
+  }).format(new Date(submission.created_at)) : "unknown-date";
+  const lastName = submission.last_name ? slugifySubmissionPart(submission.last_name) : "last-name";
+  const firstName = submission.first_name ? slugifySubmissionPart(submission.first_name) : "first-name";
 
-  return `${prefix}-${name}`;
+  return `${date}-${lastName}-${firstName}`;
 }
 
 export function formatFileSize(bytes = 0) {

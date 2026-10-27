@@ -11,6 +11,7 @@ const AdminSubmissionsPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [submissions, setSubmissions] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const loadSubmissions = async () => {
     setIsLoading(true);
@@ -31,6 +32,7 @@ const AdminSubmissionsPage = () => {
 
       setIsAuthenticated(true);
       setSubmissions(result.submissions || []);
+      setSelectedIds((ids) => ids.filter((id) => (result.submissions || []).some((submission) => submission.id === id)));
     } catch (nextError) {
       setError(nextError.message || "Could not load submissions.");
     } finally {
@@ -114,6 +116,12 @@ const AdminSubmissionsPage = () => {
           </p>
         </div>
         <div className={styles.actions}>
+          <form action="/api/admin/submissions/export" method="POST" onSubmit={() => window.setTimeout(loadSubmissions, 2000)}>
+            <input name="ids" type="hidden" value={JSON.stringify(selectedIds)} />
+            <button disabled={selectedIds.length === 0} type="submit">
+              Download Selected ({selectedIds.length})
+            </button>
+          </form>
           <button disabled={isLoading} onClick={loadSubmissions} type="button">
             Refresh
           </button>
@@ -156,6 +164,16 @@ const AdminSubmissionsPage = () => {
       ) : null}
 
       <div className={styles.list}>
+        {submissions.length > 0 ? (
+          <label className={styles.selection} typo="h6">
+            <input
+              type="checkbox"
+              checked={selectedIds.length === submissions.length}
+              onChange={(event) => setSelectedIds(event.target.checked ? submissions.map((submission) => submission.id) : [])}
+            />
+            Select all
+          </label>
+        ) : null}
         {submissions.length === 0 ? (
           <p className={styles.empty}>No submissions yet.</p>
         ) : (
@@ -165,10 +183,18 @@ const AdminSubmissionsPage = () => {
 
             return (
               <article className={styles.submission} key={submission.id}>
+                <label className={styles.selection}>
+                  <input
+                    aria-label={`Select ${getSubmissionDisplayName(submission)}`}
+                    type="checkbox"
+                    checked={selectedIds.includes(submission.id)}
+                    onChange={(event) => setSelectedIds((ids) => event.target.checked ? [...ids, submission.id] : ids.filter((id) => id !== submission.id))}
+                  />
                 <div>
                   <h3 typo="h4">{getSubmissionDisplayName(submission)}</h3>
                   <p typo="h6">{submission.email}</p>
                 </div>
+                </label>
                 <div className={styles.submissionMeta} typo="h6">
                   <p>{new Date(submission.created_at).toLocaleString()}</p>
                   <p>{formatFileSize(totalFileSize)}</p>

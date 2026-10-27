@@ -3,7 +3,7 @@ import { get } from "@vercel/blob";
 
 import { isAdminRequest } from "@/lib/submissions/adminAuth";
 import { ensureSubmissionSchema, getSubmissionDatabase } from "@/lib/submissions/database";
-import { getSubmissionDisplayName, getSubmissionFolderName, slugifySubmissionPart } from "@/lib/submissions/format";
+import { getSubmissionDisplayName, getSubmissionFolderName } from "@/lib/submissions/format";
 import { getDestinations } from "@/lib/sanity";
 
 export const config = {
@@ -39,26 +39,8 @@ function formatViennaDate(value) {
   }).format(new Date(value));
 }
 
-function formatViennaDateStamp(value) {
-  if (!value) return "unknown-date";
-
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    timeZone: "Europe/Vienna",
-    year: "numeric",
-  }).formatToParts(new Date(value));
-  const getPart = (type) => parts.find((part) => part.type === type)?.value;
-
-  return [getPart("year"), getPart("month"), getPart("day")].filter(Boolean).join("-");
-}
-
 function getSingleSubmissionArchiveName(submission = {}) {
-  const date = formatViennaDateStamp(submission.created_at);
-  const lastName = submission.last_name ? slugifySubmissionPart(submission.last_name) : "last-name";
-  const firstName = submission.first_name ? slugifySubmissionPart(submission.first_name) : "first-name";
-
-  return `${date}-${lastName}-${firstName}.zip`;
+  return `${getSubmissionFolderName(submission)}.zip`;
 }
 
 function getDestinationNames(destinationIds = [], destinationNameMap = new Map()) {
@@ -112,12 +94,24 @@ export default async function handler(request, response) {
     return response.status(401).json({ error: "Unauthorized." });
   }
 
-  if (request.method !== "GET") {
-    response.setHeader("Allow", "GET");
+  if (!["GET", "POST"].includes(request.method)) {
+    response.setHeader("Allow", "GET, POST");
     return response.status(405).json({ error: "Method not allowed." });
   }
 
   try {
+    let selectedIds = null;
+    if (request.method === "POST") {
+      try {
+        const ids = JSON.parse(request.body?.ids);
+        if (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id))) {
+          return response.status(400).json({ error: "Select valid submissions to download." });
+        }
+        selectedIds = [...new Set(ids)];
+      } catch {
+        return response.status(400).json({ error: "Invalid submission selection." });
+      }
+    }
     const sql = getSubmissionDatabase();
     await ensureSubmissionSchema(sql);
 
@@ -126,7 +120,13 @@ export default async function handler(request, response) {
     const limit = normalizeLimit(request.query.limit);
     const offset = normalizeOffset(request.query.offset);
     const submissions =
-      submissionId
+      selectedIds
+        ? await sql`
+            SELECT * FROM application_submissions
+            WHERE id = ANY(${selectedIds}::text[])
+            ORDER BY created_at ASC
+          `
+        : submissionId
         ? await sql`
             SELECT *
             FROM application_submissions
@@ -151,13 +151,19 @@ export default async function handler(request, response) {
 
     const zip = new JSZip();
     const exportedIds = [];
+    const folderNames = new Set();
     const destinations = await getDestinations();
     const destinationNameMap = new Map(destinations.map((destination) => [destination._id, destination.name]));
 
-    for (const [index, submission] of submissions.entries()) {
+    for (const submission of submissions) {
       exportedIds.push(submission.id);
 
-      const folder = zip.folder(getSubmissionFolderName(submission, offset + index));
+      const baseName = getSubmissionFolderName(submission);
+      let folderName = baseName;
+      let duplicate = 2;
+      while (folderNames.has(folderName)) folderName = `${baseName}-${duplicate++}`;
+      folderNames.add(folderName);
+      const folder = zip.folder(folderName);
       const files = submission.files || {};
 
       folder.file("submission.txt", createSubmissionText(submission, destinationNameMap));
@@ -194,7 +200,9 @@ export default async function handler(request, response) {
     }
 
     const filename =
-      submissionId && submissions.length > 0
+      selectedIds
+        ? "never-at-home-selected-submissions.zip"
+        : submissionId && submissions.length > 0
         ? getSingleSubmissionArchiveName(submissions[0])
         : mode === "new"
         ? "never-at-home-new-submissions.zip"
