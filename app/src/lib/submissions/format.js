@@ -19,7 +19,7 @@ export function getSubmissionFolderName(submission = {}) {
   const lastName = submission.last_name ? slugifySubmissionPart(submission.last_name) : "last-name";
   const firstName = submission.first_name ? slugifySubmissionPart(submission.first_name) : "first-name";
 
-  return `${date}-${lastName}-${firstName}`;
+  return `${date}-${firstName}-${lastName}`;
 }
 
 export function formatFileSize(bytes = 0) {
